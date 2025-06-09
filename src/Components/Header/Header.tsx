@@ -4,9 +4,7 @@ import styled from 'styled-components';
 const Header: React.FC = () => {
   return (
     <HeaderContainer>
-      <TopBar>
-        <span>메인페이지</span>
-      </TopBar>
+     <TopBar></TopBar>
       <NavContainer>
         <Logo>
           <LeafIcon>🌿</LeafIcon>
