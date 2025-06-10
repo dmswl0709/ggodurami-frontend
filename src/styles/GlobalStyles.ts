@@ -7,10 +7,23 @@ export const GlobalStyles = createGlobalStyle`
     box-sizing: border-box;
   }
 
+  html, body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    line-height: 1.6;
-    background-color: #f5f5f5;
+    font-family: 'Pretendard', sans-serif;
+    background-color: #FFEFD5;
+    background-attachment: fixed; /* 배경 고정 */
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #FFEFD5; /* 추가 배경색 보장 */
   }
 
   button {
