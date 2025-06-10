@@ -6,12 +6,14 @@ import AlertBanner from './components/AlertBanner/AlertBanner';
 import NewsSection from './components/NewsSection/NewsSection';
 import Container from './components/Common/Container';
 import styled from 'styled-components'; // 추가
+import TopBar from './components/TopBar/TopBar';
 
 function App() {
   return (
     <>
       <GlobalStyles />
       <div className="App">
+        <TopBar />
         <Header />
         <Container>
           <MainWrapper>
