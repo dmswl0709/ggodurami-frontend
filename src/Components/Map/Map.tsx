@@ -101,13 +101,13 @@ const MapContainer = styled.section`
 `;
 
 const MapWrapper = styled.div`
-  width: 100%;
-  max-width: 1200px;
+  width: 60vw;
   margin: 0 auto;
   position: relative;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #ffe;
 `;
 
 const MapDiv = styled.div`
