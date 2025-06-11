@@ -7,6 +7,7 @@ import NewsSection from './components/NewsSection/NewsSection';
 import Container from './components/Common/Container';
 import styled from 'styled-components'; // 추가
 import TopBar from './components/TopBar/TopBar';
+import MapSection from './components/Map/Map';
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
         <Header />
         <Container>
           <MainWrapper>
-            <Map />
+            <MapSection />
             <AlertBanner />
             <NewsSection />
           </MainWrapper>

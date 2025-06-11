@@ -1,26 +1,95 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
+
 const MapSection: React.FC = () => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const loadKakaoMap = () => {
+      if (!mapContainer.current || !window.kakao?.maps) return;
+
+      // ✅ 카카오맵 그려지는 div 스타일 강제 지정
+      mapContainer.current.style.width = '100%';
+      mapContainer.current.style.height = '500px';
+      mapContainer.current.style.backgroundColor = '#FFEFD5';
+
+      const map = new window.kakao.maps.Map(mapContainer.current, {
+        center: new window.kakao.maps.LatLng(37.5665, 126.9780),
+        level: 8,
+      });
+
+      const markerPositions = [
+        { lat: 37.5665, lng: 126.9780, title: '서울' },
+        { lat: 35.1796, lng: 129.0756, title: '부산' },
+        { lat: 35.8714, lng: 128.6014, title: '대구' },
+        { lat: 37.4563, lng: 126.7052, title: '인천' },
+        { lat: 35.1595, lng: 126.8526, title: '광주' },
+        { lat: 36.3504, lng: 127.3845, title: '대전' },
+      ];
+
+      markerPositions.forEach(({ lat, lng, title }) => {
+        const marker = new window.kakao.maps.Marker({
+          position: new window.kakao.maps.LatLng(lat, lng),
+          title,
+        });
+        marker.setMap(map);
+
+        const infoWindow = new window.kakao.maps.InfoWindow({
+          content: `<div style="padding:5px;">${title} 충전소</div>`,
+        });
+
+        window.kakao.maps.event.addListener(marker, 'click', () => {
+          infoWindow.open(map, marker);
+        });
+      });
+    };
+
+    const createScript = () => {
+      const existingScript = document.querySelector(`script[src*="dapi.kakao.com"]`);
+      if (existingScript) {
+        if (window.kakao?.maps) {
+          window.kakao.maps.load(loadKakaoMap);
+        } else {
+          existingScript.addEventListener('load', () => {
+            window.kakao.maps.load(loadKakaoMap);
+          });
+        }
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src =
+        'https://dapi.kakao.com/v2/maps/sdk.js?appkey=b74908d0327634ff8eff0c8309007f61&autoload=false';
+      script.async = true;
+      script.onload = () => {
+        window.kakao.maps.load(loadKakaoMap);
+      };
+      script.onerror = () => {
+        console.error('❌ 카카오 지도 API 로딩 실패');
+      };
+      document.head.appendChild(script);
+    };
+
+    createScript();
+  }, []);
+
   return (
     <MapContainer>
       <MapWrapper>
-        <MapPlaceholder>
-          <MapText>한국 지도</MapText>
-          <MapMarkers>
-            {/* 임시 마커들 */}
-            <Marker style={{ top: '20%', left: '45%' }}>📍</Marker>
-            <Marker style={{ top: '35%', left: '40%' }}>📍</Marker>
-            <Marker style={{ top: '50%', left: '35%' }}>📍</Marker>
-            <Marker style={{ top: '65%', left: '30%' }}>📍</Marker>
-            <Marker style={{ top: '70%', left: '55%' }}>📍</Marker>
-            <Marker style={{ top: '80%', left: '50%' }}>📍</Marker>
-          </MapMarkers>
-          <Tooltip>
-            버 충전시설 변해충 발생
-          </Tooltip>
-          <KakaoCredit>64km kakao</KakaoCredit>
-        </MapPlaceholder>
+        <MapDiv ref={mapContainer}>
+          <LoadingText>지도를 불러오는 중...</LoadingText>
+        </MapDiv>
+        <MapControls>
+          <ControlButton onClick={() => window.location.reload()}>
+            🔄 새로고침
+          </ControlButton>
+        </MapControls>
       </MapWrapper>
     </MapContainer>
   );
@@ -28,118 +97,56 @@ const MapSection: React.FC = () => {
 
 const MapContainer = styled.section`
   padding: 20px;
-  background-color: #f9f7f4;
+  background-color: #FFEFD5;
 `;
 
 const MapWrapper = styled.div`
-  max-width: 800px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   position: relative;
-`;
-
-const MapPlaceholder = styled.div`
-  width: 100%;
-  height: 500px;
-  background: linear-gradient(
-    to bottom,
-    #87ceeb 0%,
-    #87ceeb 30%,
-    #98fb98 30%,
-    #98fb98 70%,
-    #87ceeb 70%,
-    #87ceeb 100%
-  );
-  border-radius: 10px;
-  position: relative;
+  border-radius: 12px;
   overflow: hidden;
-  border: 2px solid #ddd;
-
-  @media (max-width: 768px) {
-    height: 400px;
-  }
-
-  @media (max-width: 480px) {
-    height: 300px;
-  }
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 `;
 
-const MapText = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 24px;
+const MapDiv = styled.div`
+  width: 100% !important;
+  height: 500px !important;
+  background-color: #FFEFD5 !important;
+`;
+
+const LoadingText = styled.div`
+  font-size: 16px;
   color: #666;
-  font-weight: bold;
-  opacity: 0.3;
-
-  @media (max-width: 768px) {
-    font-size: 20px;
-  }
+  text-align: center;
 `;
 
-const MapMarkers = styled.div`
+const MapControls = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
 `;
 
-const Marker = styled.div`
-  position: absolute;
-  font-size: 20px;
+const ControlButton = styled.button`
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
   cursor: pointer;
-  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
 
   &:hover {
-    transform: scale(1.2);
+    background-color: #f5f5f5;
+    transform: translateY(-1px);
   }
 
-  @media (max-width: 768px) {
-    font-size: 16px;
+  &:active {
+    transform: translateY(0);
   }
-`;
-
-const Tooltip = styled.div`
-  position: absolute;
-  top: 60%;
-  right: 15%;
-  background: white;
-  padding: 8px 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  font-size: 12px;
-  color: #333;
-  border: 1px solid #ddd;
-
-  &::before {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 20px;
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid white;
-  }
-
-  @media (max-width: 768px) {
-    right: 10%;
-    font-size: 10px;
-  }
-`;
-
-const KakaoCredit = styled.div`
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  font-size: 12px;
-  color: #666;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 2px 6px;
-  border-radius: 3px;
 `;
 
 export default MapSection;
