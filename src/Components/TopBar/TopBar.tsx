@@ -20,8 +20,8 @@ const TopBarInner = styled.div`
 const TopBarNav = styled.nav`
   display: flex;
   gap: 24px;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   
   span {
     cursor: pointer;

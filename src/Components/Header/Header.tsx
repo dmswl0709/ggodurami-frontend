@@ -44,8 +44,8 @@ const LogoImage = styled.img`
 const Nav = styled.nav`
   display: flex;
   gap: 32px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   align-items: center;
   
   span {

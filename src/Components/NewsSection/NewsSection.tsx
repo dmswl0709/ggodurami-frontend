@@ -75,7 +75,7 @@ const NewsSection: React.FC = () => {
 
 const NewsContainer = styled.section`
   padding: 40px 20px;
-  background-color: #f9f7f4;
+  background-color: #FFEFD5;
   max-width: 1200px;
   margin: 0 auto;
 `;
@@ -128,17 +128,32 @@ const NavButton = styled.button`
 `;
 
 const NewsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: flex;
   gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 10px;
 
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
+  /* 스크롤바 스타일링 */
+  &::-webkit-scrollbar {
+    height: 8px;
   }
 
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+
+  @media (max-width: 768px) {
+    gap: 15px;
   }
 `;
 
@@ -148,6 +163,8 @@ const NewsCard = styled.div`
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
+  min-width: 280px;
+  flex-shrink: 0;
 
   &:hover {
     transform: translateY(-2px);
@@ -156,6 +173,11 @@ const NewsCard = styled.div`
 
   @media (max-width: 768px) {
     padding: 16px;
+    min-width: 250px;
+  }
+
+  @media (max-width: 480px) {
+    min-width: 220px;
   }
 `;
 

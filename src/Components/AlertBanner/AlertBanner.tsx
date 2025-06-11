@@ -14,14 +14,14 @@ const AlertBanner: React.FC = () => {
 
 const BannerContainer = styled.div`
   margin: 20px;
-  max-width: 800px;
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
 `;
 
 const BannerContent = styled.button`
   width: 100%;
-  padding: 15px 20px;
+  padding: 15px 200px;
   background-color: #fff;
   border: 2px solid #ff6b6b;
   border-radius: 10px;
@@ -51,7 +51,7 @@ const AlertIcon = styled.span`
 `;
 
 const BannerText = styled.span`
-  font-size: 18px;
+  font-size: 22px;
   color: #ff6b6b;
   font-weight: bold;
 
