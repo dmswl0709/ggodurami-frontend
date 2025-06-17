@@ -18,10 +18,10 @@ const PageContainer = styled.div`
 `;
 
 const FormContainer = styled.div`
-  background-color: white;
+  background-color: #FFEFD5;
   padding: 40px;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0);
   width: 100%;
   max-width: 480px;
 `;
@@ -29,7 +29,7 @@ const FormContainer = styled.div`
 const CheckboxSection = styled.div`
   margin: 24px 0;
   padding: 16px;
-  background-color: #f9f9f9;
+  background-color: #FFEFD5;
   border-radius: 8px;
 `;
 
