@@ -74,10 +74,20 @@ const NewsSection: React.FC = () => {
 };
 
 const NewsContainer = styled.section`
+  width: 100%;
   padding: 40px 20px;
   background-color: #FFEFD5;
   max-width: 1200px;
   margin: 0 auto;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px 12px;
+  }
 `;
 
 const NewsHeader = styled.div`
@@ -85,21 +95,42 @@ const NewsHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
 `;
 
 const NewsTitle = styled.h2`
   font-size: 24px;
   color: #333;
   font-weight: bold;
+  margin: 0;
 
   @media (max-width: 768px) {
     font-size: 20px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 18px;
   }
 `;
 
 const NavButtons = styled.div`
   display: flex;
   gap: 10px;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    align-self: flex-end;
+  }
 `;
 
 const NavButton = styled.button`
@@ -114,6 +145,7 @@ const NavButton = styled.button`
   font-size: 16px;
   color: #666;
   transition: all 0.2s;
+  cursor: pointer;
 
   &:hover {
     background-color: #f5f5f5;
@@ -125,6 +157,12 @@ const NavButton = styled.button`
     height: 35px;
     font-size: 14px;
   }
+
+  @media (max-width: 480px) {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
 `;
 
 const NewsGrid = styled.div`
@@ -132,6 +170,7 @@ const NewsGrid = styled.div`
   gap: 20px;
   overflow-x: auto;
   padding-bottom: 10px;
+  width: 100%;
 
   /* 스크롤바 스타일링 */
   &::-webkit-scrollbar {
@@ -154,6 +193,18 @@ const NewsGrid = styled.div`
 
   @media (max-width: 768px) {
     gap: 15px;
+    
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+    
+    &::-webkit-scrollbar {
+      height: 5px;
+    }
   }
 `;
 
@@ -164,7 +215,11 @@ const NewsCard = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
   min-width: 280px;
+  max-width: 320px;
   flex-shrink: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 
   &:hover {
     transform: translateY(-2px);
@@ -173,11 +228,20 @@ const NewsCard = styled.div`
 
   @media (max-width: 768px) {
     padding: 16px;
+    border-radius: 8px;
     min-width: 250px;
+    max-width: 280px;
   }
 
   @media (max-width: 480px) {
+    padding: 14px;
     min-width: 220px;
+    max-width: 250px;
+  }
+
+  @media (max-width: 360px) {
+    min-width: 200px;
+    max-width: 220px;
   }
 `;
 
@@ -188,6 +252,13 @@ const CategoryTag = styled.span`
   border-radius: 4px;
   font-size: 12px;
   font-weight: bold;
+  align-self: flex-start;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
 `;
 
 const NewsCardTitle = styled.h3`
@@ -199,9 +270,16 @@ const NewsCardTitle = styled.h3`
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  word-break: keep-all;
 
   @media (max-width: 768px) {
     font-size: 15px;
+    margin: 10px 0 6px 0;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin: 8px 0 6px 0;
   }
 `;
 
@@ -214,6 +292,18 @@ const NewsDescription = styled.p`
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  word-break: keep-all;
+  flex-grow: 1;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
 `;
 
 const NewsFooter = styled.div`
@@ -222,16 +312,36 @@ const NewsFooter = styled.div`
   align-items: center;
   padding-top: 12px;
   border-top: 1px solid #f0f0f0;
+  margin-top: auto;
+
+  @media (max-width: 768px) {
+    padding-top: 10px;
+  }
+
+  @media (max-width: 480px) {
+    padding-top: 8px;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
 `;
 
 const NewsDate = styled.span`
   font-size: 12px;
   color: #999;
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
 `;
 
 const NewsAuthor = styled.span`
   font-size: 12px;
   color: #666;
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
 `;
 
 export default NewsSection;
