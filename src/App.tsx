@@ -4,6 +4,7 @@ import { GlobalStyles } from './styles/GlobalStyles';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
+import Report from './pages/Report';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/report" element={<Report />} />
         </Routes>
       </div>
     </Router>

@@ -1,10 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom'; // ✅ 추가
 
 const AlertBanner: React.FC = () => {
+  const navigate = useNavigate(); // ✅ 훅 사용
+
+  const handleClick = () => {
+    navigate('/report'); // ✅ /report 페이지로 이동
+  };
+
   return (
     <BannerContainer>
-      <BannerContent>
+      <BannerContent onClick={handleClick}> {/* ✅ 클릭 이벤트 추가 */}
         <AlertIcon>⚠️</AlertIcon>
         <BannerText>실시간 피해 신고하기</BannerText>
       </BannerContent>
@@ -30,6 +37,7 @@ const BannerContent = styled.button`
   justify-content: center;
   gap: 10px;
   transition: all 0.2s;
+  cursor: pointer;
 
   &:hover {
     background-color: #fff5f5;

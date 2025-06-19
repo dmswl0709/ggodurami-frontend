@@ -49,3 +49,5 @@ export const Logo: React.FC = () => {
     </LogoWrapper>
   );
 };
+
+export default Logo;
