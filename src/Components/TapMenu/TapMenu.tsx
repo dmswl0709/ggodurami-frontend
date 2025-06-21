@@ -28,12 +28,12 @@ const TabContainer = styled.div`
   }
 `;
 
-const TabButton = styled.button<{ active: boolean }>`
+const TabButton = styled.button<{ $active: boolean }>`
   flex: 1;
   padding: 0.75rem 1rem;
   font-size: 1rem;
   font-weight: bold;
-  background-color: ${({ active }) => (active ? '#FBBF77' : '#F4F4F4')};
+  background-color: ${({ $active }) => ($active ? '#FBBF77' : '#F4F4F4')};
   color: black;
   border: none;
   border-right: none;
@@ -49,13 +49,13 @@ const TabMenu: React.FC<TabProps> = ({ activeTab, onTabChange }) => (
   <TabWrapper>
     <TabContainer>
       <TabButton
-        active={activeTab === 'disaster'}
+        $active={activeTab === 'disaster'}
         onClick={() => onTabChange('disaster')}
       >
         재난/재해
       </TabButton>
       <TabButton
-        active={activeTab === 'pest'}
+        $active={activeTab === 'pest'}
         onClick={() => onTabChange('pest')}
       >
         병해충
