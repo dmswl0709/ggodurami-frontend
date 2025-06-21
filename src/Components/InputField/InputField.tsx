@@ -32,6 +32,7 @@ const StyledInput = styled.input`
   border-radius: 0.5rem;
   font-size: 1rem;
   background-color: white;
+  color: black;
   box-sizing: border-box;
   outline: none;
 
@@ -66,6 +67,7 @@ const StyledTextarea = styled.textarea`
   border-radius: 0.5rem;
   font-size: 1rem;
   background-color: white;
+  color: black;
   box-sizing: border-box;
   outline: none;
   resize: vertical;

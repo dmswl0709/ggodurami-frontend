@@ -262,6 +262,7 @@ const SubmitButtonWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   margin-top: 0.01rem;
+  margin-bottom: 1rem;
 `;
 
 const ErrorText = styled.div`

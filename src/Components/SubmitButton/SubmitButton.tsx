@@ -9,7 +9,8 @@ interface SubmitButtonProps {
 const ButtonContainer = styled.div`
   text-align: center;
   justify-content: center; // 버튼을 가운데로 정렬
-  margin-top: 1rem;
+  margin-top: 0.01rem;
+  margin-bottom: 1rem;
 `;
 
 const StyledButton = styled.button<{ disabled: boolean }>`
