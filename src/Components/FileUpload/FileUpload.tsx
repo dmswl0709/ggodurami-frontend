@@ -24,7 +24,7 @@ const Container = styled.div`
 `;
 
 const Title = styled.h3`
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 12px;
   color: #000;

@@ -69,8 +69,10 @@ const Report: React.FC = () => {
               />
             </LocationSection>
 
-            <SubmitButton onClick={handleSubmit} disabled={false} />
-            {error && <ErrorText>{error}</ErrorText>}
+            <SubmitButtonWrapper>
+              <SubmitButton onClick={handleSubmit} disabled={false} />
+              {error && <ErrorText>{error}</ErrorText>}
+            </SubmitButtonWrapper>
           </ContentWrapper>
         </MainWrapper>
       </Container>
@@ -113,14 +115,14 @@ const ContentWrapper = styled.div`
   }
 
   @media (max-width: 480px) {
-    padding: 0 1rem;
+    padding: 0.05rem;
   }
 `;
 
 const Title = styled.h1`
   font-size: 1.2rem;
   font-weight: bold;
-  margin: 0.8rem 0;
+  margin: 0.01rem 0;
   margin-left: 1.3rem;
   color: black;
 
@@ -130,7 +132,7 @@ const Title = styled.h1`
 
   @media (max-width: 480px) {
     font-size: 1.2rem;
-    margin: 0.6rem 0;
+    margin: 0.4rem 0;
     margin-left: 0.5rem;
   }
 `;
@@ -152,6 +154,17 @@ const Section = styled.section`
 const LocationSection = styled.section`
   width: 100%;
   margin-bottom: 2rem;
+  background-color: #FFEFD5;
+  padding: 20px;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -219,7 +232,7 @@ const LocationInput = styled.input`
 
 const LocationButton = styled.button`
   padding: 0.75rem 1rem;
-  background-color: #0066ff;
+  background-color: #FBBF77;
   color: white;
   font-weight: bold;
   border: none;
@@ -241,6 +254,14 @@ const LocationButton = styled.button`
     padding: 0.75rem;
     font-size: 0.95rem;
   }
+`;
+
+const SubmitButtonWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.01rem;
 `;
 
 const ErrorText = styled.div`
