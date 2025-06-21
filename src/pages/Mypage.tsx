@@ -182,7 +182,7 @@ const RegionInput = styled.input`
 
 const EditButton = styled.button`
   padding: 12px 20px;
-  background-color: #4CAF50;
+  background-color: #FBBF77;
   color: white;
   border: none;
   border-radius: 8px;
