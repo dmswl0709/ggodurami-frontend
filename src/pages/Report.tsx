@@ -85,7 +85,7 @@ const MainWrapper = styled.main`
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: 2rem 0;
+  padding: 0.1rem 0;
 
   @media (max-width: 768px) {
     padding: 1.5rem 0;
