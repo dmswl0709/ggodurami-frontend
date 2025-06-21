@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom'; // useNavigate 훅 import 추가
 import logoImage from "../../assets/images/Logo.png";
 
 const HeaderWrapper = styled.header`
@@ -60,6 +61,8 @@ const Nav = styled.nav`
 `;
 
 const Header = () => {
+  const navigate = useNavigate(); // useNavigate 훅 사용
+
   return (
     <HeaderWrapper>
       <Inner>
@@ -67,7 +70,9 @@ const Header = () => {
           <LogoImage src={logoImage} alt="꼬두라미" />
         </LogoContainer>
         <Nav>
-          <span>신고상황</span>
+          <span onClick={() => navigate("/ReportDetail")}>
+            신고상황
+          </span>
           <span>커뮤니티</span>
           <span>지원금 및 세미나 정보</span>
         </Nav>
