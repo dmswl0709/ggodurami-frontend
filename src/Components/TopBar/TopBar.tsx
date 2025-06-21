@@ -45,7 +45,9 @@ const TopBar = () => {
           <span onClick={() => navigate("/login")}>
             로그인 / 회원가입
           </span>
-          <span>마이페이지</span>
+          <span onClick={() => navigate("/Mypage")}>
+            마이페이지
+          </span>
         </TopBarNav>
       </TopBarInner>
     </TopBarWrapper>

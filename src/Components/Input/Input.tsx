@@ -30,6 +30,7 @@ const StyledInput = styled.input`
   border-radius: 8px;
   font-size: 16px;
   background-color: #f9f9f9;
+  color: #333;
   transition: border-color 0.3s ease;
 
   &:focus {
@@ -64,4 +65,3 @@ export const Input: React.FC<InputProps> = ({
     </InputWrapper>
   );
 };
-
