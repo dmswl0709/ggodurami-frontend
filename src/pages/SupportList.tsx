@@ -307,8 +307,14 @@ export const SupportList: React.FC = () => {
     }
   ];
 
-  const handleRowClick = (id: number) => {
-    navigate(`/support/${id}`);
+  //백엔드 연결후 이걸로 바꾸기
+  //const handleRowClick = (id: number) => {
+  //  navigate(`/support/${id}`);
+  // };
+
+  // 수정 후
+const handleRowClick = (id: number) => {
+    navigate('/SupportDetail');
   };
 
   return (
