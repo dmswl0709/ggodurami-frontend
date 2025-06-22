@@ -9,6 +9,8 @@ import Mypage from './pages/Mypage';
 import ReportDetail from './pages/ReportDetail';
 import SupportList from './pages/SupportList';
 import SupportDetail from './pages/SupportDetail';
+import CommunityList from './pages/CommunityList';
+import CommunityDetail from './pages/CommunityDetail';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Route path="/ReportDetail" element={<ReportDetail />} />
           <Route path="/SupportList" element={<SupportList />} />
           <Route path="/SupportDetail" element={<SupportDetail />} />
+          <Route path="/CommunityList" element={<CommunityList />} />
+          <Route path="/CommunityDetail" element={<CommunityDetail />} />
         </Routes>
       </div>
     </Router>
