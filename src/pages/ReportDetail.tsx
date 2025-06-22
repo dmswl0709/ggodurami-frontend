@@ -61,12 +61,12 @@ const HeaderTitle = styled.h1`
   
   @media (max-width: 1024px) {
     font-size: 28px;
-    margin: 12px 0 0 150px; /* 반응형에서는 조금 줄임 */
+    margin: 12px 0 0 40px; /* 반응형에서는 조금 줄임 */
   }
   
   @media (max-width: 768px) {
     font-size: 24px;
-    margin: 10px 0 0 100px;
+    margin: 10px 0 0 40px;
   }
   
   @media (max-width: 480px) {
