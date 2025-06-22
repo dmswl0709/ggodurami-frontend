@@ -11,6 +11,7 @@ import SupportList from './pages/SupportList';
 import SupportDetail from './pages/SupportDetail';
 import CommunityList from './pages/CommunityList';
 import CommunityDetail from './pages/CommunityDetail';
+import CommunityWrite from './pages/CommunityWrite';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/SupportDetail" element={<SupportDetail />} />
           <Route path="/CommunityList" element={<CommunityList />} />
           <Route path="/CommunityDetail" element={<CommunityDetail />} />
+          <Route path="/CommunityWrite" element={<CommunityWrite />} />
         </Routes>
       </div>
     </Router>
