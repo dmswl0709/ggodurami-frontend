@@ -74,7 +74,9 @@ const Header = () => {
             신고상황
           </span>
           <span>커뮤니티</span>
-          <span>지원금 및 세미나 정보</span>
+          <span onClick={() => navigate("/SupportList")}>
+            지원금 및 세미나 정보
+          </span>
         </Nav>
       </Inner>
     </HeaderWrapper>

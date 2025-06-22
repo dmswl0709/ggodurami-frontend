@@ -7,6 +7,8 @@ import SignUp from './pages/SignUp';
 import Report from './pages/Report';
 import Mypage from './pages/Mypage';
 import ReportDetail from './pages/ReportDetail';
+import SupportList from './pages/SupportList';
+import SupportDetail from './pages/SupportDetail';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="/report" element={<Report />} />
           <Route path="/Mypage" element={<Mypage />} />
           <Route path="/ReportDetail" element={<ReportDetail />} />
+          <Route path="/SupportList" element={<SupportList />} />
+          <Route path="/SupportDetail" element={<SupportDetail />} />
         </Routes>
       </div>
     </Router>
