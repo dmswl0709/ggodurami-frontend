@@ -5,6 +5,7 @@ import { Logo } from '../Components/Logo/Logo';
 import  Map  from '../Components/Map/Map';
 import Container from '../Components/Common/Container';
 import { useNavigate } from "react-router-dom";
+import BakanaeImage from '../assets/images/Bakanae disease.jpeg';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -339,7 +340,7 @@ export const ReportDetail: React.FC = () => {
     reportContent: '벼 줄자 전염 병해충이 발견 됐어요.',
     reportTime: '',
     detailContent: '최근 대규모 공동육묘장이 증가하고, 모 기르는(육묘) 기간의 단축, 벼씨 소독 기술 교육과 홍보 등으로 모판에서의 키다리병 발생이 점차 줄어드는 추세 인 것 같아요',
-    imageUrl: 'https://via.placeholder.com/400x300/90EE90/000000?text=벼+키다리병(못자리)',
+    imageUrl: BakanaeImage,
     imageCaption: '벼 키다리병(못자리)'
   };
 
