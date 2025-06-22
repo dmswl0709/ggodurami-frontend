@@ -75,7 +75,7 @@ const HeaderTitle = styled.h1`
 `;
 
 const ContentWrapper = styled.div`
-  background-color: white;
+  background-color: #FFEFD5;
   border-radius: 16px;
   padding: 50px;
   max-width: 1200px;
@@ -101,7 +101,7 @@ const ContentWrapper = styled.div`
 const TitleSection = styled.div`
   margin-bottom: 35px;
   padding-bottom: 25px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid white;
   
   @media (max-width: 1024px) {
     margin-bottom: 30px;
@@ -191,7 +191,7 @@ const InfoTableRow = styled.tr`
 `;
 
 const InfoTableHeader = styled.td`
-  background-color: #D2B48C;
+  background-color: #FBBF77;
   padding: 15px 20px;
   font-weight: 600;
   color: #333;
@@ -289,7 +289,7 @@ const ContentText = styled.p`
 const AttachmentSection = styled.div`
   margin-top: 35px;
   padding-top: 25px;
-  border-top: 2px solid #f0f0f0;
+  border-top: 1px solid white;
   
   @media (max-width: 1024px) {
     margin-top: 30px;
@@ -308,7 +308,7 @@ const AttachmentSection = styled.div`
 `;
 
 const AttachmentContainer = styled.div`
-  background-color: #D2B48C;
+  background-color: #FBBF77;
   border-radius: 8px;
   padding: 15px 20px;
   display: flex;
