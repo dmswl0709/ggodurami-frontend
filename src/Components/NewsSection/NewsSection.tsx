@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 interface NewsItem {
@@ -11,6 +12,9 @@ interface NewsItem {
 }
 
 const NewsSection: React.FC = () => {
+  const navigate = useNavigate();
+  const newsGridRef = useRef<HTMLDivElement>(null);
+
   const newsItems: NewsItem[] = [
     {
       id: 1,
@@ -46,19 +50,46 @@ const NewsSection: React.FC = () => {
     }
   ];
 
+  const handleCardClick = (newsId: number) => {
+    navigate('/SupportDetail');
+    // 나중에 백엔드 연결 시: navigate(`/SupportDetail/${newsId}`);
+  };
+
+  const handleScrollLeft = () => {
+    if (newsGridRef.current) {
+      newsGridRef.current.scrollBy({
+        left: -300,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleScrollRight = () => {
+    if (newsGridRef.current) {
+      newsGridRef.current.scrollBy({
+        left: 300,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleNavigateToList = () => {
+    navigate('/SupportList');
+  };
+
   return (
     <NewsContainer>
       <NewsHeader>
         <NewsTitle>지원금 및 세미나 정보</NewsTitle>
         <NavButtons>
-          <NavButton>◀</NavButton>
-          <NavButton>▶</NavButton>
-          <NavButton>≡</NavButton>
+          <NavButton onClick={handleScrollLeft}>◀</NavButton>
+          <NavButton onClick={handleScrollRight}>▶</NavButton>
+          <NavButton onClick={handleNavigateToList}>≡</NavButton>
         </NavButtons>
       </NewsHeader>
-      <NewsGrid>
+      <NewsGrid ref={newsGridRef}>
         {newsItems.map((item) => (
-          <NewsCard key={item.id}>
+          <NewsCard key={item.id} onClick={() => handleCardClick(item.id)}>
             <CategoryTag>{item.category}</CategoryTag>
             <NewsCardTitle>{item.title}</NewsCardTitle>
             <NewsDescription>{item.description}</NewsDescription>
@@ -220,6 +251,7 @@ const NewsCard = styled.div`
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-2px);
