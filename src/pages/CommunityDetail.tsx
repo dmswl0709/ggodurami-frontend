@@ -315,6 +315,12 @@ const CommentInput = styled.textarea`
   resize: vertical;
   font-family: inherit;
   font-size: 14px;
+  background-color: white;
+  color: #333;
+  
+  &::placeholder {
+    color: #999;
+  }
   
   &:focus {
     outline: none;
