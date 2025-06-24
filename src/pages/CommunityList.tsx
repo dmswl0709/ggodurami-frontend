@@ -1,8 +1,58 @@
 // pages/CommunityList.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 import { Logo } from '../Components/Logo/Logo';
 import { useNavigate } from "react-router-dom";
+
+// 타입 정의
+interface PostData {
+  no: number;
+  id: string;
+  title: string;
+  username: string;
+  created_at: string;
+  likes: number;
+}
+
+interface PostsResponse {
+  posts: PostData[];
+}
+
+// API 설정
+const BASE_URL = 'http://localhost:8000';
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 요청 인터셉터 - JWT 토큰 자동 추가 (지역별 조회 시 필요)
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// API 함수들
+const getAllPosts = async (): Promise<PostsResponse> => {
+  const response = await apiClient.get<PostsResponse>('/posts');
+  return response.data;
+};
+
+const getLocalPosts = async (): Promise<PostsResponse> => {
+  const response = await apiClient.get<PostsResponse>('/posts/local');
+  return response.data;
+};
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -144,6 +194,11 @@ const TabButton = styled.button<{ active?: boolean }>`
     opacity: 0.8;
   }
   
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
   @media (max-width: 480px) {
     padding: 10px 20px;
     font-size: 14px;
@@ -268,6 +323,31 @@ const TableCell = styled.td`
   }
 `;
 
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  margin: 20px 0;
+`;
+
+const EmptyMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+`;
+
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -302,82 +382,97 @@ const ArrowButton = styled(PaginationButton)`
   border-radius: 8px;
 `;
 
-interface CommunityData {
-  id: number;
-  title: string;
-  author: string;
-  date: string;
-  views: number;
-}
-
 export const CommunityList: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('전체보기');
-  
-  const communityData: CommunityData[] = [
-    {
-      id: 1,
-      title: '안녕하세요 ~~~ 좋은 정보 공유드려요 !!',
-      author: '25경기김포김덕주',
-      date: '25.06.02',
-      views: 3
-    },
-    {
-      id: 2,
-      title: '안녕하세요 ~~~',
-      author: '25경기김포김덕주',
-      date: '25.06.02',
-      views: 2
-    },
-    {
-      id: 3,
-      title: '안녕하세요 ~~~',
-      author: '25경기김포김덕주',
-      date: '25.06.02',
-      views: 3
-    },
-    {
-      id: 4,
-      title: '안녕하세요 ~~~',
-      author: '25경기김포김덕주',
-      date: '25.06.02',
-      views: 2
-    },
-    {
-      id: 5,
-      title: '안녕하세요 ~~~',
-      author: '25경기김포김덕주',
-      date: '25.06.02',
-      views: 3
-    },
-    {
-      id: 6,
-      title: '안녕하세요 ~~~',
-      author: '25경기김포김덕주',
-      date: '25.06.02',
-      views: 2
-    },
-    {
-      id: 7,
-      title: '안녕하세요 ~~~',
-      author: '25경기김포김덕주',
-      date: '25.06.02',
-      views: 3
-    },
-    {
-      id: 8,
-      title: '안녕하세요 ~~~',
-      author: '25경기김포김덕주',
-      date: '25.06.02',
-      views: 2
-    }
-  ];
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleRowClick = (id: number) => {
-    navigate('/CommunityDetail');
+  // 게시글 데이터 로드
+  const loadPosts = async (tabType: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      let response: PostsResponse;
+      
+      if (tabType === '전체보기') {
+        response = await getAllPosts();
+      } else {
+        // 지역별 - 로그인 필요
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          setError('지역별 게시글을 보려면 로그인이 필요합니다.');
+          setLoading(false);
+          return;
+        }
+        response = await getLocalPosts();
+      }
+      
+      setPosts(response.posts || []);
+    } catch (err: any) {
+      console.error('게시글 로드 오류:', err);
+      
+      let errorMessage = '게시글을 불러오는 중 오류가 발생했습니다.';
+      
+      if (err.response?.status === 401) {
+        errorMessage = '로그인이 필요합니다.';
+        if (activeTab === '지역별') {
+          setTimeout(() => {
+            navigate('/login');
+          }, 2000);
+        }
+      } else if (err.response?.status === 500) {
+        errorMessage = '서버 내부 오류가 발생했습니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 전체 게시글 로드
+  useEffect(() => {
+    loadPosts('전체보기');
+  }, []);
+
+  // 탭 변경 시 데이터 로드
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    loadPosts(tab);
+  };
+
+  // 날짜 포맷 함수
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const year = date.getFullYear().toString().slice(-2);
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}.${month}.${day}`;
+    } catch {
+      return dateString;
+    }
+  };
+
+  const handleRowClick = (id: string) => {
+    navigate(`/CommunityDetail/${id}`);
   };
 
   const handleWriteClick = () => {
+    // 글쓰기는 로그인 필요
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('글쓰기를 하려면 로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
     navigate('/CommunityWrite');
   };
 
@@ -404,49 +499,68 @@ export const CommunityList: React.FC = () => {
             <TabButton
               key={tab}
               active={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabChange(tab)}
+              disabled={loading}
             >
               {tab}
             </TabButton>
           ))}
         </TabContainer>
 
-        <TableContainer>
-          <Table>
-            <TableHeader>
-              <TableHeaderRow>
-                <TableHeaderCell>번호</TableHeaderCell>
-                <TableHeaderCell>제목</TableHeaderCell>
-                <TableHeaderCell>작성자</TableHeaderCell>
-                <TableHeaderCell>작성일</TableHeaderCell>
-                <TableHeaderCell>좋아요 수</TableHeaderCell>
-              </TableHeaderRow>
-            </TableHeader>
-            <TableBody>
-              {communityData.map((item) => (
-                <TableRow key={item.id} onClick={() => handleRowClick(item.id)}>
-                  <TableCell>{item.id}</TableCell>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>{item.author}</TableCell>
-                  <TableCell>{item.date}</TableCell>
-                  <TableCell>{item.views}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        {loading && <LoadingMessage>게시글을 불러오는 중...</LoadingMessage>}
         
-        <PaginationContainer>
-          <ArrowButton>←</ArrowButton>
-          <PaginationButton active>1</PaginationButton>
-          <PaginationButton>2</PaginationButton>
-          <PaginationButton>3</PaginationButton>
-          <PaginationButton>4</PaginationButton>
-          <PaginationButton>5</PaginationButton>
-          <PaginationButton>6</PaginationButton>
-          <PaginationButton>7</PaginationButton>
-          <ArrowButton>→</ArrowButton>
-        </PaginationContainer>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+
+        {!loading && !error && (
+          <>
+            <TableContainer>
+              <Table>
+                <TableHeader>
+                  <TableHeaderRow>
+                    <TableHeaderCell>번호</TableHeaderCell>
+                    <TableHeaderCell>제목</TableHeaderCell>
+                    <TableHeaderCell>작성자</TableHeaderCell>
+                    <TableHeaderCell>작성일</TableHeaderCell>
+                    <TableHeaderCell>좋아요 수</TableHeaderCell>
+                  </TableHeaderRow>
+                </TableHeader>
+                <TableBody>
+                  {posts.length === 0 ? (
+                    <tr>
+                      <TableCell colSpan={5}>
+                        <EmptyMessage>게시글이 없습니다.</EmptyMessage>
+                      </TableCell>
+                    </tr>
+                  ) : (
+                    posts.map((post) => (
+                      <TableRow key={post.id} onClick={() => handleRowClick(post.id)}>
+                        <TableCell>{post.no}</TableCell>
+                        <TableCell>{post.title}</TableCell>
+                        <TableCell>{post.username}</TableCell>
+                        <TableCell>{formatDate(post.created_at)}</TableCell>
+                        <TableCell>{post.likes}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            {posts.length > 0 && (
+              <PaginationContainer>
+                <ArrowButton>←</ArrowButton>
+                <PaginationButton active>1</PaginationButton>
+                <PaginationButton>2</PaginationButton>
+                <PaginationButton>3</PaginationButton>
+                <PaginationButton>4</PaginationButton>
+                <PaginationButton>5</PaginationButton>
+                <PaginationButton>6</PaginationButton>
+                <PaginationButton>7</PaginationButton>
+                <ArrowButton>→</ArrowButton>
+              </PaginationContainer>
+            )}
+          </>
+        )}
       </ContentWrapper>
     </PageContainer>
   );
