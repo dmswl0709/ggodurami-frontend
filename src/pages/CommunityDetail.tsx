@@ -1,4 +1,4 @@
-// pages/CommunityDetail.tsx
+// pages/CommunityDetail.tsx (수정된 버전)
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -16,6 +16,7 @@ interface PostDetailData {
   tags: string[];
   created_at: string;
   likes?: number;
+  is_liked?: boolean;
 }
 
 interface CommentData {
@@ -29,6 +30,7 @@ interface CommentData {
 interface LikeResponse {
   message: string;
   liked: boolean;
+  total_likes: number;
 }
 
 interface CommentCreateRequest {
@@ -69,34 +71,88 @@ apiClient.interceptors.request.use(
   }
 );
 
+// 응답 인터셉터 - 401 오류 처리
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // 토큰이 만료되었거나 유효하지 않은 경우
+      localStorage.removeItem('accessToken');
+      // 즉시 리디렉션하지 않고 오류를 전달하여 컴포넌트에서 처리
+    }
+    return Promise.reject(error);
+  }
+);
+
 // API 함수들
 const getPostDetail = async (postId: string): Promise<PostDetailData> => {
-  const response = await apiClient.get<PostDetailData>(`/posts/${postId}`);
-  return response.data;
+  try {
+    const response = await apiClient.get<PostDetailData>(`/posts/${postId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('게시글 조회 오류:', error);
+    throw error;
+  }
 };
 
 const toggleLike = async (postId: string): Promise<LikeResponse> => {
-  const response = await apiClient.post<LikeResponse>(`/posts/${postId}/like`);
-  return response.data;
+  try {
+    const response = await apiClient.post<LikeResponse>(`/posts/${postId}/like`);
+    return response.data;
+  } catch (error: any) {
+    console.error('좋아요 토글 오류:', error);
+    throw error;
+  }
 };
 
 const createComment = async (data: CommentCreateRequest): Promise<CommentCreateResponse> => {
-  const response = await apiClient.post<CommentCreateResponse>('/comments', data);
-  return response.data;
+  try {
+    const response = await apiClient.post<CommentCreateResponse>('/comments', data);
+    return response.data;
+  } catch (error: any) {
+    console.error('댓글 작성 오류:', error);
+    throw error;
+  }
 };
 
-// 댓글 목록 조회 함수 (만약 별도 API가 있다면)
+// 댓글 목록 조회 함수
 const getComments = async (postId: string): Promise<CommentData[]> => {
   try {
     const response = await apiClient.get<{ comments: CommentData[] }>(`/posts/${postId}/comments`);
     return response.data.comments || [];
-  } catch (error) {
-    // 댓글 조회 API가 없다면 빈 배열 반환
-    console.log('댓글 조회 API가 없거나 오류 발생');
+  } catch (error: any) {
+    console.error('댓글 조회 오류:', error);
     return [];
   }
 };
 
+// 게시글 상세 조회 (인증 없이)
+const getPostDetailPublic = async (postId: string): Promise<PostDetailData> => {
+  try {
+    const response = await axios.get<PostDetailData>(`${BASE_URL}/posts/${postId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('공개 게시글 조회 오류:', error);
+    throw error;
+  }
+};
+
+// 로그인 상태 확인 함수
+const isLoggedIn = (): boolean => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) return false;
+  
+  try {
+    // JWT 토큰 만료 확인
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Date.now() / 1000;
+    return payload.exp > currentTime;
+  } catch {
+    return false;
+  }
+};
+
+// 스타일 컴포넌트들 (동일)
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: #FFEFD5;
@@ -371,6 +427,7 @@ const CommentInput = styled.textarea`
   font-size: 14px;
   background-color: white;
   color: #333;
+  box-sizing: border-box;
   
   &::placeholder {
     color: #999;
@@ -473,6 +530,34 @@ const ReplyButton = styled(ActionButton)`
   }
 `;
 
+const LoginPrompt = styled.div`
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+  text-align: center;
+  
+  p {
+    margin: 0 0 12px 0;
+    color: #856404;
+  }
+  
+  button {
+    background-color: #FBBF77;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0 4px;
+    
+    &:hover {
+      background-color: #E6AB65;
+    }
+  }
+`;
+
 export const CommunityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -485,6 +570,7 @@ export const CommunityDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
 
   // 게시글 데이터 로드
   const loadPost = async () => {
@@ -498,13 +584,44 @@ export const CommunityDetail: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const postData = await getPostDetail(id);
+      // 로그인 상태 확인
+      const loggedIn = isLoggedIn();
+      setUserLoggedIn(loggedIn);
+      
+      let postData: PostDetailData;
+      
+      if (loggedIn) {
+        // 로그인된 경우 인증이 필요한 API 사용
+        try {
+          postData = await getPostDetail(id);
+        } catch (authError: any) {
+          if (authError.response?.status === 401) {
+            // 인증 실패 시 공개 API로 재시도
+            console.log('인증 실패, 공개 API로 재시도');
+            localStorage.removeItem('accessToken');
+            setUserLoggedIn(false);
+            postData = await getPostDetailPublic(id);
+          } else {
+            throw authError;
+          }
+        }
+      } else {
+        // 로그인되지 않은 경우 공개 API 사용
+        postData = await getPostDetailPublic(id);
+      }
+      
       setPost(postData);
       setLikeCount(postData.likes || 0);
+      setLiked(postData.is_liked || false);
       
-      // 댓글 데이터도 함께 로드
-      const commentsData = await getComments(id);
-      setComments(commentsData);
+      // 댓글 데이터 로드 (로그인 상태와 무관하게 시도)
+      try {
+        const commentsData = await getComments(id);
+        setComments(commentsData);
+      } catch (commentError) {
+        console.log('댓글 로드 실패, 빈 배열로 설정');
+        setComments([]);
+      }
       
     } catch (err: any) {
       console.error('게시글 로드 오류:', err);
@@ -515,6 +632,8 @@ export const CommunityDetail: React.FC = () => {
         errorMessage = '존재하지 않는 게시글입니다.';
       } else if (err.response?.status === 500) {
         errorMessage = '서버 내부 오류가 발생했습니다.';
+      } else if (err.code === 'ERR_NETWORK') {
+        errorMessage = '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.';
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.response?.data?.detail) {
@@ -536,43 +655,37 @@ export const CommunityDetail: React.FC = () => {
   const handleLike = async () => {
     if (!id) return;
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
+    if (!userLoggedIn) {
       alert('로그인이 필요합니다.');
       navigate('/login');
       return;
     }
 
     try {
-      console.log('좋아요 요청 시작:', id);
-      
       const response = await toggleLike(id);
-      console.log('좋아요 응답:', response);
-      
       setLiked(response.liked);
       
-      // 좋아요 수 업데이트
-      if (response.liked) {
-        setLikeCount(prev => prev + 1);
+      // total_likes가 있으면 사용, 없으면 로컬에서 계산
+      if (response.total_likes !== undefined) {
+        setLikeCount(response.total_likes);
       } else {
-        setLikeCount(prev => Math.max(0, prev - 1));
+        if (response.liked) {
+          setLikeCount(prev => prev + 1);
+        } else {
+          setLikeCount(prev => Math.max(0, prev - 1));
+        }
       }
-      
-      // 성공 메시지 표시 (선택사항)
-      // alert(response.message);
       
     } catch (err: any) {
       console.error('좋아요 처리 오류:', err);
-      console.error('응답 데이터:', err.response?.data);
-      console.error('응답 상태:', err.response?.status);
       
       let errorMessage = '좋아요 처리 중 오류가 발생했습니다.';
       
       if (err.response?.status === 401) {
         errorMessage = '로그인이 필요합니다.';
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+        localStorage.removeItem('accessToken');
+        setUserLoggedIn(false);
+        setTimeout(() => navigate('/login'), 2000);
       } else if (err.response?.status === 404) {
         errorMessage = '존재하지 않는 게시글입니다.';
       } else if (err.response?.data?.message) {
@@ -589,8 +702,7 @@ export const CommunityDetail: React.FC = () => {
   const handleCommentSubmit = async () => {
     if (!commentText.trim() || !id) return;
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
+    if (!userLoggedIn) {
       alert('로그인이 필요합니다.');
       navigate('/login');
       return;
@@ -604,11 +716,8 @@ export const CommunityDetail: React.FC = () => {
         content: commentText.trim()
       };
 
-      console.log('전송할 댓글 데이터:', commentData);
-
       const newComment = await createComment(commentData);
       
-      // API 응답에 맞게 댓글 데이터 구성
       const formattedComment: CommentData = {
         id: newComment.id,
         user_id: newComment.user_id,
@@ -620,20 +729,16 @@ export const CommunityDetail: React.FC = () => {
       setComments(prev => [...prev, formattedComment]);
       setCommentText('');
       
-      console.log('댓글 작성 성공:', newComment);
-      
     } catch (err: any) {
       console.error('댓글 작성 오류:', err);
-      console.error('응답 데이터:', err.response?.data);
-      console.error('응답 상태:', err.response?.status);
       
       let errorMessage = '댓글 작성 중 오류가 발생했습니다.';
       
       if (err.response?.status === 401) {
         errorMessage = '로그인이 필요합니다.';
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+        localStorage.removeItem('accessToken');
+        setUserLoggedIn(false);
+        setTimeout(() => navigate('/login'), 2000);
       } else if (err.response?.status === 404) {
         errorMessage = '존재하지 않는 게시글입니다.';
       } else if (err.response?.data?.message) {
@@ -674,13 +779,20 @@ export const CommunityDetail: React.FC = () => {
   };
   
   const handleReply = () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
+    if (!userLoggedIn) {
       alert('글쓰기를 하려면 로그인이 필요합니다.');
       navigate('/login');
       return;
     }
     navigate('/CommunityWrite');
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  const handleRefresh = () => {
+    loadPost();
   };
 
   if (loading) {
@@ -712,6 +824,7 @@ export const CommunityDetail: React.FC = () => {
           <ErrorMessage>{error}</ErrorMessage>
           <ActionButtons>
             <ListButton onClick={handleBackToList}>목록으로 돌아가기</ListButton>
+            <ReplyButton onClick={handleRefresh}>다시 시도</ReplyButton>
           </ActionButtons>
         </ContentWrapper>
       </PageContainer>
@@ -780,23 +893,30 @@ export const CommunityDetail: React.FC = () => {
             </CommentItem>
           ))}
           
-          <CommentForm>
-            <CommentInput
-              placeholder="댓글을 남겨주세요."
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              maxLength={3000}
-            />
-            <CommentActions>
-              <CharCount>{commentText.length}/3000</CharCount>
-              <SubmitButton 
-                onClick={handleCommentSubmit}
-                disabled={commentLoading || !commentText.trim()}
-              >
-                {commentLoading ? '등록 중...' : '등록'}
-              </SubmitButton>
-            </CommentActions>
-          </CommentForm>
+          {userLoggedIn ? (
+            <CommentForm>
+              <CommentInput
+                placeholder="댓글을 남겨주세요."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                maxLength={3000}
+              />
+              <CommentActions>
+                <CharCount>{commentText.length}/3000</CharCount>
+                <SubmitButton 
+                  onClick={handleCommentSubmit}
+                  disabled={commentLoading || !commentText.trim()}
+                >
+                  {commentLoading ? '등록 중...' : '등록'}
+                </SubmitButton>
+              </CommentActions>
+            </CommentForm>
+          ) : (
+            <LoginPrompt>
+              <p>댓글을 작성하려면 로그인이 필요합니다.</p>
+              <button onClick={handleLogin}>로그인하기</button>
+            </LoginPrompt>
+          )}
         </CommentSection>
         
         {/* HeartButton 컴포넌트 사용 */}
