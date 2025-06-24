@@ -1,6 +1,7 @@
 // pages/Report.tsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 import Logo from '../Components/Logo/Logo';
 import TapMenu from '../Components/TapMenu/TapMenu';
 import InputField from '../Components/InputField/InputField';
@@ -8,32 +9,198 @@ import FileUpload from '../Components/FileUpload/FileUpload';
 import SubmitButton from '../Components/SubmitButton/SubmitButton';
 import Container from '../Components/Common/Container';
 
+// 타입 정의
+interface ReportResponse {
+  message: string;
+}
+
+// API 설정
+const BASE_URL = 'http://localhost:8000';
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+});
+
+// 요청 인터셉터 - JWT 토큰 자동 추가
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// API 함수
+const submitReport = async (formData: FormData): Promise<ReportResponse> => {
+  const response = await apiClient.post<ReportResponse>('/report-damage', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
 const Report: React.FC = () => {
   const [activeTab, setActiveTab] = useState('disaster');
   const [files, setFiles] = useState<File[]>([]);
   const [location, setLocation] = useState('');
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
   const [selectedDisasterType, setSelectedDisasterType] = useState('');
   const [selectedPestType, setSelectedPestType] = useState('');
 
-  const handleSubmit = () => {
+  // 카테고리 매핑 함수
+  const getCategoryValues = () => {
+    if (activeTab === 'disaster') {
+      const categoryMap: { [key: string]: { main: string; sub: string } } = {
+        'earthquake': { main: '재난', sub: '지진' },
+        'typhoon': { main: '재난', sub: '태풍' },
+        'snow': { main: '재난', sub: '폭설' },
+      };
+      return categoryMap[selectedDisasterType] || null;
+    } else {
+      const categoryMap: { [key: string]: { main: string; sub: string } } = {
+        'disease': { main: '병해충', sub: '병해' },
+        'insect': { main: '병해충', sub: '해충' },
+      };
+      return categoryMap[selectedPestType] || null;
+    }
+  };
+
+  const validateForm = (): boolean => {
     const selectedType = activeTab === 'disaster' ? selectedDisasterType : selectedPestType;
     
-    if (!location || !description || files.length === 0 || !selectedType) {
-      setError('모든 항목을 입력해주세요.');
+    if (!selectedType) {
+      setError('신고 유형을 선택해주세요.');
+      return false;
+    }
+
+    if (!title.trim()) {
+      setError('제목을 입력해주세요.');
+      return false;
+    }
+
+    if (!location.trim()) {
+      setError('신고 발생지역을 입력해주세요.');
+      return false;
+    }
+
+    if (!description.trim()) {
+      setError('신고 내용을 입력해주세요.');
+      return false;
+    }
+
+    if (files.length === 0) {
+      setError('최소 1개의 파일을 업로드해주세요.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    setError('');
+    setSuccess('');
+
+    // 로그인 상태 확인
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setError('로그인이 필요합니다.');
       return;
     }
 
-    setError('');
-    alert('제출되었습니다.');
+    if (!validateForm()) {
+      return;
+    }
 
-    // 초기화
-    setFiles([]);
-    setLocation('');
-    setDescription('');
-    setSelectedDisasterType('');
-    setSelectedPestType('');
+    setLoading(true);
+
+    try {
+      // FormData 생성
+      const formData = new FormData();
+      
+      // 카테고리 정보 가져오기
+      const categoryValues = getCategoryValues();
+      if (!categoryValues) {
+        setError('올바른 카테고리를 선택해주세요.');
+        setLoading(false);
+        return;
+      }
+
+      // 폼 데이터 추가 (API 명세에 맞게)
+      formData.append('category', `${categoryValues.main}/${categoryValues.sub}`);
+      formData.append('title', title.trim());
+      formData.append('content', description.trim());
+      formData.append('local', location.trim());
+
+      // 파일들 추가
+      files.forEach((file, index) => {
+        formData.append('files', file);
+      });
+
+      // 디버깅용 로그
+      console.log('전송할 데이터:');
+      console.log('Category:', `${categoryValues.main}/${categoryValues.sub}`);
+      console.log('Title:', title.trim());
+      console.log('Content:', description.trim());
+      console.log('Local:', location.trim());
+      console.log('Files:', files.length, '개');
+
+      const response = await submitReport(formData);
+      
+      setSuccess(response.message || '✅ 신고가 성공적으로 접수되었습니다.');
+      
+      // 성공 시 폼 초기화
+      setFiles([]);
+      setLocation('');
+      setTitle('');
+      setDescription('');
+      setSelectedDisasterType('');
+      setSelectedPestType('');
+
+    } catch (err: any) {
+      console.error('신고 제출 오류:', err);
+      console.error('응답 데이터:', err.response?.data);
+      console.error('응답 상태:', err.response?.status);
+      
+      // 에러 메시지 추출
+      let errorMessage = '신고 제출 중 오류가 발생했습니다.';
+      
+      if (err.response?.status === 401) {
+        errorMessage = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+      } else if (err.response?.status === 413) {
+        errorMessage = '파일 크기가 너무 큽니다. 더 작은 파일을 업로드해주세요.';
+      } else if (err.response?.status === 415) {
+        errorMessage = '지원하지 않는 파일 형식입니다.';
+      } else if (err.response?.status === 500) {
+        errorMessage = '서버 내부 오류가 발생했습니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.detail) {
+        if (Array.isArray(err.response.data.detail)) {
+          // FastAPI 유효성 검사 에러
+          errorMessage = err.response.data.detail.map((item: any) => 
+            `${item.loc?.[1] || '필드'}: ${item.msg}`
+          ).join(', ');
+        } else {
+          errorMessage = err.response.data.detail;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTabChange = (tab: string) => {
@@ -42,6 +209,7 @@ const Report: React.FC = () => {
     setSelectedDisasterType('');
     setSelectedPestType('');
     setError('');
+    setSuccess('');
   };
 
   const renderRadioButtons = () => {
@@ -128,6 +296,17 @@ const Report: React.FC = () => {
             <TapMenu activeTab={activeTab} onTabChange={handleTabChange} />
             
             {renderRadioButtons()}
+
+            {/* 제목 입력 필드 추가 */}
+            <LocationSection>
+              <SectionTitle>신고 제목</SectionTitle>
+              <LocationInput
+                type="text"
+                placeholder="신고 제목을 입력하세요"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </LocationSection>
             
             <FileUpload files={files} onFilesChange={setFiles} />
 
@@ -144,6 +323,7 @@ const Report: React.FC = () => {
                   onClick={() =>
                     alert('위치 자동 입력은 아직 지원되지 않습니다.')
                   }
+                  disabled={loading}
                 >
                   위치 찾기
                 </LocationButton>
@@ -161,8 +341,13 @@ const Report: React.FC = () => {
             </LocationSection>
 
             <SubmitButtonWrapper>
-              <SubmitButton onClick={handleSubmit} disabled={false} />
               {error && <ErrorText>{error}</ErrorText>}
+              {success && <SuccessText>{success}</SuccessText>}
+              <SubmitButton 
+                onClick={handleSubmit} 
+                disabled={loading}
+              />
+              {loading && <LoadingText>제출 중...</LoadingText>}
             </SubmitButtonWrapper>
           </ContentWrapper>
         </MainWrapper>
@@ -284,20 +469,6 @@ const RadioLabel = styled.label`
   }
 `;
 
-const Section = styled.section`
-  width: 100%;
-  max-width: 800px;
-  margin-bottom: 2rem;
-
-  @media (max-width: 1024px) {
-    max-width: 700px;
-  }
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-  }
-`;
-
 const LocationSection = styled.section`
   width: 100%;
   margin-bottom: 2rem;
@@ -388,7 +559,12 @@ const LocationButton = styled.button`
   white-space: nowrap;
 
   &:hover {
-    background-color: #0052cc;
+    background-color: #E6AB65;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
   }
 
   @media (max-width: 768px) {
@@ -413,7 +589,45 @@ const SubmitButtonWrapper = styled.div`
 `;
 
 const ErrorText = styled.div`
-  color: red;
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  padding: 8px 12px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+  }
+`;
+
+const SuccessText = styled.div`
+  color: #155724;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  padding: 8px 12px;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+  }
+`;
+
+const LoadingText = styled.div`
+  color: #666;
   font-size: 0.9rem;
   margin-top: 1rem;
   text-align: center;
