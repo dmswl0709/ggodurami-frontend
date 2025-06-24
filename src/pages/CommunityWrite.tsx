@@ -1,9 +1,59 @@
 // pages/CommunityWrite.tsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 import { Logo } from '../Components/Logo/Logo';
 import InputField from '../Components/InputField/InputField';
 import { useNavigate } from "react-router-dom";
+
+// 타입 정의
+interface PostCreateRequest {
+  title: string;
+  content: string;
+  tags: string[];
+}
+
+interface PostCreateResponse {
+  user_id: string;
+  username: string;
+  title: string;
+  content: string;
+  tags: string[];
+  local_id: number;
+  created_at: string;
+  likes: number;
+  id: string;
+}
+
+// API 설정
+const BASE_URL = 'http://localhost:8000';
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 요청 인터셉터 - JWT 토큰 자동 추가
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// API 함수
+const createPost = async (data: PostCreateRequest): Promise<PostCreateResponse> => {
+  const response = await apiClient.post<PostCreateResponse>('/post', data);
+  return response.data;
+};
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -133,10 +183,68 @@ const CharacterLimit = styled.div`
   margin-bottom: 15px;
 `;
 
+const TagInput = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+  color: #333;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #4CAF50;
+    background-color: white;
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
+    padding: 10px 14px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+`;
+
+const TagHelper = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+`;
+
+const ErrorMessage = styled.div`
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+`;
+
+const SuccessMessage = styled.div`
+  color: #155724;
+  font-size: 14px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+`;
+
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  position: relative;
 `;
 
 const SubmitButton = styled.button`
@@ -174,26 +282,36 @@ const SubmitButton = styled.button`
   }
 `;
 
+const LoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+`;
+
 interface CommunityWriteData {
-  author: string;
   title: string;
   content: string;
+  tags: string;
 }
 
 export const CommunityWrite: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<CommunityWriteData>({
-    author: '',
     title: '',
-    content: ''
+    content: '',
+    tags: ''
   });
 
-  const handleAuthorChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      author: value
-    }));
-  };
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleTitleChange = (value: string) => {
     if (value.length <= 20) {
@@ -202,6 +320,8 @@ export const CommunityWrite: React.FC = () => {
         title: value
       }));
     }
+    // 입력 시 에러 메시지 클리어
+    if (error) setError(null);
   };
 
   const handleContentChange = (value: string) => {
@@ -211,33 +331,119 @@ export const CommunityWrite: React.FC = () => {
         content: value
       }));
     }
+    // 입력 시 에러 메시지 클리어
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // 간단한 유효성 검사
-    if (!formData.author || !formData.title || !formData.content) {
-      alert('모든 필드를 입력해주세요.');
-      return;
+  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: e.target.value
+    }));
+    // 입력 시 에러 메시지 클리어
+    if (error) setError(null);
+  };
+
+  const validateForm = (): boolean => {
+    if (!formData.title || !formData.content) {
+      setError('제목과 내용을 모두 입력해주세요.');
+      return false;
     }
     
     if (formData.title.length < 2) {
-      alert('제목을 최소 2자 이상 입력해주세요.');
-      return;
+      setError('제목을 최소 2자 이상 입력해주세요.');
+      return false;
     }
     
     if (formData.content.length < 10) {
-      alert('내용을 최소 10자 이상 입력해주세요.');
+      setError('내용을 최소 10자 이상 입력해주세요.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
       return;
     }
-    
-    // 실제 구현시에는 여기서 API 호출
-    console.log('게시글 등록:', formData);
-    
-    // 등록 완료 후 커뮤니티 목록으로 이동
-    alert('게시글이 등록되었습니다.');
-    navigate('/communityList'); // 커뮤니티 목록 페이지로 이동
+
+    // 로그인 상태 확인
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setError('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      // 태그 처리 (쉼표로 분리하고 공백 제거)
+      const tagsArray = formData.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+
+      // 백엔드 API 형식에 맞게 데이터 변환
+      const postData: PostCreateRequest = {
+        title: formData.title,
+        content: formData.content,
+        tags: tagsArray
+      };
+
+      console.log('전송할 게시글 데이터:', postData);
+
+      const response = await createPost(postData);
+      
+      setSuccess('✅ 게시글이 성공적으로 등록되었습니다!');
+      
+      // 성공 시 2초 후 커뮤니티 목록으로 이동
+      setTimeout(() => {
+        navigate('/communityList');
+      }, 2000);
+
+    } catch (err: any) {
+      console.error('게시글 등록 오류:', err);
+      console.error('응답 데이터:', err.response?.data);
+      console.error('응답 상태:', err.response?.status);
+      
+      // 에러 메시지 추출
+      let errorMessage = '게시글 등록 중 오류가 발생했습니다.';
+      
+      if (err.response?.status === 401) {
+        errorMessage = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+        setTimeout(() => {
+          localStorage.removeItem('accessToken');
+          navigate('/login');
+        }, 2000);
+      } else if (err.response?.status === 500) {
+        errorMessage = '서버 내부 오류가 발생했습니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.detail) {
+        if (Array.isArray(err.response.data.detail)) {
+          // FastAPI 유효성 검사 에러
+          errorMessage = err.response.data.detail.map((item: any) => 
+            `${item.loc?.[1] || '필드'}: ${item.msg}`
+          ).join(', ');
+        } else {
+          errorMessage = err.response.data.detail;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -252,17 +458,6 @@ export const CommunityWrite: React.FC = () => {
       <ContentWrapper>
         <FormContainer onSubmit={handleSubmit}>
           <InputGroup>
-            <Label htmlFor="author">작성자 이름(닉네임)</Label>
-            <InputField
-              type="text"
-              value={formData.author}
-              onChange={handleAuthorChange}
-              placeholder="이름을 작성 해 주세요"
-              required
-            />
-          </InputGroup>
-          
-          <InputGroup>
             <Label htmlFor="title">제목</Label>
             <InputField
               type="text"
@@ -271,6 +466,9 @@ export const CommunityWrite: React.FC = () => {
               placeholder="최소 2자, 최대 20자 작성 가능"
               required
             />
+            <CharacterLimit>
+              {formData.title.length}/20자
+            </CharacterLimit>
           </InputGroup>
           
           <InputGroup>
@@ -287,11 +485,36 @@ export const CommunityWrite: React.FC = () => {
               {formData.content.length}/2000자
             </CharacterLimit>
           </InputGroup>
+
+          <InputGroup>
+            <Label htmlFor="tags">태그 (선택사항)</Label>
+            <TagInput
+              type="text"
+              value={formData.tags}
+              onChange={handleTagsChange}
+              placeholder="태그를 쉼표로 구분해서 입력하세요 (예: 토마토, 장마, 병충해)"
+            />
+            <TagHelper>
+              태그는 쉼표(,)로 구분하여 입력하세요. 게시글 검색에 도움이 됩니다.
+            </TagHelper>
+          </InputGroup>
+
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {success && <SuccessMessage>{success}</SuccessMessage>}
           
           <ButtonContainer>
-            <SubmitButton type="submit">
-              등록
+            <SubmitButton 
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? '등록 중...' : '등록'}
             </SubmitButton>
+            
+            {loading && (
+              <LoadingOverlay>
+                <div>게시글 등록 중...</div>
+              </LoadingOverlay>
+            )}
           </ButtonContainer>
         </FormContainer>
       </ContentWrapper>
