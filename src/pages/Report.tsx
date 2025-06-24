@@ -14,9 +14,13 @@ const Report: React.FC = () => {
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+  const [selectedDisasterType, setSelectedDisasterType] = useState('');
+  const [selectedPestType, setSelectedPestType] = useState('');
 
   const handleSubmit = () => {
-    if (!location || !description || files.length === 0) {
+    const selectedType = activeTab === 'disaster' ? selectedDisasterType : selectedPestType;
+    
+    if (!location || !description || files.length === 0 || !selectedType) {
       setError('모든 항목을 입력해주세요.');
       return;
     }
@@ -28,6 +32,90 @@ const Report: React.FC = () => {
     setFiles([]);
     setLocation('');
     setDescription('');
+    setSelectedDisasterType('');
+    setSelectedPestType('');
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // 탭 변경 시 라디오 버튼 선택 초기화
+    setSelectedDisasterType('');
+    setSelectedPestType('');
+    setError('');
+  };
+
+  const renderRadioButtons = () => {
+    if (activeTab === 'disaster') {
+      return (
+        <RadioSection>
+          <RadioGroup>
+            <RadioOption>
+              <RadioInput
+                type="radio"
+                id="earthquake"
+                name="disasterType"
+                value="earthquake"
+                checked={selectedDisasterType === 'earthquake'}
+                onChange={(e) => setSelectedDisasterType(e.target.value)}
+              />
+              <RadioLabel htmlFor="earthquake">지진,산불</RadioLabel>
+            </RadioOption>
+            <RadioOption>
+              <RadioInput
+                type="radio"
+                id="typhoon"
+                name="disasterType"
+                value="typhoon"
+                checked={selectedDisasterType === 'typhoon'}
+                onChange={(e) => setSelectedDisasterType(e.target.value)}
+              />
+              <RadioLabel htmlFor="typhoon">태풍,호우</RadioLabel>
+            </RadioOption>
+            <RadioOption>
+              <RadioInput
+                type="radio"
+                id="snow"
+                name="disasterType"
+                value="snow"
+                checked={selectedDisasterType === 'snow'}
+                onChange={(e) => setSelectedDisasterType(e.target.value)}
+              />
+              <RadioLabel htmlFor="snow">폭설</RadioLabel>
+            </RadioOption>
+          </RadioGroup>
+        </RadioSection>
+      );
+    } else if (activeTab === 'pest') {
+      return (
+        <RadioSection>
+          <RadioGroup>
+            <RadioOption>
+              <RadioInput
+                type="radio"
+                id="disease"
+                name="pestType"
+                value="disease"
+                checked={selectedPestType === 'disease'}
+                onChange={(e) => setSelectedPestType(e.target.value)}
+              />
+              <RadioLabel htmlFor="disease">질병</RadioLabel>
+            </RadioOption>
+            <RadioOption>
+              <RadioInput
+                type="radio"
+                id="insect"
+                name="pestType"
+                value="insect"
+                checked={selectedPestType === 'insect'}
+                onChange={(e) => setSelectedPestType(e.target.value)}
+              />
+              <RadioLabel htmlFor="insect">해충</RadioLabel>
+            </RadioOption>
+          </RadioGroup>
+        </RadioSection>
+      );
+    }
+    return null;
   };
 
   return (
@@ -37,7 +125,10 @@ const Report: React.FC = () => {
           <ContentWrapper>
             <Logo />
             <Title>신고하기</Title>
-            <TapMenu activeTab={activeTab} onTabChange={setActiveTab} />
+            <TapMenu activeTab={activeTab} onTabChange={handleTabChange} />
+            
+            {renderRadioButtons()}
+            
             <FileUpload files={files} onFilesChange={setFiles} />
 
             <LocationSection>
@@ -134,6 +225,62 @@ const Title = styled.h1`
     font-size: 1.2rem;
     margin: 0.4rem 0;
     margin-left: 0.5rem;
+  }
+`;
+
+const RadioSection = styled.section`
+  width: 100%;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+`;
+
+const RadioGroup = styled.div`
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const RadioOption = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const RadioInput = styled.input`
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: #FBBF77;
+  cursor: pointer;
+
+  @media (max-width: 480px) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+`;
+
+const RadioLabel = styled.label`
+  font-size: 1rem;
+  font-weight: 500;
+  color: black;
+  cursor: pointer;
+  user-select: none;
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
   }
 `;
 
