@@ -1,11 +1,13 @@
-// pages/Login.tsx (백엔드 연동 버전)
-import React, { useState } from 'react';
+// pages/Login.tsx (Redux 연동 버전)
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
 import { Input } from '../Components/Input/Input';
 import { Button } from '../Components/Button/Button';
 import { Logo } from '../Components/Logo/Logo';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { loginStart, loginSuccess, loginFailure, clearError } from '../store/slices/authSlice';
 
 // 타입 정의
 interface LoginRequest {
@@ -16,6 +18,18 @@ interface LoginRequest {
 interface LoginResponse {
   message: string;
   access_token: string;
+}
+
+interface UserResponse {
+  mypage: {
+    user_id: string;
+    username: string;
+    email: string;
+    region_name?: string;
+    crop_name?: string;
+    local_id?: number;
+    profile_image?: string;
+  };
 }
 
 // API 설정
@@ -31,6 +45,15 @@ const apiClient = axios.create({
 // API 함수
 const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
   const response = await apiClient.post<LoginResponse>('/login', data);
+  return response.data;
+};
+
+const getCurrentUser = async (token: string): Promise<UserResponse> => {
+  const response = await apiClient.get<UserResponse>('/mypage', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return response.data;
 };
 
@@ -136,14 +159,26 @@ interface LoginFormData {
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { loading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+  
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: ''
   });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // 이미 로그인되어 있으면 홈으로 리다이렉트
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // 컴포넌트 마운트 시 에러 클리어
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   const handleInputChange = (field: keyof LoginFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -151,19 +186,19 @@ const Login: React.FC = () => {
       [field]: e.target.value
     }));
     // 입력 시 에러 메시지 클리어
-    if (error) setError(null);
+    if (error) dispatch(clearError());
   };
 
   const validateForm = (): boolean => {
     if (!formData.email || !formData.password) {
-      setError('이메일과 비밀번호를 입력해주세요.');
+      dispatch(loginFailure('이메일과 비밀번호를 입력해주세요.'));
       return false;
     }
 
     // 이메일 형식 체크
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError('올바른 이메일 형식을 입력해주세요.');
+      dispatch(loginFailure('올바른 이메일 형식을 입력해주세요.'));
       return false;
     }
 
@@ -177,12 +212,10 @@ const Login: React.FC = () => {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
+    dispatch(loginStart());
 
     try {
-      // 백엔드 API 호출
+      // 1. 로그인 API 호출
       const loginData: LoginRequest = {
         email: formData.email,
         password: formData.password
@@ -190,12 +223,24 @@ const Login: React.FC = () => {
 
       console.log('전송할 로그인 데이터:', loginData);
 
-      const response = await loginUser(loginData);
+      const loginResponse = await loginUser(loginData);
+      console.log('로그인 응답:', loginResponse);
+
+      // 2. 사용자 정보 조회
+      const userResponse = await getCurrentUser(loginResponse.access_token);
+      console.log('사용자 정보:', userResponse);
+
+      // 3. Redux 상태 업데이트
+      dispatch(loginSuccess({
+        user: {
+          user_id: userResponse.mypage.user_id,
+          username: userResponse.mypage.username,
+          email: userResponse.mypage.email,
+        },
+        token: loginResponse.access_token,
+      }));
       
-      // 토큰을 localStorage에 저장
-      localStorage.setItem('accessToken', response.access_token);
-      
-      setSuccess(response.message);
+      setSuccess(loginResponse.message);
       
       // 성공 시 1.5초 후 홈으로 이동
       setTimeout(() => {
@@ -229,9 +274,7 @@ const Login: React.FC = () => {
         errorMessage = err.message;
       }
       
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
+      dispatch(loginFailure(errorMessage));
     }
   };
 

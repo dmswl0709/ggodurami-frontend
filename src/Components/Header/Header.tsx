@@ -1,6 +1,7 @@
+// Components/Header/Header.tsx
 import React from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom'; // useNavigate 훅 import 추가
+import { useNavigate } from 'react-router-dom';
 import logoImage from "../../assets/images/Logo.png";
 
 const HeaderWrapper = styled.header`
@@ -8,7 +9,7 @@ const HeaderWrapper = styled.header`
   padding: 8px 24px;
   display: flex;
   justify-content: center;
-  height: 60px; /* 높이 고정 */
+  height: 60px;
   position: relative;
 `;
 
@@ -30,11 +31,11 @@ const LogoContainer = styled.div`
 `;
 
 const LogoImage = styled.img`
-  height: 145px; /* 원하는 크기로 설정 */
+  height: 145px;
   width: auto;
   object-fit: contain;
   position: relative;
-  top: -10px; /* 로고만 위로 올리기 */
+  top: -10px;
   
   &:hover {
     opacity: 0.8;
@@ -61,14 +62,19 @@ const Nav = styled.nav`
 `;
 
 const Header = () => {
-  const navigate = useNavigate(); // useNavigate 훅 사용
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    navigate('/');
+  };
 
   return (
     <HeaderWrapper>
       <Inner>
-        <LogoContainer>
+        <LogoContainer onClick={handleLogoClick}>
           <LogoImage src={logoImage} alt="꼬두라미" />
         </LogoContainer>
+        
         <Nav>
           <span onClick={() => navigate("/ReportDetail")}>
             신고상황

@@ -1,5 +1,8 @@
+// App.tsx
 import React from 'react';
+import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { store } from './store/store';
 import { GlobalStyles } from './styles/GlobalStyles';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -15,24 +18,26 @@ import CommunityWrite from './pages/CommunityWrite';
 
 function App() {
   return (
-    <Router>
-      <GlobalStyles />
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/report" element={<Report />} />
-          <Route path="/Mypage" element={<Mypage />} />
-          <Route path="/ReportDetail" element={<ReportDetail />} />
-          <Route path="/SupportList" element={<SupportList />} />
-          <Route path="/SupportDetail" element={<SupportDetail />} />
-          <Route path="/CommunityList" element={<CommunityList />} />
-          <Route path="/CommunityDetail/:id" element={<CommunityDetail />} />
-          <Route path="/CommunityWrite" element={<CommunityWrite />} />
-        </Routes>
-      </div>
-    </Router>
+    <Provider store={store}>
+      <Router>
+        <GlobalStyles />
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/Mypage" element={<Mypage />} />
+            <Route path="/ReportDetail" element={<ReportDetail />} />
+            <Route path="/SupportList" element={<SupportList />} />
+            <Route path="/SupportDetail" element={<SupportDetail />} />
+            <Route path="/CommunityList" element={<CommunityList />} />
+            <Route path="/CommunityDetail/:id" element={<CommunityDetail />} />
+            <Route path="/CommunityWrite" element={<CommunityWrite />} />
+          </Routes>
+        </div>
+      </Router>
+    </Provider>
   );
 }
 
