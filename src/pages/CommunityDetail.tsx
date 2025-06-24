@@ -1,9 +1,101 @@
 // pages/CommunityDetail.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Logo } from '../Components/Logo/Logo';
 import { HeartButton } from '../Components/HeartButton/HeartButton';
-import { useNavigate } from "react-router-dom";
+
+// 타입 정의
+interface PostDetailData {
+  id: string;
+  user_id: string;
+  username: string;
+  title: string;
+  content: string;
+  tags: string[];
+  created_at: string;
+  likes?: number;
+}
+
+interface CommentData {
+  id: string;
+  user_id: string;
+  username: string;
+  content: string;
+  created_at: string;
+}
+
+interface LikeResponse {
+  message: string;
+  liked: boolean;
+}
+
+interface CommentCreateRequest {
+  post_id: string;
+  content: string;
+}
+
+interface CommentCreateResponse {
+  id: string;
+  user_id: string;
+  username: string;
+  content: string;
+  post_id: string;
+  created_at: string;
+}
+
+// API 설정
+const BASE_URL = 'http://localhost:8000';
+
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 요청 인터셉터 - JWT 토큰 자동 추가
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// API 함수들
+const getPostDetail = async (postId: string): Promise<PostDetailData> => {
+  const response = await apiClient.get<PostDetailData>(`/posts/${postId}`);
+  return response.data;
+};
+
+const toggleLike = async (postId: string): Promise<LikeResponse> => {
+  const response = await apiClient.post<LikeResponse>(`/posts/${postId}/like`);
+  return response.data;
+};
+
+const createComment = async (data: CommentCreateRequest): Promise<CommentCreateResponse> => {
+  const response = await apiClient.post<CommentCreateResponse>('/comments', data);
+  return response.data;
+};
+
+// 댓글 목록 조회 함수 (만약 별도 API가 있다면)
+const getComments = async (postId: string): Promise<CommentData[]> => {
+  try {
+    const response = await apiClient.get<{ comments: CommentData[] }>(`/posts/${postId}/comments`);
+    return response.data.comments || [];
+  } catch (error) {
+    // 댓글 조회 API가 없다면 빈 배열 반환
+    console.log('댓글 조회 API가 없거나 오류 발생');
+    return [];
+  }
+};
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -98,6 +190,24 @@ const ContentWrapper = styled.div`
   }
 `;
 
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  margin: 20px 0;
+`;
+
 const PostContainer = styled.div`
   background-color: white;
   border-radius: 12px;
@@ -167,46 +277,12 @@ const PostContent = styled.div`
   margin-bottom: 30px;
 `;
 
-const ContentSection = styled.div`
-  margin-bottom: 25px;
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  color: #FBBF77;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  
-  &:before {
-    content: '👇';
-    margin-right: 8px;
-  }
-  
-  @media (max-width: 768px) {
-    font-size: 14px;
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 13px;
-  }
-`;
-
 const ContentText = styled.div`
   font-size: 14px;
   line-height: 1.6;
   color: #555;
   margin-bottom: 10px;
-  
-  ul {
-    margin: 10px 0;
-    padding-left: 20px;
-  }
-  
-  li {
-    margin-bottom: 5px;
-  }
+  white-space: pre-wrap;
   
   @media (max-width: 768px) {
     font-size: 13px;
@@ -217,42 +293,20 @@ const ContentText = styled.div`
   }
 `;
 
-const Divider = styled.div`
-  text-align: center;
-  margin: 30px 0;
-  color: #ccc;
-  font-size: 14px;
-`;
-
-const LikeContainer = styled.div`
+const TagContainer = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 30px 0;
-  gap: 10px;
-`;
-
-const LikeButton = styled.button`
-  display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 10px 20px;
-  background-color: white;
+  margin: 15px 0;
+`;
+
+const Tag = styled.span`
+  background-color: #FFEFD5;
+  color: #8B4513;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #555;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background-color: #f5f5f5;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 8px 15px;
-    font-size: 12px;
-  }
 `;
 
 const CommentSection = styled.div`
@@ -365,6 +419,11 @@ const SubmitButton = styled.button`
     background-color: #E6AB65;
   }
   
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
   @media (max-width: 480px) {
     padding: 10px;
   }
@@ -415,28 +474,268 @@ const ReplyButton = styled(ActionButton)`
 `;
 
 export const CommunityDetail: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  
+  const [post, setPost] = useState<PostDetailData | null>(null);
+  const [comments, setComments] = useState<CommentData[]>([]);
   const [commentText, setCommentText] = useState('');
   const [liked, setLiked] = useState(false);
-  
+  const [likeCount, setLikeCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [commentLoading, setCommentLoading] = useState(false);
+
+  // 게시글 데이터 로드
+  const loadPost = async () => {
+    if (!id) {
+      setError('게시글 ID가 없습니다.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const postData = await getPostDetail(id);
+      setPost(postData);
+      setLikeCount(postData.likes || 0);
+      
+      // 댓글 데이터도 함께 로드
+      const commentsData = await getComments(id);
+      setComments(commentsData);
+      
+    } catch (err: any) {
+      console.error('게시글 로드 오류:', err);
+      
+      let errorMessage = '게시글을 불러오는 중 오류가 발생했습니다.';
+      
+      if (err.response?.status === 404) {
+        errorMessage = '존재하지 않는 게시글입니다.';
+      } else if (err.response?.status === 500) {
+        errorMessage = '서버 내부 오류가 발생했습니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadPost();
+  }, [id]);
+
+  // 좋아요 토글
+  const handleLike = async () => {
+    if (!id) return;
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      console.log('좋아요 요청 시작:', id);
+      
+      const response = await toggleLike(id);
+      console.log('좋아요 응답:', response);
+      
+      setLiked(response.liked);
+      
+      // 좋아요 수 업데이트
+      if (response.liked) {
+        setLikeCount(prev => prev + 1);
+      } else {
+        setLikeCount(prev => Math.max(0, prev - 1));
+      }
+      
+      // 성공 메시지 표시 (선택사항)
+      // alert(response.message);
+      
+    } catch (err: any) {
+      console.error('좋아요 처리 오류:', err);
+      console.error('응답 데이터:', err.response?.data);
+      console.error('응답 상태:', err.response?.status);
+      
+      let errorMessage = '좋아요 처리 중 오류가 발생했습니다.';
+      
+      if (err.response?.status === 401) {
+        errorMessage = '로그인이 필요합니다.';
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else if (err.response?.status === 404) {
+        errorMessage = '존재하지 않는 게시글입니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      }
+      
+      alert(errorMessage);
+    }
+  };
+
+  // 댓글 작성
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim() || !id) return;
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setCommentLoading(true);
+      
+      const commentData: CommentCreateRequest = {
+        post_id: id,
+        content: commentText.trim()
+      };
+
+      console.log('전송할 댓글 데이터:', commentData);
+
+      const newComment = await createComment(commentData);
+      
+      // API 응답에 맞게 댓글 데이터 구성
+      const formattedComment: CommentData = {
+        id: newComment.id,
+        user_id: newComment.user_id,
+        username: newComment.username,
+        content: newComment.content,
+        created_at: newComment.created_at
+      };
+
+      setComments(prev => [...prev, formattedComment]);
+      setCommentText('');
+      
+      console.log('댓글 작성 성공:', newComment);
+      
+    } catch (err: any) {
+      console.error('댓글 작성 오류:', err);
+      console.error('응답 데이터:', err.response?.data);
+      console.error('응답 상태:', err.response?.status);
+      
+      let errorMessage = '댓글 작성 중 오류가 발생했습니다.';
+      
+      if (err.response?.status === 401) {
+        errorMessage = '로그인이 필요합니다.';
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else if (err.response?.status === 404) {
+        errorMessage = '존재하지 않는 게시글입니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.detail) {
+        if (Array.isArray(err.response.data.detail)) {
+          errorMessage = err.response.data.detail.map((item: any) => 
+            `${item.loc?.[1] || '필드'}: ${item.msg}`
+          ).join(', ');
+        } else {
+          errorMessage = err.response.data.detail;
+        }
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
+  // 날짜 포맷 함수
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${year}.${month}.${day} ${hours}:${minutes}`;
+    } catch {
+      return dateString;
+    }
+  };
+
   const handleBackToList = () => {
     navigate('/CommunityList');
   };
   
   const handleReply = () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('글쓰기를 하려면 로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
     navigate('/CommunityWrite');
   };
-  
-  const handleLike = () => {
-    setLiked(!liked);
-  };
-  
-  const handleCommentSubmit = () => {
-    if (commentText.trim()) {
-      // 댓글 제출 로직
-      setCommentText('');
-    }
-  };
+
+  if (loading) {
+    return (
+      <PageContainer>
+        <Header>
+          <LogoContainer>
+            <Logo />
+          </LogoContainer>
+          <HeaderTitle>커뮤니티</HeaderTitle>
+        </Header>
+        <ContentWrapper>
+          <LoadingMessage>게시글을 불러오는 중...</LoadingMessage>
+        </ContentWrapper>
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <Header>
+          <LogoContainer>
+            <Logo />
+          </LogoContainer>
+          <HeaderTitle>커뮤니티</HeaderTitle>
+        </Header>
+        <ContentWrapper>
+          <ErrorMessage>{error}</ErrorMessage>
+          <ActionButtons>
+            <ListButton onClick={handleBackToList}>목록으로 돌아가기</ListButton>
+          </ActionButtons>
+        </ContentWrapper>
+      </PageContainer>
+    );
+  }
+
+  if (!post) {
+    return (
+      <PageContainer>
+        <Header>
+          <LogoContainer>
+            <Logo />
+          </LogoContainer>
+          <HeaderTitle>커뮤니티</HeaderTitle>
+        </Header>
+        <ContentWrapper>
+          <ErrorMessage>게시글을 찾을 수 없습니다.</ErrorMessage>
+          <ActionButtons>
+            <ListButton onClick={handleBackToList}>목록으로 돌아가기</ListButton>
+          </ActionButtons>
+        </ContentWrapper>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
@@ -450,60 +749,52 @@ export const CommunityDetail: React.FC = () => {
       <ContentWrapper>
         <PostContainer>
           <PostHeader>
-            <PostTitle>안녕하세요~~~ 좋은 정보 공유드려요 !!</PostTitle>
+            <PostTitle>{post.title}</PostTitle>
             <PostMeta>
-              <span>2025/06/02 &nbsp;&nbsp;&nbsp; 작성자 : 25경기김포김덕주 &nbsp;&nbsp;&nbsp; 좋아요 : 3</span>
+              <span>{formatDate(post.created_at)} &nbsp;&nbsp;&nbsp; 작성자: {post.username} &nbsp;&nbsp;&nbsp; 좋아요: {likeCount}</span>
             </PostMeta>
           </PostHeader>
           
           <PostContent>
-            <ContentSection>
-              <SectionTitle>초보 농부라면?</SectionTitle>
-              <ContentText>
-                <ul>
-                  <li>농업 경험, 나이 농사, 기후 조건 불문합니다</li>
-                  <li>새내 농부님들을 성장 최적 교육</li>
-                  <li>성공한 경험자, 성공한 앞길기능~초월기 기능</li>
-                </ul>
-                <p>초보 농부제는 꼭 없이 좋습니다.</p>
-                <p>나중에만에서 따뜻한 이야기와 함께 읽지 안으시죠.</p>
-              </ContentText>
-            </ContentSection>
+            <ContentText>{post.content}</ContentText>
             
-            <Divider>• • • • •</Divider>
-            
-            <ContentSection>
-              <SectionTitle>서비 농부라면?</SectionTitle>
-              <ContentText>
-                <ul>
-                  <li>안선의 격없이 높은가지에서 안석성 옵션이 됩니다.</li>
-                  <li>직품 속의 화려한 외 경험 블루 수 있습니다.</li>
-                  <li>초월 농부생을 화정하여 바라본 만가킴을 흉내내었기오른.</li>
-                </ul>
-                <p>신제 농부제는 나의 이야기 봅니다.</p>
-                <p>안전의 집들을 거음놈은 새에붐의 오직 원하셨습니다.</p>
-              </ContentText>
-            </ContentSection>
+            {post.tags && post.tags.length > 0 && (
+              <TagContainer>
+                {post.tags.map((tag, index) => (
+                  <Tag key={index}>#{tag}</Tag>
+                ))}
+              </TagContainer>
+            )}
           </PostContent>
-          
         </PostContainer>
         
         <CommentSection>
-          <CommentHeader>💬 댓글 1</CommentHeader>
+          <CommentHeader>💬 댓글 {comments.length}</CommentHeader>
           
-          <CommentItem>
-            <CommentMeta>좋은 정보 감사드려요 ~~~ 2025.06.02 12:20 25경세천포김수</CommentMeta>
-          </CommentItem>
+          {comments.map((comment) => (
+            <CommentItem key={comment.id}>
+              <CommentMeta>
+                {comment.username} · {formatDate(comment.created_at)}
+              </CommentMeta>
+              <CommentText>{comment.content}</CommentText>
+            </CommentItem>
+          ))}
           
           <CommentForm>
             <CommentInput
               placeholder="댓글을 남겨주세요."
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
+              maxLength={3000}
             />
             <CommentActions>
               <CharCount>{commentText.length}/3000</CharCount>
-              <SubmitButton onClick={handleCommentSubmit}>등록</SubmitButton>
+              <SubmitButton 
+                onClick={handleCommentSubmit}
+                disabled={commentLoading || !commentText.trim()}
+              >
+                {commentLoading ? '등록 중...' : '등록'}
+              </SubmitButton>
             </CommentActions>
           </CommentForm>
         </CommentSection>
@@ -511,15 +802,15 @@ export const CommunityDetail: React.FC = () => {
         {/* HeartButton 컴포넌트 사용 */}
         <HeartButton 
           isLiked={liked}
-          likeCount={liked ? 4 : 3}
+          likeCount={likeCount}
           onLike={handleLike}
           showText={true}
           showCount={true}
         />
         
         <ActionButtons>
-          <ListButton onClick={handleBackToList}>다음 글</ListButton>
-          <ReplyButton onClick={handleReply}>목록</ReplyButton>
+          <ListButton onClick={handleBackToList}>목록</ListButton>
+          <ReplyButton onClick={handleReply}>글쓰기</ReplyButton>
         </ActionButtons>
       </ContentWrapper>
     </PageContainer>

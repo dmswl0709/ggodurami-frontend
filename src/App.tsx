@@ -28,7 +28,7 @@ function App() {
           <Route path="/SupportList" element={<SupportList />} />
           <Route path="/SupportDetail" element={<SupportDetail />} />
           <Route path="/CommunityList" element={<CommunityList />} />
-          <Route path="/CommunityDetail" element={<CommunityDetail />} />
+          <Route path="/CommunityDetail/:id" element={<CommunityDetail />} />
           <Route path="/CommunityWrite" element={<CommunityWrite />} />
         </Routes>
       </div>
