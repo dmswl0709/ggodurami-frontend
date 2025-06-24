@@ -50,7 +50,7 @@ const getAllPosts = async (): Promise<PostsResponse> => {
 };
 
 const getLocalPosts = async (): Promise<PostsResponse> => {
-  const response = await apiClient.get<PostsResponse>('/posts/local');
+  const response = await apiClient.get<PostsResponse>('/post/local');
   return response.data;
 };
 
@@ -164,7 +164,7 @@ const TabContainer = styled.div`
   margin-bottom: 20px;
 `;
 
-const TabButton = styled.button<{ active?: boolean }>`
+const TabButton = styled.button<{ $active?: boolean }>`
   padding: 12px 24px;
   border: none;
   font-size: 16px;
