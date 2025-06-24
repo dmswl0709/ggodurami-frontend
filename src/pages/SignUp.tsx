@@ -14,6 +14,7 @@ interface RegisterRequest {
   email: string;
   password: string;
   phone_num: string;
+  crop_name: string;
   local_id: number;
 }
 
@@ -37,7 +38,15 @@ const registerUser = async (data: RegisterRequest): Promise<RegisterResponse> =>
   return response.data;
 };
 
-
+// 테스트 함수 추가
+const testConnection = async () => {
+  try {
+    const response = await apiClient.get('/health');
+    console.log('서버 연결 테스트:', response.data);
+  } catch (error) {
+    console.error('서버 연결 실패:', error);
+  }
+};
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -122,6 +131,7 @@ interface SignUpFormData {
   email: string;
   password: string;
   phone_num: string;
+  crop_name: string;
   local_id: string;
 }
 
@@ -138,7 +148,8 @@ const SignUp: React.FC = () => {
     email: '',
     password: '',
     phone_num: '',
-    local_id: '1' // 기본값 설정
+    crop_name: '',
+    local_id: '' // 기본값 설정
   });
 
   const [checkboxes, setCheckboxes] = useState<CheckboxState>({
@@ -172,10 +183,6 @@ const SignUp: React.FC = () => {
     // 추후 지역 검색 모달이나 페이지로 연결
   };
 
-  const handleTestConnection = async () => {
-    console.log('서버 연결 테스트 시작');
-    await testConnection();
-  };
 
   const validateForm = (): boolean => {
     // 필수 필드 체크
@@ -238,6 +245,7 @@ const SignUp: React.FC = () => {
         email: formData.email,
         password: formData.password,
         phone_num: formData.phone_num.replace(/[^0-9]/g, ''), // 숫자만 남기기
+        crop_name: formData.crop_name,
         local_id: parseInt(formData.local_id) || 1
       };
 
@@ -323,6 +331,13 @@ const SignUp: React.FC = () => {
               value={formData.phone_num}
               onChange={handleInputChange('phone_num')}
               required
+            />
+
+            <Input
+              label="재배작물"
+              placeholder="재배하는 작물을 입력하세요"
+              value={formData.crop_name}
+              onChange={handleInputChange('crop_name')}
             />
 
             <RegionIdWrapper>
