@@ -1,4 +1,4 @@
-// pages/CommunityDetail.tsx (수정된 버전)
+// pages/CommunityDetail.tsx (삭제 기능 추가된 버전)
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -45,6 +45,10 @@ interface CommentCreateResponse {
   content: string;
   post_id: string;
   created_at: string;
+}
+
+interface DeleteResponse {
+  message: string;
 }
 
 // API 설정
@@ -126,6 +130,17 @@ const getComments = async (postId: string): Promise<CommentData[]> => {
   }
 };
 
+// 게시글 삭제 함수
+const deletePost = async (postId: string): Promise<DeleteResponse> => {
+  try {
+    const response = await apiClient.delete<DeleteResponse>(`/posts/${postId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('게시글 삭제 오류:', error);
+    throw error;
+  }
+};
+
 // 게시글 상세 조회 (인증 없이)
 const getPostDetailPublic = async (postId: string): Promise<PostDetailData> => {
   try {
@@ -152,7 +167,20 @@ const isLoggedIn = (): boolean => {
   }
 };
 
-// 스타일 컴포넌트들 (동일)
+// 현재 로그인한 사용자 ID 가져오기
+const getCurrentUserId = (): string | null => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) return null;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || payload.user_id || null;
+  } catch {
+    return null;
+  }
+};
+
+// 스타일 컴포넌트들 
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: #FFEFD5;
@@ -295,11 +323,19 @@ const PostHeader = styled.div`
   }
 `;
 
+const PostHeaderTop = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+`;
+
 const PostTitle = styled.h2`
   font-size: 18px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 10px;
+  margin: 0;
+  flex: 1;
   
   @media (max-width: 768px) {
     font-size: 16px;
@@ -307,6 +343,32 @@ const PostTitle = styled.h2`
   
   @media (max-width: 480px) {
     font-size: 14px;
+  }
+`;
+
+const DeleteButton = styled.button`
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #c82333;
+  }
+  
+  &:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 `;
 
@@ -558,6 +620,87 @@ const LoginPrompt = styled.div`
   }
 `;
 
+// 삭제 확인 모달 스타일
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+`;
+
+const ModalContainer = styled.div`
+  background-color: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  
+  @media (max-width: 480px) {
+    padding: 20px;
+  }
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+`;
+
+const ModalMessage = styled.p`
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 25px;
+  text-align: center;
+  line-height: 1.5;
+`;
+
+const ModalButtons = styled.div`
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+`;
+
+const ModalButton = styled.button`
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+`;
+
+const CancelModalButton = styled(ModalButton)`
+  background-color: #6c757d;
+  color: white;
+  
+  &:hover {
+    background-color: #5a6268;
+  }
+`;
+
+const ConfirmModalButton = styled(ModalButton)`
+  background-color: #dc3545;
+  color: white;
+  
+  &:hover {
+    background-color: #c82333;
+  }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
 export const CommunityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -571,6 +714,15 @@ export const CommunityDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // 현재 사용자가 게시글 작성자인지 확인
+  const isPostOwner = (): boolean => {
+    if (!userLoggedIn || !post) return false;
+    const currentUserId = getCurrentUserId();
+    return currentUserId === post.user_id;
+  };
 
   // 게시글 데이터 로드
   const loadPost = async () => {
@@ -759,6 +911,56 @@ export const CommunityDetail: React.FC = () => {
     }
   };
 
+  // 게시글 삭제
+  const handleDeletePost = async () => {
+    if (!id) return;
+
+    try {
+      setDeleteLoading(true);
+      
+      const response = await deletePost(id);
+      console.log('삭제 성공:', response.message);
+      
+      alert('게시글이 삭제되었습니다.');
+      navigate('/CommunityList');
+      
+    } catch (err: any) {
+      console.error('게시글 삭제 오류:', err);
+      
+      let errorMessage = '게시글 삭제 중 오류가 발생했습니다.';
+      
+      if (err.response?.status === 401) {
+        errorMessage = '로그인이 필요합니다.';
+        localStorage.removeItem('accessToken');
+        setUserLoggedIn(false);
+        setTimeout(() => navigate('/login'), 2000);
+      } else if (err.response?.status === 403) {
+        errorMessage = '삭제 권한이 없습니다.';
+      } else if (err.response?.status === 404) {
+        errorMessage = '존재하지 않는 게시글입니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+    }
+  };
+
+  // 삭제 확인 모달 열기
+  const openDeleteModal = () => {
+    setShowDeleteModal(true);
+  };
+
+  // 삭제 확인 모달 닫기
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
+
   // 날짜 포맷 함수
   const formatDate = (dateString: string): string => {
     try {
@@ -862,7 +1064,17 @@ export const CommunityDetail: React.FC = () => {
       <ContentWrapper>
         <PostContainer>
           <PostHeader>
-            <PostTitle>{post.title}</PostTitle>
+            <PostHeaderTop>
+              <PostTitle>{post.title}</PostTitle>
+              {isPostOwner() && (
+                <DeleteButton 
+                  onClick={openDeleteModal}
+                  disabled={deleteLoading}
+                >
+                  {deleteLoading ? '삭제 중...' : '삭제'}
+                </DeleteButton>
+              )}
+            </PostHeaderTop>
             <PostMeta>
               <span>{formatDate(post.created_at)} &nbsp;&nbsp;&nbsp; 작성자: {post.username} &nbsp;&nbsp;&nbsp; 좋아요: {likeCount}</span>
             </PostMeta>
@@ -933,6 +1145,30 @@ export const CommunityDetail: React.FC = () => {
           <ReplyButton onClick={handleReply}>글쓰기</ReplyButton>
         </ActionButtons>
       </ContentWrapper>
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <ModalOverlay>
+          <ModalContainer>
+            <ModalTitle>게시글 삭제</ModalTitle>
+            <ModalMessage>
+              정말로 이 게시글을 삭제하시겠습니까?<br/>
+              삭제된 게시글은 복구할 수 없습니다.
+            </ModalMessage>
+            <ModalButtons>
+              <CancelModalButton onClick={closeDeleteModal}>
+                취소
+              </CancelModalButton>
+              <ConfirmModalButton 
+                onClick={handleDeletePost}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? '삭제 중...' : '삭제'}
+              </ConfirmModalButton>
+            </ModalButtons>
+          </ModalContainer>
+        </ModalOverlay>
+      )}
     </PageContainer>
   );
 };
