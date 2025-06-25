@@ -1,4 +1,4 @@
-// pages/Report.tsx
+// pages/Report.tsx (정리된 버전)
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -8,6 +8,8 @@ import InputField from '../Components/InputField/InputField';
 import FileUpload from '../Components/FileUpload/FileUpload';
 import SubmitButton from '../Components/SubmitButton/SubmitButton';
 import Container from '../Components/Common/Container';
+import FindLocal from '../Components/FindLocal/FindLocal';
+
 
 // 타입 정의
 interface ReportResponse {
@@ -56,6 +58,18 @@ const Report: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [selectedDisasterType, setSelectedDisasterType] = useState('');
   const [selectedPestType, setSelectedPestType] = useState('');
+  const [isMapOpen, setIsMapOpen] = useState(false);
+
+  // 지도에서 위치 선택 처리
+  const handleLocationSelect = (selectedLocation: SelectedLocation) => {
+    setLocation(selectedLocation.address);
+    setIsMapOpen(false);
+  };
+
+  // 지역찾기 버튼 클릭
+  const handleLocationSearch = () => {
+    setIsMapOpen(true);
+  };
 
   // 카테고리 매핑 함수
   const getCategoryValues = () => {
@@ -110,7 +124,6 @@ const Report: React.FC = () => {
     setError('');
     setSuccess('');
 
-    // 로그인 상태 확인
     const token = localStorage.getItem('accessToken');
     if (!token) {
       setError('로그인이 필요합니다.');
@@ -124,10 +137,8 @@ const Report: React.FC = () => {
     setLoading(true);
 
     try {
-      // FormData 생성
       const formData = new FormData();
       
-      // 카테고리 정보 가져오기
       const categoryValues = getCategoryValues();
       if (!categoryValues) {
         setError('올바른 카테고리를 선택해주세요.');
@@ -135,24 +146,14 @@ const Report: React.FC = () => {
         return;
       }
 
-      // 폼 데이터 추가 (API 명세에 맞게)
       formData.append('category', `${categoryValues.main}/${categoryValues.sub}`);
       formData.append('title', title.trim());
       formData.append('content', description.trim());
       formData.append('local', location.trim());
 
-      // 파일들 추가
-      files.forEach((file, index) => {
+      files.forEach((file) => {
         formData.append('files', file);
       });
-
-      // 디버깅용 로그
-      console.log('전송할 데이터:');
-      console.log('Category:', `${categoryValues.main}/${categoryValues.sub}`);
-      console.log('Title:', title.trim());
-      console.log('Content:', description.trim());
-      console.log('Local:', location.trim());
-      console.log('Files:', files.length, '개');
 
       const response = await submitReport(formData);
       
@@ -168,10 +169,7 @@ const Report: React.FC = () => {
 
     } catch (err: any) {
       console.error('신고 제출 오류:', err);
-      console.error('응답 데이터:', err.response?.data);
-      console.error('응답 상태:', err.response?.status);
       
-      // 에러 메시지 추출
       let errorMessage = '신고 제출 중 오류가 발생했습니다.';
       
       if (err.response?.status === 401) {
@@ -186,15 +184,12 @@ const Report: React.FC = () => {
         errorMessage = err.response.data.message;
       } else if (err.response?.data?.detail) {
         if (Array.isArray(err.response.data.detail)) {
-          // FastAPI 유효성 검사 에러
           errorMessage = err.response.data.detail.map((item: any) => 
             `${item.loc?.[1] || '필드'}: ${item.msg}`
           ).join(', ');
         } else {
           errorMessage = err.response.data.detail;
         }
-      } else if (err.message) {
-        errorMessage = err.message;
       }
       
       setError(errorMessage);
@@ -205,7 +200,6 @@ const Report: React.FC = () => {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    // 탭 변경 시 라디오 버튼 선택 초기화
     setSelectedDisasterType('');
     setSelectedPestType('');
     setError('');
@@ -297,7 +291,6 @@ const Report: React.FC = () => {
             
             {renderRadioButtons()}
 
-            {/* 제목 입력 필드 추가 */}
             <LocationSection>
               <SectionTitle>신고 제목</SectionTitle>
               <LocationInput
@@ -315,19 +308,17 @@ const Report: React.FC = () => {
               <LocationInputWrapper>
                 <LocationInput
                   type="text"
-                  placeholder="예: 경기도 용인시 수지구"
+                  placeholder="지역찾기 버튼을 눌러 지도에서 위치를 선택하세요"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 />
-                <LocationButton
-                  onClick={() =>
-                    alert('위치 자동 입력은 아직 지원되지 않습니다.')
-                  }
-                  disabled={loading}
-                >
-                  위치 찾기
+                <LocationButton onClick={handleLocationSearch}>
+                  🗺️ 지역찾기
                 </LocationButton>
               </LocationInputWrapper>
+              <LocationHelpText>
+                💡 지역찾기 버튼을 누르면 지도가 열리고, 원하는 위치를 클릭하여 선택할 수 있습니다.
+              </LocationHelpText>
             </LocationSection>
 
             <LocationSection>
@@ -352,10 +343,18 @@ const Report: React.FC = () => {
           </ContentWrapper>
         </MainWrapper>
       </Container>
+
+      {/* 지역찾기 컴포넌트 */}
+      <FindLocal
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        onLocationSelect={handleLocationSelect}
+      />
     </>
   );
 };
 
+// 스타일 컴포넌트들
 const MainWrapper = styled.main`
   display: flex;
   flex-direction: column;
@@ -528,6 +527,7 @@ const LocationInput = styled.input`
   font-size: 1rem;
   background-color: white;
   color: black;
+  box-sizing: border-box;
 
   &::placeholder {
     color: #999;
@@ -535,8 +535,8 @@ const LocationInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0066ff;
-    box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
+    border-color: #FBBF77;
+    box-shadow: 0 0 0 2px rgba(251, 191, 119, 0.2);
   }
 
   @media (max-width: 768px) {
@@ -576,6 +576,17 @@ const LocationButton = styled.button`
     width: 100%;
     padding: 0.75rem;
     font-size: 0.95rem;
+  }
+`;
+
+const LocationHelpText = styled.div`
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+
+  @media (max-width: 480px) {
+    font-size: 0.75rem;
   }
 `;
 
