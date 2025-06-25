@@ -8,7 +8,12 @@ import { Button } from '../Components/Button/Button';
 import { Checkbox } from '../Components/Checkbox/Checkbox';
 import { Logo } from '../Components/Logo/Logo';
 
-// 지역 코드 정의 (Mypage.tsx와 동일)
+// 전역 타이머 타입 선언
+declare global {
+  interface Window {
+    emailTimeout: NodeJS.Timeout;
+  }
+}
 const LOCAL_CODES = {
   1: "서울",
   2: "부산광역시",
@@ -268,13 +273,53 @@ const SignUp: React.FC = () => {
   const [checkboxes, setCheckboxes] = useState<CheckboxState>({
     ageConfirm: false,
     specialChars: false,
-    duplicateCheck: true
+    duplicateCheck: false
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [editingRegion, setEditingRegion] = useState(false);
+  const [emailChecked, setEmailChecked] = useState(false); // 이메일 중복 확인 상태
+
+  // 비밀번호 조건 실시간 검증
+  const validatePasswordConditions = (password: string) => {
+    const lengthValid = password.length >= 8 && password.length <= 15;
+    const specialCharValid = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    setCheckboxes(prev => ({
+      ...prev,
+      ageConfirm: lengthValid,
+      specialChars: specialCharValid
+    }));
+  };
+
+  // 이메일 중복 확인 함수 (실제로는 API 호출)
+  const checkEmailDuplicate = async (email: string) => {
+    // 간단한 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailChecked(false);
+      setCheckboxes(prev => ({ ...prev, duplicateCheck: false }));
+      return;
+    }
+
+    try {
+      // 실제 환경에서는 이메일 중복 확인 API 호출
+      // const response = await apiClient.post('/check-email', { email });
+      
+      // 임시로 모든 이메일을 사용 가능한 것으로 처리
+      // 실제로는 백엔드 응답에 따라 처리
+      setTimeout(() => {
+        setEmailChecked(true);
+        setCheckboxes(prev => ({ ...prev, duplicateCheck: true }));
+      }, 500);
+      
+    } catch (error) {
+      setEmailChecked(false);
+      setCheckboxes(prev => ({ ...prev, duplicateCheck: false }));
+    }
+  };
 
   // 지역 ID로 지역 이름 찾기
   const getRegionNameById = (localId: number): string => {
@@ -282,15 +327,40 @@ const SignUp: React.FC = () => {
   };
 
   const handleInputChange = (field: keyof SignUpFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
     setFormData(prev => ({
       ...prev,
-      [field]: e.target.value
+      [field]: value
     }));
+    
+    // 실시간 검증
+    if (field === 'password') {
+      validatePasswordConditions(value);
+    } else if (field === 'email') {
+      // 이메일 입력 시 중복 확인 체크박스 초기화
+      setEmailChecked(false);
+      setCheckboxes(prev => ({ ...prev, duplicateCheck: false }));
+      
+      // 디바운스를 위해 타이머 사용
+      clearTimeout(window.emailTimeout);
+      window.emailTimeout = setTimeout(() => {
+        if (value.trim()) {
+          checkEmailDuplicate(value);
+        }
+      }, 1000);
+    }
+    
     // 입력 시 에러 메시지 클리어
     if (error) setError(null);
   };
 
   const handleCheckboxChange = (field: keyof CheckboxState) => (checked: boolean) => {
+    // 자동 검증된 체크박스는 수동으로 변경할 수 없도록 제한
+    if (field === 'ageConfirm' || field === 'specialChars' || field === 'duplicateCheck') {
+      return; // 자동 검증 체크박스는 사용자가 직접 변경할 수 없음
+    }
+    
     setCheckboxes(prev => ({
       ...prev,
       [field]: checked
@@ -522,18 +592,21 @@ const SignUp: React.FC = () => {
                 label="8자 이상, 15자 이하로 설정해 주세요."
                 checked={checkboxes.ageConfirm}
                 onChange={handleCheckboxChange('ageConfirm')}
+                disabled={true} // 자동 검증이므로 사용자가 직접 클릭할 수 없음
               />
               
               <Checkbox
                 label="특수 문자를 사용해 주세요."
                 checked={checkboxes.specialChars}
                 onChange={handleCheckboxChange('specialChars')}
+                disabled={true} // 자동 검증이므로 사용자가 직접 클릭할 수 없음
               />
               
               <Checkbox
-                label="중복 확인."
+                label={emailChecked ? "사용 가능한 이메일입니다." : "이메일 중복 확인 중..."}
                 checked={checkboxes.duplicateCheck}
                 onChange={handleCheckboxChange('duplicateCheck')}
+                disabled={true} // 자동 검증이므로 사용자가 직접 클릭할 수 없음
               />
             </CheckboxSection>
 
