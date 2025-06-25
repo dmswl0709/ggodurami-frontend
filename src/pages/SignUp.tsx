@@ -1,4 +1,4 @@
-// pages/SignUp.tsx (임시 인라인 버전)
+// pages/SignUp.tsx (지역 선택 드롭다운 추가 버전)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -7,6 +7,26 @@ import { Input } from '../Components/Input/Input';
 import { Button } from '../Components/Button/Button';
 import { Checkbox } from '../Components/Checkbox/Checkbox';
 import { Logo } from '../Components/Logo/Logo';
+
+// 지역 코드 정의 (Mypage.tsx와 동일)
+const LOCAL_CODES = {
+  1: "서울",
+  2: "부산광역시",
+  3: "대구광역시",
+  4: "인천광역시",
+  5: "광주광역시",
+  6: "대전광역시",
+  7: "울산광역시",
+  8: "세종특별자치시",
+  9: "경기도",
+  11: "충청북도",
+  12: "충청남도",
+  13: "전라북도",
+  14: "전라남도",
+  15: "경상북도",
+  16: "경상남도",
+  17: "제주특별자치도",
+};
 
 // 타입 정의
 interface RegisterRequest {
@@ -38,16 +58,6 @@ const registerUser = async (data: RegisterRequest): Promise<RegisterResponse> =>
   return response.data;
 };
 
-// 테스트 함수 추가
-const testConnection = async () => {
-  try {
-    const response = await apiClient.get('/health');
-    console.log('서버 연결 테스트:', response.data);
-  } catch (error) {
-    console.error('서버 연결 실패:', error);
-  }
-};
-
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: #FFEFD5;
@@ -73,19 +83,120 @@ const CheckboxSection = styled.div`
   border-radius: 8px;
 `;
 
-const RegionIdWrapper = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-`;
-
-const RegionIdInput = styled.div`
-  flex: 1;
-`;
-
-const FindRegionButton = styled(Button)`
-  white-space: nowrap;
+const RegionSection = styled.div`
   margin-bottom: 20px;
+`;
+
+const SectionLabel = styled.label`
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  
+  @media (max-width: 480px) {
+    font-size: 15px;
+  }
+`;
+
+const RegionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const InputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const StyledInput = styled.input`
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+  color: #333;
+  
+  &:focus {
+    outline: none;
+    border-color: #4CAF50;
+    background-color: white;
+  }
+  
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #666;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+`;
+
+const StyledSelect = styled.select`
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+  color: #333;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #4CAF50;
+    background-color: white;
+  }
+  
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #666;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+`;
+
+const RegionButton = styled.button`
+  padding: 12px 20px;
+  background-color: #FBBF77;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  
+  &:hover {
+    background-color: #e0a768;
+  }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+`;
+
+const InfoText = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
 `;
 
 const ErrorMessage = styled.div`
@@ -132,7 +243,8 @@ interface SignUpFormData {
   password: string;
   phone_num: string;
   crop_name: string;
-  local_id: string;
+  local_id: number;
+  region_name: string;
 }
 
 interface CheckboxState {
@@ -149,7 +261,8 @@ const SignUp: React.FC = () => {
     password: '',
     phone_num: '',
     crop_name: '',
-    local_id: '' // 기본값 설정
+    local_id: 0,
+    region_name: ''
   });
 
   const [checkboxes, setCheckboxes] = useState<CheckboxState>({
@@ -161,6 +274,12 @@ const SignUp: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [editingRegion, setEditingRegion] = useState(false);
+
+  // 지역 ID로 지역 이름 찾기
+  const getRegionNameById = (localId: number): string => {
+    return LOCAL_CODES[localId as keyof typeof LOCAL_CODES] || '';
+  };
 
   const handleInputChange = (field: keyof SignUpFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -178,16 +297,33 @@ const SignUp: React.FC = () => {
     }));
   };
 
-  const handleFindRegion = () => {
-    console.log('지역찾기 클릭');
-    // 추후 지역 검색 모달이나 페이지로 연결
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedLocalId = parseInt(e.target.value);
+    const selectedRegionName = getRegionNameById(selectedLocalId);
+    
+    setFormData(prev => ({
+      ...prev,
+      local_id: selectedLocalId,
+      region_name: selectedRegionName
+    }));
   };
 
+  const handleRegionEdit = () => {
+    setEditingRegion(!editingRegion);
+    if (editingRegion) {
+      // 편집 취소 시 초기값으로 복원
+      setFormData(prev => ({
+        ...prev,
+        local_id: 0,
+        region_name: ''
+      }));
+    }
+  };
 
   const validateForm = (): boolean => {
     // 필수 필드 체크
     if (!formData.username || !formData.email || !formData.password || !formData.phone_num) {
-      setError('모든 필드를 입력해주세요.');
+      setError('모든 필수 필드를 입력해주세요.');
       return false;
     }
 
@@ -246,7 +382,7 @@ const SignUp: React.FC = () => {
         password: formData.password,
         phone_num: formData.phone_num.replace(/[^0-9]/g, ''), // 숫자만 남기기
         crop_name: formData.crop_name,
-        local_id: parseInt(formData.local_id) || 1
+        local_id: formData.local_id || 1 // 기본값 1 (서울)
       };
 
       console.log('전송할 데이터:', registerData); // 디버깅용
@@ -340,24 +476,46 @@ const SignUp: React.FC = () => {
               onChange={handleInputChange('crop_name')}
             />
 
-            <RegionIdWrapper>
-              <RegionIdInput>
-                <Input
-                  label="지역 ID (선택)"
-                  placeholder="지역ID를 입력하세요."
-                  value={formData.local_id}
-                  onChange={handleInputChange('local_id')}
-                />
-              </RegionIdInput>
-              <FindRegionButton
-                variant="secondary"
-                onClick={handleFindRegion}
-                type="button"
-                disabled={loading}
-              >
-                지역찾기
-              </FindRegionButton>
-            </RegionIdWrapper>
+            {/* 지역 선택 섹션 */}
+            <RegionSection>
+              <SectionLabel>지역 (선택)</SectionLabel>
+              <RegionContainer>
+                <InputContainer>
+                  {editingRegion ? (
+                    <StyledSelect
+                      value={formData.local_id}
+                      onChange={handleRegionChange}
+                    >
+                      <option value={0}>지역을 선택하세요</option>
+                      {Object.entries(LOCAL_CODES).map(([id, name]) => (
+                        <option key={id} value={parseInt(id)}>
+                          {name} (지역번호: {id})
+                        </option>
+                      ))}
+                    </StyledSelect>
+                  ) : (
+                    <StyledInput
+                      type="text"
+                      value={formData.local_id ? `${formData.region_name} (지역번호: ${formData.local_id})` : '지역을 선택해주세요'}
+                      disabled={true}
+                      placeholder="지역을 선택해주세요"
+                    />
+                  )}
+                  <RegionButton 
+                    type="button"
+                    onClick={handleRegionEdit} 
+                    disabled={loading}
+                  >
+                    {editingRegion ? '취소' : '지역찾기'}
+                  </RegionButton>
+                </InputContainer>
+                {editingRegion && (
+                  <InfoText>
+                    💡 지역을 선택하면 지역번호가 자동으로 설정됩니다.
+                  </InfoText>
+                )}
+              </RegionContainer>
+            </RegionSection>
 
             <CheckboxSection>
               <Checkbox
