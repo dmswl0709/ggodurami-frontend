@@ -1,4 +1,4 @@
-// pages/Login.tsx (Redux 연동 버전)
+// pages/Login.tsx (비밀번호 변경 기능 추가 버전)
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -32,6 +32,15 @@ interface UserResponse {
   };
 }
 
+interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
+interface ChangePasswordResponse {
+  message: string;
+}
+
 // API 설정
 const BASE_URL = 'http://localhost:8000';
 
@@ -57,6 +66,16 @@ const getCurrentUser = async (token: string): Promise<UserResponse> => {
   return response.data;
 };
 
+const changePassword = async (data: ChangePasswordRequest, token: string): Promise<ChangePasswordResponse> => {
+  const response = await apiClient.patch<ChangePasswordResponse>('/change-password', data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+// 스타일 컴포넌트들
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: #FFEFD5;
@@ -152,10 +171,114 @@ const RelativeContainer = styled.div`
   position: relative;
 `;
 
+// 비밀번호 변경 모달 스타일
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+`;
+
+const ModalContainer = styled.div`
+  background-color: #FFEFD5;
+  border-radius: 16px;
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  
+  @media (max-width: 480px) {
+    padding: 20px;
+    margin: 0 10px;
+  }
+`;
+
+const ModalTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+const ModalButtonGroup = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+`;
+
+const ModalButton = styled.button`
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+`;
+
+const CancelButton = styled(ModalButton)`
+  background-color: #6c757d;
+  color: white;
+  
+  &:hover {
+    background-color: #5a6268;
+  }
+`;
+
+const ConfirmButton = styled(ModalButton)`
+  background-color: #FBBF77;
+  color: white;
+  
+  &:hover {
+    background-color: #E6AB65;
+  }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+const LoginStep = styled.div`
+  margin-bottom: 20px;
+`;
+
+const StepTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+`;
+
+const StepDescription = styled.p`
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+  line-height: 1.4;
+`;
+
 interface LoginFormData {
   email: string;
   password: string;
 }
+
+interface PasswordChangeData {
+  email: string;
+  password: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -167,6 +290,18 @@ const Login: React.FC = () => {
     password: ''
   });
   const [success, setSuccess] = useState<string | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordStep, setPasswordStep] = useState<'login' | 'change'>(0);
+  const [passwordChangeData, setPasswordChangeData] = useState<PasswordChangeData>({
+    email: '',
+    password: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState<string>('');
+  const [passwordSuccess, setPasswordSuccess] = useState<string>('');
 
   // 이미 로그인되어 있으면 홈으로 리다이렉트
   useEffect(() => {
@@ -189,6 +324,14 @@ const Login: React.FC = () => {
     if (error) dispatch(clearError());
   };
 
+  const handlePasswordInputChange = (field: keyof PasswordChangeData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordChangeData(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }));
+    if (passwordError) setPasswordError('');
+  };
+
   const validateForm = (): boolean => {
     if (!formData.email || !formData.password) {
       dispatch(loginFailure('이메일과 비밀번호를 입력해주세요.'));
@@ -199,6 +342,30 @@ const Login: React.FC = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       dispatch(loginFailure('올바른 이메일 형식을 입력해주세요.'));
+      return false;
+    }
+
+    return true;
+  };
+
+  const validatePasswordChange = (): boolean => {
+    if (!passwordChangeData.currentPassword || !passwordChangeData.newPassword || !passwordChangeData.confirmPassword) {
+      setPasswordError('모든 필드를 입력해주세요.');
+      return false;
+    }
+
+    if (passwordChangeData.newPassword.length < 6) {
+      setPasswordError('새 비밀번호는 최소 6자 이상이어야 합니다.');
+      return false;
+    }
+
+    if (passwordChangeData.newPassword !== passwordChangeData.confirmPassword) {
+      setPasswordError('새 비밀번호와 확인 비밀번호가 일치하지 않습니다.');
+      return false;
+    }
+
+    if (passwordChangeData.currentPassword === passwordChangeData.newPassword) {
+      setPasswordError('새 비밀번호는 현재 비밀번호와 달라야 합니다.');
       return false;
     }
 
@@ -278,9 +445,140 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleForgotPassword = () => {
-    console.log('비밀번호 찾기 클릭');
-    alert('비밀번호 찾기 기능은 준비 중입니다.');
+  const handlePasswordChangeLogin = async () => {
+    if (!passwordChangeData.email || !passwordChangeData.password) {
+      setPasswordError('이메일과 현재 비밀번호를 입력해주세요.');
+      return;
+    }
+
+    setPasswordLoading(true);
+    setPasswordError('');
+
+    try {
+      // 임시 로그인으로 토큰 획득
+      const loginData: LoginRequest = {
+        email: passwordChangeData.email,
+        password: passwordChangeData.password
+      };
+
+      const loginResponse = await loginUser(loginData);
+      
+      // 임시 토큰을 저장하고 다음 단계로
+      setPasswordChangeData(prev => ({
+        ...prev,
+        currentPassword: prev.password
+      }));
+      
+      setPasswordStep('change');
+      
+    } catch (err: any) {
+      console.error('비밀번호 변경 로그인 오류:', err);
+      
+      let errorMessage = '로그인에 실패했습니다.';
+      if (err.response?.status === 401) {
+        errorMessage = '이메일 또는 비밀번호가 틀렸습니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      setPasswordError(errorMessage);
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (!validatePasswordChange()) {
+      return;
+    }
+
+    setPasswordLoading(true);
+    setPasswordError('');
+
+    try {
+      // 먼저 로그인하여 토큰 획득
+      const loginResponse = await loginUser({
+        email: passwordChangeData.email,
+        password: passwordChangeData.currentPassword
+      });
+
+      // 비밀번호 변경 API 호출
+      const changeData: ChangePasswordRequest = {
+        current_password: passwordChangeData.currentPassword,
+        new_password: passwordChangeData.newPassword
+      };
+
+      const response = await changePassword(changeData, loginResponse.access_token);
+      
+      setPasswordSuccess(response.message);
+      
+      // 성공 시 2초 후 모달 닫기
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPasswordStep('login');
+        setPasswordChangeData({
+          email: '',
+          password: '',
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setPasswordSuccess('');
+      }, 2000);
+
+    } catch (err: any) {
+      console.error('비밀번호 변경 오류:', err);
+      
+      let errorMessage = '비밀번호 변경에 실패했습니다.';
+      
+      if (err.response?.status === 401) {
+        errorMessage = '현재 비밀번호가 틀렸습니다.';
+      } else if (err.response?.status === 400) {
+        errorMessage = '비밀번호 형식이 올바르지 않습니다.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.detail) {
+        if (Array.isArray(err.response.data.detail)) {
+          errorMessage = err.response.data.detail.map((item: any) => 
+            `${item.loc?.[1] || '필드'}: ${item.msg}`
+          ).join(', ');
+        } else {
+          errorMessage = err.response.data.detail;
+        }
+      }
+      
+      setPasswordError(errorMessage);
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const openPasswordModal = () => {
+    setShowPasswordModal(true);
+    setPasswordStep('login');
+    setPasswordError('');
+    setPasswordSuccess('');
+    setPasswordChangeData({
+      email: '',
+      password: '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+  };
+
+  const closePasswordModal = () => {
+    setShowPasswordModal(false);
+    setPasswordStep('login');
+    setPasswordError('');
+    setPasswordSuccess('');
+    setPasswordChangeData({
+      email: '',
+      password: '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
   };
 
   const handleSignUp = () => {
@@ -326,8 +624,8 @@ const Login: React.FC = () => {
             </ButtonGroup>
 
             <LinkGroup>
-              <LinkText onClick={handleForgotPassword}>
-                아직 회원이 아니신가요?
+              <LinkText onClick={openPasswordModal}>
+                비밀번호 변경
               </LinkText>
               <SignUpLink onClick={handleSignUp}>
                 회원가입
@@ -342,6 +640,95 @@ const Login: React.FC = () => {
           </LoadingOverlay>
         )}
       </RelativeContainer>
+
+      {/* 비밀번호 변경 모달 */}
+      {showPasswordModal && (
+        <ModalOverlay>
+          <ModalContainer>
+            <ModalTitle>비밀번호 변경</ModalTitle>
+            
+            {passwordStep === 'login' ? (
+              <LoginStep>
+                <StepTitle>1단계: 본인 확인</StepTitle>
+                <StepDescription>
+                  비밀번호 변경을 위해 현재 계정 정보를 입력해주세요.
+                </StepDescription>
+                
+                <Input
+                  label="이메일"
+                  type="email"
+                  placeholder="이메일을 입력하세요"
+                  value={passwordChangeData.email}
+                  onChange={handlePasswordInputChange('email')}
+                />
+                
+                <Input
+                  label="현재 비밀번호"
+                  type="password"
+                  placeholder="현재 비밀번호를 입력하세요"
+                  value={passwordChangeData.password}
+                  onChange={handlePasswordInputChange('password')}
+                />
+                
+                {passwordError && <ErrorMessage>{passwordError}</ErrorMessage>}
+                
+                <ModalButtonGroup>
+                  <CancelButton onClick={closePasswordModal} disabled={passwordLoading}>
+                    취소
+                  </CancelButton>
+                  <ConfirmButton 
+                    onClick={handlePasswordChangeLogin}
+                    disabled={passwordLoading}
+                  >
+                    {passwordLoading ? '확인 중...' : '다음'}
+                  </ConfirmButton>
+                </ModalButtonGroup>
+              </LoginStep>
+            ) : (
+              <LoginStep>
+                <StepTitle>2단계: 새 비밀번호 설정</StepTitle>
+                <StepDescription>
+                  새로운 비밀번호를 입력해주세요. (최소 6자 이상)
+                </StepDescription>
+                
+                <Input
+                  label="새 비밀번호"
+                  type="password"
+                  placeholder="새 비밀번호를 입력하세요"
+                  value={passwordChangeData.newPassword}
+                  onChange={handlePasswordInputChange('newPassword')}
+                />
+                
+                <Input
+                  label="새 비밀번호 확인"
+                  type="password"
+                  placeholder="새 비밀번호를 다시 입력하세요"
+                  value={passwordChangeData.confirmPassword}
+                  onChange={handlePasswordInputChange('confirmPassword')}
+                />
+                
+                {passwordError && <ErrorMessage>{passwordError}</ErrorMessage>}
+                {passwordSuccess && <SuccessMessage>{passwordSuccess}</SuccessMessage>}
+                
+                <ModalButtonGroup>
+                  <CancelButton 
+                    onClick={() => setPasswordStep('login')} 
+                    disabled={passwordLoading}
+                  >
+                    이전
+                  </CancelButton>
+                  <ConfirmButton 
+                    onClick={handlePasswordChange}
+                    disabled={passwordLoading}
+                  >
+                    {passwordLoading ? '변경 중...' : '비밀번호 변경'}
+                  </ConfirmButton>
+                </ModalButtonGroup>
+              </LoginStep>
+            )}
+          </ModalContainer>
+        </ModalOverlay>
+      )}
     </PageContainer>
   );
 };
