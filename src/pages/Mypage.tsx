@@ -5,6 +5,26 @@ import axios from 'axios';
 import { Input } from '../Components/Input/Input';
 import { Logo } from '../Components/Logo/Logo';
 
+// 지역 코드 정의
+const LOCAL_CODES = {
+  1: "서울",
+  2: "부산광역시",
+  3: "대구광역시",
+  4: "인천광역시",
+  5: "광주광역시",
+  6: "대전광역시",
+  7: "울산광역시",
+  8: "세종특별자치시",
+  9: "경기도",
+  11: "충청북도",
+  12: "충청남도",
+  13: "전라북도",
+  14: "전라남도",
+  15: "경상북도",
+  16: "경상남도",
+  17: "제주특별자치도",
+};
+
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: #FFEFD5;
@@ -143,11 +163,11 @@ const UserTitle = styled.h2`
   }
 `;
 
-const RegionSection = styled.div`
+const EditableSection = styled.div`
   margin-bottom: 20px;
 `;
 
-const RegionLabel = styled.label`
+const SectionLabel = styled.label`
   display: block;
   font-size: 16px;
   font-weight: 600;
@@ -159,14 +179,19 @@ const RegionLabel = styled.label`
   }
 `;
 
-const RegionContainer = styled.div`
+const EditableContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const InputContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
 `;
 
-const RegionInput = styled.input`
+const StyledInput = styled.input`
   flex: 1;
   padding: 12px 16px;
   border: 2px solid #ddd;
@@ -184,6 +209,35 @@ const RegionInput = styled.input`
   &:disabled {
     background-color: #f5f5f5;
     color: #666;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+`;
+
+const StyledSelect = styled.select`
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f9f9f9;
+  color: #333;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #4CAF50;
+    background-color: white;
+  }
+  
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #666;
+    cursor: not-allowed;
   }
   
   @media (max-width: 480px) {
@@ -202,6 +256,7 @@ const EditButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  white-space: nowrap;
   
   &:hover {
     background-color: #e0a768;
@@ -218,8 +273,14 @@ const EditButton = styled.button`
   }
 `;
 
+const ActionButtonsContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+`;
+
 const SaveButton = styled.button`
-  width: 100%;
+  flex: 1;
   padding: 12px;
   background-color: #4CAF50;
   color: white;
@@ -228,11 +289,36 @@ const SaveButton = styled.button`
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 20px;
   transition: background-color 0.3s ease;
   
   &:hover {
     background-color: #45a049;
+  }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 15px;
+  }
+`;
+
+const CancelButton = styled.button`
+  flex: 1;
+  padding: 12px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: #5a6268;
   }
   
   &:disabled {
@@ -272,6 +358,12 @@ const SuccessMessage = styled.div`
   text-align: center;
 `;
 
+const InfoText = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+`;
+
 interface UserData {
   username: string;
   email: string;
@@ -283,6 +375,11 @@ interface UserData {
 
 interface ApiResponse {
   mypage: UserData;
+}
+
+interface UpdateRequest {
+  crop_name: string;
+  local_id: number;
 }
 
 // API 설정
@@ -303,7 +400,6 @@ api.interceptors.request.use(
     console.log('🔑 사용할 토큰:', token);
     
     if (token) {
-      // Bearer 토큰 형식으로 설정
       config.headers.Authorization = `Bearer ${token}`;
       console.log('📤 Authorization 헤더:', config.headers.Authorization);
     } else {
@@ -335,11 +431,23 @@ export const Mypage: React.FC = () => {
     profile_image: ''
   });
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [editingRegion, setEditingRegion] = useState(false);
+  const [editingCrop, setEditingCrop] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
+
+  // 지역 이름으로 지역 ID 찾기
+  const getLocalIdByName = (regionName: string): number => {
+    const entry = Object.entries(LOCAL_CODES).find(([_, name]) => name === regionName);
+    return entry ? parseInt(entry[0]) : 0;
+  };
+
+  // 지역 ID로 지역 이름 찾기
+  const getRegionNameById = (localId: number): string => {
+    return LOCAL_CODES[localId as keyof typeof LOCAL_CODES] || '';
+  };
 
   // 사용자 정보 가져오기
   const fetchUserData = async () => {
@@ -347,7 +455,6 @@ export const Mypage: React.FC = () => {
       setIsLoading(true);
       setError('');
       
-      // 토큰 확인
       const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
       console.log('🔍 현재 저장된 토큰들:');
       console.log('token:', localStorage.getItem('token'));
@@ -368,7 +475,6 @@ export const Mypage: React.FC = () => {
       
       const fetchedData = response.data.mypage;
       
-      // 데이터 필드별 확인
       console.log('🔍 각 필드 확인:');
       console.log('username:', fetchedData.username);
       console.log('email:', fetchedData.email);
@@ -388,12 +494,9 @@ export const Mypage: React.FC = () => {
         
         if (err.response?.status === 401) {
           setError('인증이 만료되었습니다. 다시 로그인해주세요.');
-          // 토큰 삭제
           localStorage.removeItem('token');
           localStorage.removeItem('accessToken');
           localStorage.removeItem('authToken');
-          // 로그인 페이지로 리다이렉트하는 로직 추가
-          // navigate('/login');
         } else if (err.response?.status === 500) {
           setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
         } else {
@@ -414,39 +517,34 @@ export const Mypage: React.FC = () => {
       setError('');
       setSuccessMessage('');
 
-      // 변경된 데이터만 전송
-      const changedData: Partial<UserData> = {};
-      
-      if (userData.username !== originalData.username) {
-        changedData.username = userData.username;
-      }
-      if (userData.email !== originalData.email) {
-        changedData.email = userData.email;
-      }
-      if (userData.crop_name !== originalData.crop_name) {
-        changedData.crop_name = userData.crop_name;
-      }
-      if (userData.region_name !== originalData.region_name) {
-        changedData.region_name = userData.region_name;
-      }
+      // PATCH API 명세에 맞게 데이터 구성
+      const updateData: UpdateRequest = {
+        crop_name: userData.crop_name,
+        local_id: userData.local_id
+      };
 
-      // 변경사항이 없으면 리턴
-      if (Object.keys(changedData).length === 0) {
-        setSuccessMessage('변경사항이 없습니다.');
-        return;
-      }
+      console.log('📤 업데이트 요청 데이터:', updateData);
 
-      // PUT 또는 PATCH 요청 (실제 API 엔드포인트에 맞게 수정)
-      await api.put('/mypage', changedData);
+      const response = await api.patch('/mypage', updateData);
+      console.log('✅ 업데이트 응답:', response.data);
       
-      setOriginalData(userData);
+      // 업데이트 성공 후 원본 데이터도 갱신
+      setOriginalData({
+        ...originalData,
+        crop_name: userData.crop_name,
+        local_id: userData.local_id,
+        region_name: getRegionNameById(userData.local_id)
+      });
+      
       setSuccessMessage('정보가 성공적으로 업데이트되었습니다.');
+      setEditingRegion(false);
+      setEditingCrop(false);
       
       // 3초 후 성공 메시지 숨기기
       setTimeout(() => setSuccessMessage(''), 3000);
       
     } catch (err) {
-      console.error('사용자 정보 업데이트 실패:', err);
+      console.error('❌ 사용자 정보 업데이트 실패:', err);
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 401) {
           setError('인증이 만료되었습니다. 다시 로그인해주세요.');
@@ -474,8 +572,38 @@ export const Mypage: React.FC = () => {
     }));
   };
 
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedLocalId = parseInt(e.target.value);
+    const selectedRegionName = getRegionNameById(selectedLocalId);
+    
+    setUserData(prev => ({
+      ...prev,
+      local_id: selectedLocalId,
+      region_name: selectedRegionName
+    }));
+  };
+
   const handleRegionEdit = () => {
-    setIsEditing(!isEditing);
+    setEditingRegion(!editingRegion);
+    if (editingRegion) {
+      // 편집 취소 시 원래 데이터로 복원
+      setUserData(prev => ({
+        ...prev,
+        local_id: originalData.local_id,
+        region_name: originalData.region_name
+      }));
+    }
+  };
+
+  const handleCropEdit = () => {
+    setEditingCrop(!editingCrop);
+    if (editingCrop) {
+      // 편집 취소 시 원래 데이터로 복원
+      setUserData(prev => ({
+        ...prev,
+        crop_name: originalData.crop_name
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -484,9 +612,15 @@ export const Mypage: React.FC = () => {
 
   const handleCancel = () => {
     setUserData(originalData);
-    setIsEditing(false);
+    setEditingRegion(false);
+    setEditingCrop(false);
     setError('');
     setSuccessMessage('');
+  };
+
+  const hasChanges = () => {
+    return userData.crop_name !== originalData.crop_name || 
+           userData.local_id !== originalData.local_id;
   };
 
   if (isLoading) {
@@ -517,7 +651,6 @@ export const Mypage: React.FC = () => {
               src={userData.profile_image} 
               alt="프로필 사진"
               onError={(e) => {
-                // 이미지 로드 실패 시 기본 아이콘 표시
                 e.currentTarget.style.display = 'none';
                 const parentElement = e.currentTarget.parentElement;
                 if (parentElement) {
@@ -543,6 +676,7 @@ export const Mypage: React.FC = () => {
           placeholder="이름을 입력하세요"
           value={userData.username}
           onChange={handleInputChange('username')}
+          disabled={true}
         />
         
         <Input
@@ -551,33 +685,80 @@ export const Mypage: React.FC = () => {
           placeholder="이메일을 입력하세요"
           value={userData.email}
           onChange={handleInputChange('email')}
+          disabled={true}
         />
         
-        <RegionSection>
-          <RegionLabel>지역 (지역번호: {userData.local_id})</RegionLabel>
-          <RegionContainer>
-            <RegionInput
-              type="text"
-              value={userData.region_name}
-              onChange={handleInputChange('region_name')}
-              disabled={!isEditing}
-              placeholder="지역을 입력하세요"
-            />
-            <EditButton onClick={handleRegionEdit} disabled={isSaving}>
-              {isEditing ? '취소' : '지역변경'}
-            </EditButton>
-          </RegionContainer>
-        </RegionSection>
+        {/* 지역 편집 섹션 */}
+        <EditableSection>
+          <SectionLabel>지역</SectionLabel>
+          <EditableContainer>
+            <InputContainer>
+              {editingRegion ? (
+                <StyledSelect
+                  value={userData.local_id}
+                  onChange={handleRegionChange}
+                >
+                  <option value={0}>지역을 선택하세요</option>
+                  {Object.entries(LOCAL_CODES).map(([id, name]) => (
+                    <option key={id} value={parseInt(id)}>
+                      {name} (지역번호: {id})
+                    </option>
+                  ))}
+                </StyledSelect>
+              ) : (
+                <StyledInput
+                  type="text"
+                  value={`${userData.region_name} (지역번호: ${userData.local_id})`}
+                  disabled={true}
+                />
+              )}
+              <EditButton onClick={handleRegionEdit} disabled={isSaving}>
+                {editingRegion ? '취소' : '지역변경'}
+              </EditButton>
+            </InputContainer>
+            {editingRegion && (
+              <InfoText>
+                💡 지역을 선택하면 지역번호가 자동으로 설정됩니다.
+              </InfoText>
+            )}
+          </EditableContainer>
+        </EditableSection>
         
-        <Input
-          label="재배 작물"
-          type="text"
-          placeholder="재배하는 작물을 입력하세요"
-          value={userData.crop_name}
-          onChange={handleInputChange('crop_name')}
-        />
+        {/* 재배 작물 편집 섹션 */}
+        <EditableSection>
+          <SectionLabel>재배 작물</SectionLabel>
+          <EditableContainer>
+            <InputContainer>
+              <StyledInput
+                type="text"
+                placeholder="재배하는 작물을 입력하세요"
+                value={userData.crop_name}
+                onChange={handleInputChange('crop_name')}
+                disabled={!editingCrop}
+              />
+              <EditButton onClick={handleCropEdit} disabled={isSaving}>
+                {editingCrop ? '취소' : '작물변경'}
+              </EditButton>
+            </InputContainer>
+            {editingCrop && (
+              <InfoText>
+                💡 현재 재배하고 있는 주요 작물을 입력해주세요.
+              </InfoText>
+            )}
+          </EditableContainer>
+        </EditableSection>
 
-
+        {/* 저장/취소 버튼 - 변경사항이 있을 때만 표시 */}
+        {(editingRegion || editingCrop) && hasChanges() && (
+          <ActionButtonsContainer>
+            <CancelButton onClick={handleCancel} disabled={isSaving}>
+              취소
+            </CancelButton>
+            <SaveButton onClick={handleSave} disabled={isSaving}>
+              {isSaving ? '저장 중...' : '저장'}
+            </SaveButton>
+          </ActionButtonsContainer>
+        )}
       </MyPageContainer>
     </PageContainer>
   );
