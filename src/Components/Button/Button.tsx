@@ -11,7 +11,9 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-const StyledButton = styled.button<{
+const StyledButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['variant', 'fullWidth'].includes(prop),
+})<{
   variant: 'primary' | 'secondary';
   fullWidth: boolean;
 }>`
