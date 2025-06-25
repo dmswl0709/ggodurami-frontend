@@ -164,7 +164,9 @@ const TabContainer = styled.div`
   margin-bottom: 20px;
 `;
 
-const TabButton = styled.button<{ $active?: boolean }>`
+const TabButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== '$active',
+})<{ $active?: boolean }>`
   padding: 12px 24px;
   border: none;
   font-size: 16px;
@@ -174,14 +176,14 @@ const TabButton = styled.button<{ $active?: boolean }>`
   position: relative;
   
   &:first-child {
-    background-color: ${props => props.active ? '#8B4513' : '#F5DEB3'};
-    color: ${props => props.active ? 'white' : '#8B4513'};
+    background-color: ${props => props.$active ? '#8B4513' : '#F5DEB3'};
+    color: ${props => props.$active ? 'white' : '#8B4513'};
     border-radius: 12px 0 0 12px;
   }
   
   &:last-child {
-    background-color: ${props => props.active ? '#8B4513' : '#F5DEB3'};
-    color: ${props => props.active ? 'white' : '#8B4513'};
+    background-color: ${props => props.$active ? '#8B4513' : '#F5DEB3'};
+    color: ${props => props.$active ? 'white' : '#8B4513'};
     border-radius: 0 12px 12px 0;
     
     &:before {
@@ -356,7 +358,9 @@ const PaginationContainer = styled.div`
   gap: 8px;
 `;
 
-const PaginationButton = styled.button<{ active?: boolean }>`
+const PaginationButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== 'active',
+})<{ active?: boolean }>`
   width: 35px;
   height: 35px;
   border: 1px solid #ddd;
@@ -498,7 +502,7 @@ export const CommunityList: React.FC = () => {
           {tabs.map((tab) => (
             <TabButton
               key={tab}
-              active={activeTab === tab}
+              $active={activeTab === tab}
               onClick={() => handleTabChange(tab)}
               disabled={loading}
             >
