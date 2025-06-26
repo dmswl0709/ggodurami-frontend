@@ -54,7 +54,6 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.error = null;
-      
       // localStorage에서 토큰 제거
       localStorage.removeItem('accessToken');
     },

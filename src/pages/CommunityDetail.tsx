@@ -1,4 +1,4 @@
-// pages/CommunityDetail.tsx (삭제 기능 추가된 버전)
+// pages/CommunityDetail.tsx (좋아요 상태 조회 및 댓글 엔드포인트 추가된 버전)
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -31,6 +31,18 @@ interface LikeResponse {
   message: string;
   liked: boolean;
   total_likes: number;
+}
+
+interface LikeStatusResponse {
+  post_id: string;
+  total_likes: number;
+  user_liked: boolean | null;
+}
+
+interface CommentsResponse {
+  post_id: string;
+  comments: CommentData[];
+  total: number;
 }
 
 interface CommentCreateRequest {
@@ -109,6 +121,17 @@ const toggleLike = async (postId: string): Promise<LikeResponse> => {
   }
 };
 
+// 좋아요 상태 조회 함수 (새로 추가)
+const getLikeStatus = async (postId: string): Promise<LikeStatusResponse> => {
+  try {
+    const response = await apiClient.get<LikeStatusResponse>(`/posts/${postId}/like-status`);
+    return response.data;
+  } catch (error: any) {
+    console.error('좋아요 상태 조회 오류:', error);
+    throw error;
+  }
+};
+
 const createComment = async (data: CommentCreateRequest): Promise<CommentCreateResponse> => {
   try {
     const response = await apiClient.post<CommentCreateResponse>('/comments', data);
@@ -119,14 +142,14 @@ const createComment = async (data: CommentCreateRequest): Promise<CommentCreateR
   }
 };
 
-// 댓글 목록 조회 함수
-const getComments = async (postId: string): Promise<CommentData[]> => {
+// 댓글 목록 조회 함수 (엔드포인트 수정)
+const getComments = async (postId: string): Promise<CommentsResponse> => {
   try {
-    const response = await apiClient.get<{ comments: CommentData[] }>(`/posts/${postId}/comments`);
-    return response.data.comments || [];
+    const response = await apiClient.get<CommentsResponse>(`/posts/${postId}/comments`);
+    return response.data;
   } catch (error: any) {
     console.error('댓글 조회 오류:', error);
-    return [];
+    throw error;
   }
 };
 
@@ -148,6 +171,28 @@ const getPostDetailPublic = async (postId: string): Promise<PostDetailData> => {
     return response.data;
   } catch (error: any) {
     console.error('공개 게시글 조회 오류:', error);
+    throw error;
+  }
+};
+
+// 좋아요 상태 조회 (인증 없이) - 새로 추가
+const getLikeStatusPublic = async (postId: string): Promise<LikeStatusResponse> => {
+  try {
+    const response = await axios.get<LikeStatusResponse>(`${BASE_URL}/posts/${postId}/like-status`);
+    return response.data;
+  } catch (error: any) {
+    console.error('공개 좋아요 상태 조회 오류:', error);
+    throw error;
+  }
+};
+
+// 댓글 목록 조회 (인증 없이) - 새로 추가
+const getCommentsPublic = async (postId: string): Promise<CommentsResponse> => {
+  try {
+    const response = await axios.get<CommentsResponse>(`${BASE_URL}/posts/${postId}/comments`);
+    return response.data;
+  } catch (error: any) {
+    console.error('공개 댓글 조회 오류:', error);
     throw error;
   }
 };
@@ -724,6 +769,65 @@ export const CommunityDetail: React.FC = () => {
     return currentUserId === post.user_id;
   };
 
+  // 좋아요 상태 로드
+  const loadLikeStatus = async (postId: string, loggedIn: boolean) => {
+    try {
+      let likeData: LikeStatusResponse;
+      
+      if (loggedIn) {
+        try {
+          likeData = await getLikeStatus(postId);
+        } catch (authError: any) {
+          if (authError.response?.status === 401) {
+            // 인증 실패 시 공개 API로 재시도
+            console.log('좋아요 상태 인증 실패, 공개 API로 재시도');
+            likeData = await getLikeStatusPublic(postId);
+          } else {
+            throw authError;
+          }
+        }
+      } else {
+        likeData = await getLikeStatusPublic(postId);
+      }
+      
+      setLikeCount(likeData.total_likes);
+      setLiked(likeData.user_liked || false);
+      
+    } catch (err) {
+      console.error('좋아요 상태 로드 실패:', err);
+      // 좋아요 정보 로드 실패 시 기본값 유지
+    }
+  };
+
+  // 댓글 데이터 로드
+  const loadComments = async (postId: string, loggedIn: boolean) => {
+    try {
+      let commentsData: CommentsResponse;
+      
+      if (loggedIn) {
+        try {
+          commentsData = await getComments(postId);
+        } catch (authError: any) {
+          if (authError.response?.status === 401) {
+            // 인증 실패 시 공개 API로 재시도
+            console.log('댓글 인증 실패, 공개 API로 재시도');
+            commentsData = await getCommentsPublic(postId);
+          } else {
+            throw authError;
+          }
+        }
+      } else {
+        commentsData = await getCommentsPublic(postId);
+      }
+      
+      setComments(commentsData.comments || []);
+      
+    } catch (err) {
+      console.error('댓글 로드 실패:', err);
+      setComments([]);
+    }
+  };
+
   // 게시글 데이터 로드
   const loadPost = async () => {
     if (!id) {
@@ -763,17 +867,12 @@ export const CommunityDetail: React.FC = () => {
       }
       
       setPost(postData);
-      setLikeCount(postData.likes || 0);
-      setLiked(postData.is_liked || false);
       
-      // 댓글 데이터 로드 (로그인 상태와 무관하게 시도)
-      try {
-        const commentsData = await getComments(id);
-        setComments(commentsData);
-      } catch (commentError) {
-        console.log('댓글 로드 실패, 빈 배열로 설정');
-        setComments([]);
-      }
+      // 좋아요 상태와 댓글 데이터를 별도로 로드
+      await Promise.all([
+        loadLikeStatus(id, userLoggedIn),
+        loadComments(id, userLoggedIn)
+      ]);
       
     } catch (err: any) {
       console.error('게시글 로드 오류:', err);
