@@ -1,10 +1,19 @@
-// pages/CommunityDetail.tsx (좋아요 상태 조회 및 댓글 엔드포인트 추가된 버전)
+// pages/CommunityDetail.tsx (Redux로 좋아요 상태 관리 - 전체코드)
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import { Logo } from '../Components/Logo/Logo';
 import { HeartButton } from '../Components/HeartButton/HeartButton';
+import { 
+  loginSuccess, 
+  logout,
+  setLikeStatus,
+  removeLikeStatus,
+  initializeAuth
+} from '../store/slices/authSlice';
+import type { RootState } from '../store/store';
 
 // 타입 정의
 interface PostDetailData {
@@ -37,6 +46,13 @@ interface LikeStatusResponse {
   post_id: string;
   total_likes: number;
   user_liked: boolean | null;
+}
+
+interface MyLikeStatusResponse {
+  post_id: string;
+  user_id: string;
+  liked: boolean;
+  total_likes: number;
 }
 
 interface CommentsResponse {
@@ -92,9 +108,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // 토큰이 만료되었거나 유효하지 않은 경우
       localStorage.removeItem('accessToken');
-      // 즉시 리디렉션하지 않고 오류를 전달하여 컴포넌트에서 처리
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userInfo');
     }
     return Promise.reject(error);
   }
@@ -121,7 +137,16 @@ const toggleLike = async (postId: string): Promise<LikeResponse> => {
   }
 };
 
-// 좋아요 상태 조회 함수 (새로 추가)
+const getMyLikeStatus = async (postId: string): Promise<MyLikeStatusResponse> => {
+  try {
+    const response = await apiClient.get<MyLikeStatusResponse>(`/posts/${postId}/like-status/me`);
+    return response.data;
+  } catch (error: any) {
+    console.error('내 좋아요 상태 조회 오류:', error);
+    throw error;
+  }
+};
+
 const getLikeStatus = async (postId: string): Promise<LikeStatusResponse> => {
   try {
     const response = await apiClient.get<LikeStatusResponse>(`/posts/${postId}/like-status`);
@@ -142,7 +167,6 @@ const createComment = async (data: CommentCreateRequest): Promise<CommentCreateR
   }
 };
 
-// 댓글 목록 조회 함수 (엔드포인트 수정)
 const getComments = async (postId: string): Promise<CommentsResponse> => {
   try {
     const response = await apiClient.get<CommentsResponse>(`/posts/${postId}/comments`);
@@ -153,7 +177,6 @@ const getComments = async (postId: string): Promise<CommentsResponse> => {
   }
 };
 
-// 게시글 삭제 함수
 const deletePost = async (postId: string): Promise<DeleteResponse> => {
   try {
     const response = await apiClient.delete<DeleteResponse>(`/posts/${postId}`);
@@ -164,7 +187,6 @@ const deletePost = async (postId: string): Promise<DeleteResponse> => {
   }
 };
 
-// 게시글 상세 조회 (인증 없이)
 const getPostDetailPublic = async (postId: string): Promise<PostDetailData> => {
   try {
     const response = await axios.get<PostDetailData>(`${BASE_URL}/posts/${postId}`);
@@ -175,7 +197,6 @@ const getPostDetailPublic = async (postId: string): Promise<PostDetailData> => {
   }
 };
 
-// 좋아요 상태 조회 (인증 없이) - 새로 추가
 const getLikeStatusPublic = async (postId: string): Promise<LikeStatusResponse> => {
   try {
     const response = await axios.get<LikeStatusResponse>(`${BASE_URL}/posts/${postId}/like-status`);
@@ -186,7 +207,6 @@ const getLikeStatusPublic = async (postId: string): Promise<LikeStatusResponse> 
   }
 };
 
-// 댓글 목록 조회 (인증 없이) - 새로 추가
 const getCommentsPublic = async (postId: string): Promise<CommentsResponse> => {
   try {
     const response = await axios.get<CommentsResponse>(`${BASE_URL}/posts/${postId}/comments`);
@@ -197,13 +217,9 @@ const getCommentsPublic = async (postId: string): Promise<CommentsResponse> => {
   }
 };
 
-// 로그인 상태 확인 함수
-const isLoggedIn = (): boolean => {
-  const token = localStorage.getItem('accessToken');
-  if (!token) return false;
-  
+// JWT 토큰 유효성 검사 함수
+const isTokenValid = (token: string): boolean => {
   try {
-    // JWT 토큰 만료 확인
     const payload = JSON.parse(atob(token.split('.')[1]));
     const currentTime = Date.now() / 1000;
     return payload.exp > currentTime;
@@ -212,8 +228,7 @@ const isLoggedIn = (): boolean => {
   }
 };
 
-// 현재 로그인한 사용자 ID 가져오기
-const getCurrentUserId = (): string | null => {
+const getCurrentUserIdFromToken = (): string | null => {
   const token = localStorage.getItem('accessToken');
   if (!token) return null;
   
@@ -225,7 +240,7 @@ const getCurrentUserId = (): string | null => {
   }
 };
 
-// 스타일 컴포넌트들 
+// 스타일 컴포넌트들
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: #FFEFD5;
@@ -665,7 +680,6 @@ const LoginPrompt = styled.div`
   }
 `;
 
-// 삭제 확인 모달 스타일
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -749,68 +763,152 @@ const ConfirmModalButton = styled(ModalButton)`
 export const CommunityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  // Redux state에서 인증 정보와 좋아요 상태 가져오기
+  const { isAuthenticated, user, likedPosts } = useSelector((state: RootState) => state.auth);
   
   const [post, setPost] = useState<PostDetailData | null>(null);
   const [comments, setComments] = useState<CommentData[]>([]);
   const [commentText, setCommentText] = useState('');
-  const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [commentLoading, setCommentLoading] = useState(false);
-  const [userLoggedIn, setUserLoggedIn] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Redux에서 현재 게시글의 좋아요 상태 가져오기
+  const isLiked = id ? (likedPosts[id] || false) : false;
+
+  // 컴포넌트 마운트 시 인증 상태 복원
+  useEffect(() => {
+    // 인증 상태와 좋아요 상태 초기화
+    dispatch(initializeAuth());
+    
+    const token = localStorage.getItem('accessToken');
+    const userInfo = localStorage.getItem('userInfo');
+    
+    // 디버깅: 현재 상태 확인
+    console.log('=== 컴포넌트 마운트 디버깅 ===');
+    console.log('토큰 존재:', !!token);
+    console.log('사용자 정보 존재:', !!userInfo);
+    console.log('Redux likedPosts:', likedPosts);
+    console.log('localStorage likedPosts:', localStorage.getItem('likedPosts'));
+    
+    if (token && userInfo && isTokenValid(token)) {
+      try {
+        const userData = JSON.parse(userInfo);
+        console.log('인증 상태 복원 완료:', userData.username);
+      } catch (error) {
+        console.error('사용자 정보 파싱 오류:', error);
+        dispatch(logout());
+        localStorage.clear();
+      }
+    } else {
+      dispatch(logout());
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userInfo');
+    }
+  }, [dispatch]);
+
+  // 디버깅을 위한 useEffect 추가
+  useEffect(() => {
+    console.log('=== Redux 상태 변경 감지 ===');
+    console.log('isAuthenticated:', isAuthenticated);
+    console.log('user:', user);
+    console.log('likedPosts:', likedPosts);
+    console.log('현재 게시글 좋아요 상태:', isLiked);
+  }, [isAuthenticated, user, likedPosts, isLiked]);
+
   // 현재 사용자가 게시글 작성자인지 확인
   const isPostOwner = (): boolean => {
-    if (!userLoggedIn || !post) return false;
-    const currentUserId = getCurrentUserId();
-    return currentUserId === post.user_id;
+    if (!isAuthenticated || !post || !user) return false;
+    return user.id === post.user_id || user.user_id === post.user_id;
   };
 
   // 좋아요 상태 로드
-  const loadLikeStatus = async (postId: string, loggedIn: boolean) => {
+  const loadLikeStatus = async (postId: string) => {
+    console.log('=== loadLikeStatus 시작 ===');
+    console.log('postId:', postId);
+    console.log('isAuthenticated:', isAuthenticated);
+    
+    // 먼저 localStorage에서 기존 좋아요 상태 확인
     try {
-      let likeData: LikeStatusResponse;
-      
-      if (loggedIn) {
+      const savedLikedPosts = localStorage.getItem('likedPosts');
+      if (savedLikedPosts) {
+        const likedPostsData = JSON.parse(savedLikedPosts);
+        if (likedPostsData[postId] !== undefined) {
+          console.log('📦 localStorage에서 기존 좋아요 상태 발견:', likedPostsData[postId]);
+          // Redux에도 즉시 반영
+          dispatch(setLikeStatus({ 
+            postId, 
+            liked: likedPostsData[postId] 
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('localStorage 읽기 실패:', error);
+    }
+    
+    try {
+      if (isAuthenticated) {
         try {
-          likeData = await getLikeStatus(postId);
-        } catch (authError: any) {
-          if (authError.response?.status === 401) {
-            // 인증 실패 시 공개 API로 재시도
-            console.log('좋아요 상태 인증 실패, 공개 API로 재시도');
-            likeData = await getLikeStatusPublic(postId);
-          } else {
-            throw authError;
-          }
+          console.log('✅ 로그인된 사용자 - 개별 좋아요 상태 조회 시도');
+          
+          // 로그인된 사용자: 개별 좋아요 상태 조회
+          const myLikeData = await getMyLikeStatus(postId);
+          console.log('🎯 API 응답 데이터:', myLikeData);
+          
+          setLikeCount(myLikeData.total_likes);
+          
+          // API에서 받은 최신 상태로 업데이트 (서버가 최종 진실의 원천)
+          dispatch(setLikeStatus({ 
+            postId, 
+            liked: myLikeData.liked 
+          }));
+          
+          console.log('✅ 서버에서 받은 최신 좋아요 상태로 업데이트:', myLikeData.liked);
+          return; // 성공 시 함수 종료
+          
+        } catch (authError) {
+          console.error('❌ 인증된 좋아요 상태 조회 실패:', authError);
+          // 인증 실패 시 아래 공개 API로 진행
         }
       } else {
-        likeData = await getLikeStatusPublic(postId);
+        console.log('👤 비로그인 사용자');
       }
       
-      setLikeCount(likeData.total_likes);
-      setLiked(likeData.user_liked || false);
+      // 비로그인 사용자 또는 인증 실패 시: 전체 좋아요 수만 조회
+      try {
+        console.log('📊 공개 좋아요 상태 조회 시도');
+        const publicLikeData = await getLikeStatusPublic(postId);
+        console.log('📊 공개 API 응답:', publicLikeData);
+        setLikeCount(publicLikeData.total_likes || 0);
+      } catch (publicError) {
+        console.error('❌ 공개 좋아요 상태 조회 실패:', publicError);
+        setLikeCount(0);
+      }
       
     } catch (err) {
-      console.error('좋아요 상태 로드 실패:', err);
-      // 좋아요 정보 로드 실패 시 기본값 유지
+      console.error('❌ 좋아요 상태 로드 전체 실패:', err);
+      setLikeCount(0);
     }
   };
 
   // 댓글 데이터 로드
-  const loadComments = async (postId: string, loggedIn: boolean) => {
+  const loadComments = async (postId: string) => {
     try {
       let commentsData: CommentsResponse;
       
-      if (loggedIn) {
+      if (isAuthenticated) {
         try {
           commentsData = await getComments(postId);
         } catch (authError: any) {
           if (authError.response?.status === 401) {
-            // 인증 실패 시 공개 API로 재시도
-            console.log('댓글 인증 실패, 공개 API로 재시도');
+            dispatch(logout());
+            localStorage.clear();
             commentsData = await getCommentsPublic(postId);
           } else {
             throw authError;
@@ -821,7 +919,6 @@ export const CommunityDetail: React.FC = () => {
       }
       
       setComments(commentsData.comments || []);
-      
     } catch (err) {
       console.error('댓글 로드 실패:', err);
       setComments([]);
@@ -840,38 +937,30 @@ export const CommunityDetail: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      // 로그인 상태 확인
-      const loggedIn = isLoggedIn();
-      setUserLoggedIn(loggedIn);
-      
       let postData: PostDetailData;
       
-      if (loggedIn) {
-        // 로그인된 경우 인증이 필요한 API 사용
+      if (isAuthenticated) {
         try {
           postData = await getPostDetail(id);
         } catch (authError: any) {
           if (authError.response?.status === 401) {
-            // 인증 실패 시 공개 API로 재시도
-            console.log('인증 실패, 공개 API로 재시도');
-            localStorage.removeItem('accessToken');
-            setUserLoggedIn(false);
+            dispatch(logout());
+            localStorage.clear();
             postData = await getPostDetailPublic(id);
           } else {
             throw authError;
           }
         }
       } else {
-        // 로그인되지 않은 경우 공개 API 사용
         postData = await getPostDetailPublic(id);
       }
       
       setPost(postData);
       
-      // 좋아요 상태와 댓글 데이터를 별도로 로드
+      // 데이터 로드
       await Promise.all([
-        loadLikeStatus(id, userLoggedIn),
-        loadComments(id, userLoggedIn)
+        loadLikeStatus(id),
+        loadComments(id)
       ]);
       
     } catch (err: any) {
@@ -899,53 +988,111 @@ export const CommunityDetail: React.FC = () => {
 
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
-    loadPost();
-  }, [id]);
+    // 인증 상태 복원 후 데이터 로드
+    const initializeAndLoadData = async () => {
+      // 1. 먼저 인증 상태 복원
+      dispatch(initializeAuth());
+      
+      // 2. 잠시 기다렸다가 데이터 로드 (Redux 상태 복원 시간 확보)
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // 3. 게시글 데이터 로드
+      await loadPost();
+    };
+
+    initializeAndLoadData();
+  }, [id, dispatch]);
+
+  // 페이지 진입 시 localStorage에서 좋아요 상태 강제 복원
+  useEffect(() => {
+    if (id) {
+      try {
+        const savedLikedPosts = localStorage.getItem('likedPosts');
+        console.log('=== 페이지 진입 시 localStorage 확인 ===');
+        console.log('localStorage likedPosts:', savedLikedPosts);
+        
+        if (savedLikedPosts) {
+          const likedPostsData = JSON.parse(savedLikedPosts);
+          console.log('파싱된 좋아요 데이터:', likedPostsData);
+          console.log('현재 게시글 ID:', id);
+          console.log('현재 게시글 좋아요 상태:', likedPostsData[id]);
+          
+          // Redux에 저장된 상태와 localStorage가 다르면 localStorage 우선
+          if (likedPostsData[id] !== undefined && likedPostsData[id] !== likedPosts[id]) {
+            console.log('🔄 localStorage에서 Redux로 좋아요 상태 복원');
+            dispatch(setLikeStatus({ 
+              postId: id, 
+              liked: likedPostsData[id] 
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('localStorage 좋아요 상태 복원 실패:', error);
+      }
+    }
+  }, [id, dispatch]); // likedPosts는 의존성에서 제거 (무한 루프 방지)
+
+  // 인증 상태 변경 시 좋아요 상태 새로고침
+  useEffect(() => {
+    if (post && id) {
+      loadLikeStatus(id);
+    }
+  }, [isAuthenticated]);
 
   // 좋아요 토글
   const handleLike = async () => {
     if (!id) return;
 
-    if (!userLoggedIn) {
+    if (!isAuthenticated) {
       alert('로그인이 필요합니다.');
       navigate('/login');
       return;
     }
 
     try {
-      const response = await toggleLike(id);
-      setLiked(response.liked);
+      console.log('=== 좋아요 토글 시작 ===');
+      console.log('현재 좋아요 상태:', isLiked);
       
-      // total_likes가 있으면 사용, 없으면 로컬에서 계산
-      if (response.total_likes !== undefined) {
-        setLikeCount(response.total_likes);
-      } else {
-        if (response.liked) {
-          setLikeCount(prev => prev + 1);
-        } else {
-          setLikeCount(prev => Math.max(0, prev - 1));
-        }
+      const response = await toggleLike(id);
+      console.log('🎯 좋아요 토글 API 응답:', response);
+      
+      // Redux store에 좋아요 상태 업데이트
+      dispatch(setLikeStatus({ 
+        postId: id, 
+        liked: response.liked 
+      }));
+      
+      // 추가: 컴포넌트에서도 직접 localStorage에 저장
+      try {
+        const currentLikedPosts = JSON.parse(localStorage.getItem('likedPosts') || '{}');
+        currentLikedPosts[id] = response.liked;
+        localStorage.setItem('likedPosts', JSON.stringify(currentLikedPosts));
+        console.log('🔧 컴포넌트에서 직접 localStorage 저장:', currentLikedPosts);
+      } catch (storageError) {
+        console.error('❌ 직접 localStorage 저장 실패:', storageError);
       }
+      
+      setLikeCount(response.total_likes);
+      
+      console.log('✅ 좋아요 토글 완료 - Redux 상태 업데이트:', response.liked);
+      
+      // 강제로 상태 확인
+      setTimeout(() => {
+        console.log('🔄 1초 후 Redux 상태:', likedPosts);
+        console.log('🔄 1초 후 localStorage:', localStorage.getItem('likedPosts'));
+      }, 1000);
       
     } catch (err: any) {
-      console.error('좋아요 처리 오류:', err);
-      
-      let errorMessage = '좋아요 처리 중 오류가 발생했습니다.';
+      console.error('❌ 좋아요 처리 오류:', err);
       
       if (err.response?.status === 401) {
-        errorMessage = '로그인이 필요합니다.';
-        localStorage.removeItem('accessToken');
-        setUserLoggedIn(false);
-        setTimeout(() => navigate('/login'), 2000);
-      } else if (err.response?.status === 404) {
-        errorMessage = '존재하지 않는 게시글입니다.';
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
+        dispatch(logout());
+        localStorage.clear();
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+      } else {
+        alert('좋아요 처리 중 오류가 발생했습니다.');
       }
-      
-      alert(errorMessage);
     }
   };
 
@@ -953,7 +1100,7 @@ export const CommunityDetail: React.FC = () => {
   const handleCommentSubmit = async () => {
     if (!commentText.trim() || !id) return;
 
-    if (!userLoggedIn) {
+    if (!isAuthenticated) {
       alert('로그인이 필요합니다.');
       navigate('/login');
       return;
@@ -983,28 +1130,14 @@ export const CommunityDetail: React.FC = () => {
     } catch (err: any) {
       console.error('댓글 작성 오류:', err);
       
-      let errorMessage = '댓글 작성 중 오류가 발생했습니다.';
-      
       if (err.response?.status === 401) {
-        errorMessage = '로그인이 필요합니다.';
-        localStorage.removeItem('accessToken');
-        setUserLoggedIn(false);
-        setTimeout(() => navigate('/login'), 2000);
-      } else if (err.response?.status === 404) {
-        errorMessage = '존재하지 않는 게시글입니다.';
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.detail) {
-        if (Array.isArray(err.response.data.detail)) {
-          errorMessage = err.response.data.detail.map((item: any) => 
-            `${item.loc?.[1] || '필드'}: ${item.msg}`
-          ).join(', ');
-        } else {
-          errorMessage = err.response.data.detail;
-        }
+        dispatch(logout());
+        localStorage.clear();
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+      } else {
+        alert('댓글 작성 중 오류가 발생했습니다.');
       }
-      
-      alert(errorMessage);
     } finally {
       setCommentLoading(false);
     }
@@ -1020,30 +1153,25 @@ export const CommunityDetail: React.FC = () => {
       const response = await deletePost(id);
       console.log('삭제 성공:', response.message);
       
+      // Redux에서 좋아요 상태 제거
+      dispatch(removeLikeStatus(id));
+      
       alert('게시글이 삭제되었습니다.');
       navigate('/CommunityList');
       
     } catch (err: any) {
       console.error('게시글 삭제 오류:', err);
       
-      let errorMessage = '게시글 삭제 중 오류가 발생했습니다.';
-      
       if (err.response?.status === 401) {
-        errorMessage = '로그인이 필요합니다.';
-        localStorage.removeItem('accessToken');
-        setUserLoggedIn(false);
-        setTimeout(() => navigate('/login'), 2000);
+        dispatch(logout());
+        localStorage.clear();
+        alert('로그인이 필요합니다.');
+        navigate('/login');
       } else if (err.response?.status === 403) {
-        errorMessage = '삭제 권한이 없습니다.';
-      } else if (err.response?.status === 404) {
-        errorMessage = '존재하지 않는 게시글입니다.';
-      } else if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
+        alert('삭제 권한이 없습니다.');
+      } else {
+        alert('게시글 삭제 중 오류가 발생했습니다.');
       }
-      
-      alert(errorMessage);
     } finally {
       setDeleteLoading(false);
       setShowDeleteModal(false);
@@ -1080,7 +1208,7 @@ export const CommunityDetail: React.FC = () => {
   };
   
   const handleReply = () => {
-    if (!userLoggedIn) {
+    if (!isAuthenticated) {
       alert('글쓰기를 하려면 로그인이 필요합니다.');
       navigate('/login');
       return;
@@ -1204,7 +1332,7 @@ export const CommunityDetail: React.FC = () => {
             </CommentItem>
           ))}
           
-          {userLoggedIn ? (
+          {isAuthenticated ? (
             <CommentForm>
               <CommentInput
                 placeholder="댓글을 남겨주세요."
@@ -1230,9 +1358,9 @@ export const CommunityDetail: React.FC = () => {
           )}
         </CommentSection>
         
-        {/* HeartButton 컴포넌트 사용 */}
+        {/* HeartButton 컴포넌트 - Redux 상태 사용 */}
         <HeartButton 
-          isLiked={liked}
+          isLiked={isLiked}  // Redux에서 가져온 좋아요 상태
           likeCount={likeCount}
           onLike={handleLike}
           showText={true}
