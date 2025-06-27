@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Logo } from '../Components/Logo/Logo';
 import Map from '../Components/Map/Map';
-import Container from '../Components/Common/Container';
 import { useNavigate } from "react-router-dom";
 import BakanaeImage from '../assets/images/Bakanae disease.jpeg';
 
@@ -117,23 +116,20 @@ const ContentWrapper = styled.div`
   background-color: white;
   border-radius: 16px;
   padding: 50px;
-  max-width: 1200px;
+  width: 60vw; /* 지도와 동일한 너비 */
   margin: 0 auto 40px auto;
+  box-sizing: border-box;
   
-  @media (max-width: 1024px) {
-    max-width: 95%;
-    padding: 40px 30px;
+  @media (max-width: 768px) {
+    width: 95vw; /* 모바일에서 지도와 동일한 크기 */
+    padding: 30px 20px;
     margin: 0 auto;
   }
   
-  @media (max-width: 768px) {
-    padding: 30px 20px;
-    margin: 0 10px;
-  }
-  
   @media (max-width: 480px) {
+    width: 98vw; /* 작은 모바일에서 지도와 동일한 크기 */
     padding: 25px 15px;
-    margin: 0 5px;
+    margin: 0 auto;
   }
 `;
 
@@ -347,13 +343,29 @@ interface ReportData {
   sub_category: string;
   latitude: string;
   longitude: string;
+  id?: string; // 신고 ID 추가
+}
+
+interface ReportDetailData {
+  user_id: string;
+  username: string;
+  main_category: string;
+  sub_category: string;
+  title: string;
+  content: string;
+  local: string;
+  latitude: string;
+  longitude: string;
+  files: string[];
+  created_at: string;
+  id: string;
 }
 
 interface ApiResponse {
   reports: ReportData[];
 }
 
-// API 함수
+// API 함수들
 const fetchRecentReports = async (): Promise<ApiResponse> => {
   try {
     console.log('Attempting to fetch reports from API...');
@@ -394,6 +406,34 @@ const fetchRecentReports = async (): Promise<ApiResponse> => {
   }
 };
 
+// 신고 상세 정보 가져오기
+const fetchReportDetail = async (reportId: string): Promise<ReportDetailData | null> => {
+  try {
+    console.log(`Fetching report detail for ID: ${reportId}`);
+    
+    const response = await fetch(`http://localhost:8000/report/${reportId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      mode: 'cors',
+    });
+    
+    if (!response.ok) {
+      console.warn(`Failed to fetch report detail: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log('✅ Report detail fetched:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to fetch report detail:', error);
+    return null;
+  }
+};
+
 // 목업 데이터 함수 (실제 API 응답 형태로 수정)
 const getMockData = (): ApiResponse => {
   console.log('📋 Using mock data');
@@ -404,21 +444,24 @@ const getMockData = (): ApiResponse => {
         main_category: "병해충",
         sub_category: "병해",
         latitude: "35.7336908241694",
-        longitude: "127.06573190851746"
+        longitude: "127.06573190851746",
+        id: "mock_report_1"
       },
       {
         title: "제주도 태풍",
         main_category: "재난",
         sub_category: "태풍",
         latitude: "33.2375195759578",
-        longitude: "126.515860406201"
+        longitude: "126.515860406201",
+        id: "mock_report_2"
       },
       {
         title: "전주 지진 발생",
         main_category: "재난",
         sub_category: "지진",
         latitude: "37.5665",
-        longitude: "126.978"
+        longitude: "126.978",
+        id: "mock_report_3"
       }
     ]
   };
@@ -426,8 +469,10 @@ const getMockData = (): ApiResponse => {
 
 export const ReportDetail: React.FC = () => {
   const [reportsData, setReportsData] = useState<ReportData[]>([]);
+  const [selectedReportDetail, setSelectedReportDetail] = useState<ReportDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   useEffect(() => {
     const loadReports = async () => {
@@ -436,7 +481,17 @@ export const ReportDetail: React.FC = () => {
         const data = await fetchRecentReports();
         setReportsData(data.reports);
         setError(null);
+        
         console.log('Reports loaded successfully:', data.reports);
+        
+        // 각 신고에 ID가 있는지 확인
+        data.reports.forEach((report, index) => {
+          console.log(`Report ${index}:`, {
+            title: report.title,
+            id: report.id,
+            hasId: !!report.id
+          });
+        });
       } catch (err) {
         // 이제 fetchRecentReports에서 목업 데이터를 반환하므로 
         // 여기서는 실제 치명적인 오류만 처리
@@ -450,16 +505,50 @@ export const ReportDetail: React.FC = () => {
     loadReports();
   }, []);
 
-  // 더미 데이터 (API에서 받아온 데이터가 부족한 경우 기본 표시용)
-  const defaultReportData = {
-    pestType: '병해충',
-    diseaseType: '노균병',
-    location: '전북특별자치도 전주시 완산구 망내로 28',
-    reportContent: '벼 줄자 전염 병해충이 발견 됐어요.',
-    reportTime: '',
-    detailContent: '최근 대규모 공동육묘장이 증가하고, 모 기르는(육묘) 기간의 단축, 벼씨 소독 기술 교육과 홍보 등으로 모판에서의 키다리병 발생이 점차 줄어드는 추세 인 것 같아요',
-    imageUrl: BakanaeImage,
-    imageCaption: '벼 키다리병(못자리)'
+  // 마커 클릭 시 호출되는 함수
+  const handleMarkerClick = async (reportId: string) => {
+    console.log('handleMarkerClick called with:', reportId);
+    
+    if (!reportId) {
+      console.warn('Report ID is missing');
+      return;
+    }
+
+    setLoadingDetail(true);
+    try {
+      // 임시 ID인 경우 목업 데이터 표시
+      if (reportId.startsWith('temp_') || reportId.startsWith('mock_')) {
+        console.log('Using mock detail data for:', reportId);
+        
+        // 제목 기반으로 목업 데이터 생성
+        const mockDetail: ReportDetailData = {
+          user_id: "mock_user_id",
+          username: "테스트 사용자",
+          main_category: "병해충",
+          sub_category: "병해",
+          title: reportId.includes('다저벌악') ? "다저벌악" : 
+                 reportId.includes('태풍') ? "제주도 태풍" :
+                 reportId.includes('지진') ? "전주 지진 발생" : "테스트 신고",
+          content: "이것은 테스트 신고 내용입니다. 실제 API 연동 시 실제 데이터로 대체됩니다.",
+          local: "테스트 지역",
+          latitude: "37.5665",
+          longitude: "126.978",
+          files: [],
+          created_at: new Date().toISOString(),
+          id: reportId
+        };
+        
+        setSelectedReportDetail(mockDetail);
+      } else {
+        // 실제 API 호출
+        const detail = await fetchReportDetail(reportId);
+        setSelectedReportDetail(detail);
+      }
+    } catch (error) {
+      console.error('Error fetching report detail:', error);
+    } finally {
+      setLoadingDetail(false);
+    }
   };
 
   if (loading) {
@@ -492,66 +581,125 @@ export const ReportDetail: React.FC = () => {
       </Header>
       
       <MapContainer>
-        <Map reports={reportsData} />
+        <Map reports={reportsData} onMarkerClick={handleMarkerClick} />
       </MapContainer>
       
-      <Container>
-        <ContentWrapper>
+      <ContentWrapper>
+        {/* 선택된 신고의 상세 정보만 표시 */}
+        {selectedReportDetail ? (
           <InfoSection>
             <InfoItem>
-              <InfoLabel>발생 유형 :</InfoLabel>
-              <InfoValue>{defaultReportData.pestType}</InfoValue>
+              <InfoLabel style={{ color: '#d32f2f', fontWeight: 700, fontSize: '20px' }}>
+                📋 선택된 신고 상세 정보
+              </InfoLabel>
             </InfoItem>
             
-            <InfoItem>
-              <InfoLabel>병해충명 :</InfoLabel>
-              <InfoValue>{defaultReportData.diseaseType}</InfoValue>
-            </InfoItem>
-            
-            <InfoItem>
-              <InfoLabel>발생 지역 주소 :</InfoLabel>
-              <InfoValue>{defaultReportData.location}</InfoValue>
-            </InfoItem>
-  
-            <ImageSection>
-              <ImageLabelContainer>
-                <InfoLabel>접수된 신고 사진 :</InfoLabel>
-              </ImageLabelContainer>
-              <ImageContainer>
-                <ReportImage 
-                  src={defaultReportData.imageUrl} 
-                  alt={defaultReportData.imageCaption}
-                />
-                <ImageCaption>{defaultReportData.imageCaption}</ImageCaption>
-              </ImageContainer>
-            </ImageSection>
+            {loadingDetail ? (
+              <DetailContent>상세 정보를 불러오는 중...</DetailContent>
+            ) : (
+              <>
+                <InfoItem>
+                  <InfoLabel>신고 제목:</InfoLabel>
+                  <InfoValue>{selectedReportDetail.title}</InfoValue>
+                </InfoItem>
+                
+                <InfoItem>
+                  <InfoLabel>신고자:</InfoLabel>
+                  <InfoValue>{selectedReportDetail.username}</InfoValue>
+                </InfoItem>
+                
+                <InfoItem>
+                  <InfoLabel>카테고리:</InfoLabel>
+                  <InfoValue>
+                    {selectedReportDetail.main_category}
+                    {selectedReportDetail.sub_category && ` > ${selectedReportDetail.sub_category}`}
+                  </InfoValue>
+                </InfoItem>
+                
+                <InfoItem>
+                  <InfoLabel>발생 지역:</InfoLabel>
+                  <InfoValue>{selectedReportDetail.local}</InfoValue>
+                </InfoItem>
+                
+                <InfoItem>
+                  <InfoLabel>좌표:</InfoLabel>
+                  <InfoValue>
+                    위도: {selectedReportDetail.latitude}, 경도: {selectedReportDetail.longitude}
+                  </InfoValue>
+                </InfoItem>
+                
+                <InfoItem>
+                  <InfoLabel>신고 일시:</InfoLabel>
+                  <InfoValue>
+                    {new Date(selectedReportDetail.created_at).toLocaleString('ko-KR')}
+                  </InfoValue>
+                </InfoItem>
+                
+                <DetailSection>
+                  <InfoItem>
+                    <InfoLabel>신고 내용:</InfoLabel>
+                  </InfoItem>
+                  <DetailContent style={{ backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '8px', marginTop: '10px' }}>
+                    {selectedReportDetail.content}
+                  </DetailContent>
+                </DetailSection>
+                
+                {/* 첨부 파일이 있는 경우 표시 */}
+                {selectedReportDetail.files && selectedReportDetail.files.length > 0 && (
+                  <ImageSection>
+                    <ImageLabelContainer>
+                      <InfoLabel>첨부 파일:</InfoLabel>
+                    </ImageLabelContainer>
+                    <ImageContainer>
+                      <ReportImage 
+                        src={`http://localhost:8000${selectedReportDetail.files[0]}`}
+                        alt="신고 첨부 파일"
+                        onError={(e) => {
+                          console.error('이미지 로드 실패:', selectedReportDetail.files[0]);
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      <ImageCaption>신고 첨부 이미지</ImageCaption>
+                    </ImageContainer>
+                  </ImageSection>
+                )}
+              </>
+            )}
           </InfoSection>
-          
+        ) : (
+          /* 마커를 클릭하지 않은 초기 상태 */
+          <InfoSection>
+            <InfoItem>
+              <InfoLabel style={{ color: '#666', fontWeight: 600, fontSize: '18px' }}>
+                🗺️ 실시간 신고 현황
+              </InfoLabel>
+            </InfoItem>
+            <DetailContent style={{ textAlign: 'center', padding: '40px 20px', color: '#666' }}>
+              지도의 마커를 클릭하면 해당 신고의 상세 정보를 확인할 수 있습니다.
+              <br />
+              <br />
+              <span style={{ fontSize: '14px', color: '#999' }}>
+                💡 빨간색 마커: 재난/재해 신고 | 파란색 마커: 병해충 신고
+              </span>
+            </DetailContent>
+          </InfoSection>
+        )}
+
+        {/* 실시간 신고 목록 요약만 표시 */}
+        {reportsData.length > 0 && (
           <DetailSection>
             <InfoItem>
-              <InfoLabel>접수된 신고 내용:</InfoLabel>
+              <InfoLabel>최근 신고 현황:</InfoLabel>
             </InfoItem>
             <DetailContent>
-              {defaultReportData.detailContent}
+              총 {reportsData.length}건의 신고가 접수되어 지도에 표시되고 있습니다.
+              {reportsData.some(report => report.latitude && report.longitude) && 
+                ` (위치 정보가 있는 신고: ${reportsData.filter(report => report.latitude && report.longitude).length}건)`
+              }
             </DetailContent>
           </DetailSection>
-
-          {/* 실시간 신고 목록 표시 */}
-          {reportsData.length > 0 && (
-            <DetailSection>
-              <InfoItem>
-                <InfoLabel>최근 신고 현황:</InfoLabel>
-              </InfoItem>
-              <DetailContent>
-                총 {reportsData.length}건의 신고가 접수되어 지도에 표시되고 있습니다.
-                {reportsData.some(report => report.latitude && report.longitude) && 
-                  ` (위치 정보가 있는 신고: ${reportsData.filter(report => report.latitude && report.longitude).length}건)`
-                }
-              </DetailContent>
-            </DetailSection>
-          )}
-        </ContentWrapper>
-      </Container>
+        )}
+      </ContentWrapper>
     </PageContainer>
   );
 };

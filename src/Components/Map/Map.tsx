@@ -16,20 +16,22 @@ interface ReportData {
   sub_category: string;
   latitude: string;
   longitude: string;
+  id?: string; // ID 추가
 }
 
 interface MapProps {
   reports?: ReportData[];
+  onMarkerClick?: (reportId: string) => void; // 마커 클릭 콜백 추가
 }
 
-const MapSection: React.FC<MapProps> = ({ reports = [] }) => {
+const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadKakaoMap = () => {
       if (!mapContainer.current || !window.kakao?.maps) return;
 
-      // 카카오맵 그려지는 div 스타일 강제 지정
+      // 지도 컨테이너 스타일 설정
       mapContainer.current.style.width = '100%';
       mapContainer.current.style.height = '500px';
       mapContainer.current.style.backgroundColor = '#FFEFD5';
@@ -57,6 +59,14 @@ const MapSection: React.FC<MapProps> = ({ reports = [] }) => {
           const lat = parseFloat(report.latitude);
           const lng = parseFloat(report.longitude);
           
+          console.log(`Creating marker ${index}:`, {
+            title: report.title,
+            id: report.id,
+            lat,
+            lng,
+            category: report.main_category
+          });
+          
           // 유효한 좌표인지 확인 (한국 영역 내 좌표인지도 체크)
           if (!isNaN(lat) && !isNaN(lng) && lat > 33 && lat < 39 && lng > 125 && lng < 130) {
             
@@ -70,12 +80,12 @@ const MapSection: React.FC<MapProps> = ({ reports = [] }) => {
               // 재난/재해: 빨간색 마커 (로컬 이미지)
               markerImageSrc = redMarker;
               markerColor = '빨간색 (재난/재해)';
-              imageSize = new window.kakao.maps.Size(37, 45); // 빨간색 마커 크기
+              imageSize = new window.kakao.maps.Size(32, 45); // 빨간색 마커 크기
             } else if (report.main_category === '병해충' || report.main_category.includes('병해')) {
               // 병해충: 파란색 마커 (로컬 이미지)
               markerImageSrc = blueMarker;
               markerColor = '파란색 (병해충)';
-              imageSize = new window.kakao.maps.Size(20, 34); // 파란색 마커 크기 (조금 작게)
+              imageSize = new window.kakao.maps.Size(28, 40); // 파란색 마커 크기 (조금 작게)
             } else {
               // 기타: 기본 빨간색 마커
               markerImageSrc = redMarker;
@@ -118,9 +128,30 @@ const MapSection: React.FC<MapProps> = ({ reports = [] }) => {
               content: infoContent,
             });
 
-            // 마커 클릭 시 정보창 표시
+            // 마커 클릭 시 정보창 표시 및 상세 정보 요청
             window.kakao.maps.event.addListener(marker, 'click', () => {
+              console.log('Marker clicked:', {
+                title: report.title,
+                id: report.id,
+                hasOnMarkerClick: !!onMarkerClick
+              });
+              
               infoWindow.open(map, marker);
+              
+              // 상세 정보 요청
+              if (onMarkerClick) {
+                if (report.id) {
+                  console.log(`Calling onMarkerClick with ID: ${report.id}`);
+                  onMarkerClick(report.id);
+                } else {
+                  // ID가 없는 경우 임시로 인덱스나 제목 기반 ID 생성
+                  const tempId = `temp_${index}_${report.title.replace(/\s/g, '_')}`;
+                  console.warn(`Report ID missing, using temporary ID: ${tempId}`);
+                  onMarkerClick(tempId);
+                }
+              } else {
+                console.warn('onMarkerClick callback not provided');
+              }
             });
           } else {
             console.warn(`Invalid coordinates for report: ${report.title}, lat: ${lat}, lng: ${lng}`);
@@ -186,7 +217,7 @@ const MapSection: React.FC<MapProps> = ({ reports = [] }) => {
     };
 
     createScript();
-  }, [reports]); // reports가 변경될 때마다 지도를 다시 그림
+  }, [reports, onMarkerClick]); // reports와 onMarkerClick이 변경될 때마다 지도를 다시 그림
 
   return (
     <MapContainer>
@@ -240,12 +271,28 @@ const MapWrapper = styled.div`
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   background: #fff;
+  
+  @media (max-width: 768px) {
+    width: 95vw; /* 모바일에서 지도 크기 확대 */
+  }
+  
+  @media (max-width: 480px) {
+    width: 98vw; /* 작은 모바일에서 더 크게 */
+  }
 `;
 
 const MapDiv = styled.div`
   width: 100% !important;
   height: 500px !important;
   background-color: #FFEFD5 !important;
+  
+  @media (max-width: 768px) {
+    height: 400px !important; /* 모바일에서 적당한 높이 유지 */
+  }
+  
+  @media (max-width: 480px) {
+    height: 350px !important; /* 작은 모바일에서 높이 조정 */
+  }
 `;
 
 const LoadingText = styled.div`
@@ -271,12 +318,13 @@ const ControlButton = styled.button`
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
-
+  white-space: nowrap;
+  
   &:hover {
     background-color: #f5f5f5;
     transform: translateY(-1px);
   }
-
+  
   &:active {
     transform: translateY(0);
   }
