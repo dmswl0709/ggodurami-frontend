@@ -1,8 +1,8 @@
 // pages/ReportDetail.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Logo } from '../Components/Logo/Logo';
-import  Map  from '../Components/Map/Map';
+import Map from '../Components/Map/Map';
 import Container from '../Components/Common/Container';
 import { useNavigate } from "react-router-dom";
 import BakanaeImage from '../assets/images/Bakanae disease.jpeg';
@@ -10,7 +10,7 @@ import BakanaeImage from '../assets/images/Bakanae disease.jpeg';
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: #FFEFD5;
-  padding: 5px 0; /* 기존 20px에서 5px로 대폭 축소 */
+  padding: 5px 0;
 `;
 
 const Header = styled.div`
@@ -18,10 +18,10 @@ const Header = styled.div`
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  margin-bottom: 5px; /* 기존 20px에서 5px로 대폭 축소 */
+  margin-bottom: 5px;
   padding: 0 10px;
-  max-width: 1200px; /* 기존 800px에서 1200px로 확대 */
-  margin: 0 auto 5px auto; /* 마진도 동일하게 축소 */
+  max-width: 1200px;
+  margin: 0 auto 5px auto;
   
   @media (max-width: 1024px) {
     max-width: 95%;
@@ -41,7 +41,7 @@ const Header = styled.div`
 `;
 
 const LogoContainer = styled.div`
-  margin-top: 2px; /* 기존 5px에서 2px로 더 축소 */
+  margin-top: 2px;
   margin-bottom: -50px;
   
   @media (max-width: 768px) {
@@ -54,15 +54,15 @@ const LogoContainer = styled.div`
 `;
 
 const HeaderTitle = styled.h1`
-  font-size: 25px; /* 기존 28px에서 32px로 확대 */
+  font-size: 25px;
   font-weight: 700;
   color: #333;
-  margin: 15px 0 0 40px; /* 왼쪽 마진을 200px로 크게 설정하여 오른쪽으로 이동 */
+  margin: 15px 0 0 40px;
   text-align: left;
   
   @media (max-width: 1024px) {
     font-size: 28px;
-    margin: 12px 0 0 40px; /* 반응형에서는 조금 줄임 */
+    margin: 12px 0 0 40px;
   }
   
   @media (max-width: 768px) {
@@ -78,11 +78,11 @@ const HeaderTitle = styled.h1`
 
 const MapContainer = styled.div`
   width: 100%;
-  height: 450px; /* 기존 400px에서 450px로 확대 */
+  height: 450px;
   margin-bottom: 30px;
   border-radius: 12px;
   overflow: hidden;
-  max-width: 1200px; /* 기존 800px에서 1200px로 확대 */
+  max-width: 1200px;
   margin: 0 auto 30px auto;
   padding: 0 20px;
   box-sizing: border-box;
@@ -116,9 +116,9 @@ const MapContainer = styled.div`
 const ContentWrapper = styled.div`
   background-color: white;
   border-radius: 16px;
-  padding: 50px; /* 기존 40px에서 50px로 확대 */
-  max-width: 1200px; /* 기존 800px에서 1200px로 확대 */
-  margin: 0 auto 40px auto; /* 아래쪽 마진 40px 추가 */
+  padding: 50px;
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
   
   @media (max-width: 1024px) {
     max-width: 95%;
@@ -138,7 +138,7 @@ const ContentWrapper = styled.div`
 `;
 
 const InfoSection = styled.div`
-  margin-bottom: 35px; /* 기존 30px에서 35px로 확대 */
+  margin-bottom: 35px;
   
   @media (max-width: 1024px) {
     margin-bottom: 30px;
@@ -156,7 +156,7 @@ const InfoSection = styled.div`
 const InfoItem = styled.div`
   display: flex;
   align-items: flex-start;
-  margin-bottom: 18px; /* 기존 15px에서 18px로 확대 */
+  margin-bottom: 18px;
   
   @media (max-width: 768px) {
     margin-bottom: 15px;
@@ -169,11 +169,11 @@ const InfoItem = styled.div`
 `;
 
 const InfoLabel = styled.span`
-  font-size: 18px; /* 기존 16px에서 18px로 확대 */
+  font-size: 18px;
   font-weight: 600;
   color: #333;
-  min-width: 140px; /* 기존 120px에서 140px로 확대 */
-  margin-right: 15px; /* 기존 10px에서 15px로 확대 */
+  min-width: 140px;
+  margin-right: 15px;
   
   @media (max-width: 1024px) {
     font-size: 17px;
@@ -196,7 +196,7 @@ const InfoLabel = styled.span`
 `;
 
 const InfoValue = styled.span`
-  font-size: 18px; /* 기존 16px에서 18px로 확대 */
+  font-size: 18px;
   color: #555;
   line-height: 1.5;
   
@@ -214,7 +214,7 @@ const InfoValue = styled.span`
 `;
 
 const ImageSection = styled.div`
-  margin-bottom: 35px; /* 기존 30px에서 35px로 확대 */
+  margin-bottom: 35px;
   
   @media (max-width: 1024px) {
     margin-bottom: 30px;
@@ -232,7 +232,7 @@ const ImageSection = styled.div`
 const ImageLabelContainer = styled.div`
   display: flex;
   align-items: flex-start;
-  margin-bottom: 18px; /* 기존 15px에서 18px로 확대 */
+  margin-bottom: 18px;
   
   @media (max-width: 768px) {
     margin-bottom: 15px;
@@ -246,7 +246,7 @@ const ImageLabelContainer = styled.div`
 
 const ImageContainer = styled.div`
   width: 100%;
-  max-width: 500px; /* 기존 400px에서 500px로 확대 */
+  max-width: 500px;
   margin: 0 auto;
   text-align: center;
   
@@ -268,11 +268,11 @@ const ReportImage = styled.img`
   height: auto;
   border-radius: 12px;
   border: 2px solid #ddd;
-  margin-bottom: 12px; /* 기존 10px에서 12px로 확대 */
+  margin-bottom: 12px;
 `;
 
 const ImageCaption = styled.p`
-  font-size: 16px; /* 기존 14px에서 16px로 확대 */
+  font-size: 16px;
   color: #666;
   margin: 0;
   
@@ -290,7 +290,7 @@ const ImageCaption = styled.p`
 `;
 
 const DetailSection = styled.div`
-  margin-top: 25px; /* 기존 20px에서 25px로 확대 */
+  margin-top: 25px;
   
   @media (max-width: 768px) {
     margin-top: 20px;
@@ -302,7 +302,7 @@ const DetailSection = styled.div`
 `;
 
 const DetailContent = styled.p`
-  font-size: 18px; /* 기존 16px에서 18px로 확대 */
+  font-size: 18px;
   color: #555;
   line-height: 1.6;
   margin: 0;
@@ -320,20 +320,138 @@ const DetailContent = styled.p`
   }
 `;
 
-interface ReportDetailData {
-  pestType: string;
-  diseaseType: string;
-  location: string;
-  reportContent: string;
-  reportTime: string;
-  detailContent: string;
-  imageUrl: string;
-  imageCaption: string;
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  font-size: 18px;
+  color: #666;
+`;
+
+const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  font-size: 18px;
+  color: #e74c3c;
+  text-align: center;
+`;
+
+// API 응답 타입 정의
+interface ReportData {
+  title: string;
+  main_category: string;
+  sub_category: string;
+  latitude: string;
+  longitude: string;
 }
 
+interface ApiResponse {
+  reports: ReportData[];
+}
+
+// API 함수
+const fetchRecentReports = async (): Promise<ApiResponse> => {
+  try {
+    console.log('Attempting to fetch reports from API...');
+    
+    // CORS 헤더와 함께 요청
+    const response = await fetch('http://localhost:8000/reports/recent', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      mode: 'cors', // CORS 모드 명시
+    });
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    
+    if (!response.ok) {
+      console.warn(`API call failed with status: ${response.status}. Using mock data.`);
+      return getMockData();
+    }
+
+    const contentType = response.headers.get('content-type');
+    console.log('Content-Type:', contentType);
+    
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn('API did not return JSON. Using mock data.');
+      return getMockData();
+    }
+
+    const data = await response.json();
+    console.log('✅ API Response successful:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ API call failed:', error);
+    console.log('🔄 Falling back to mock data');
+    return getMockData();
+  }
+};
+
+// 목업 데이터 함수 (실제 API 응답 형태로 수정)
+const getMockData = (): ApiResponse => {
+  console.log('📋 Using mock data');
+  return {
+    reports: [
+      {
+        title: "다저벌악",
+        main_category: "병해충",
+        sub_category: "병해",
+        latitude: "35.7336908241694",
+        longitude: "127.06573190851746"
+      },
+      {
+        title: "제주도 태풍",
+        main_category: "재난",
+        sub_category: "태풍",
+        latitude: "33.2375195759578",
+        longitude: "126.515860406201"
+      },
+      {
+        title: "전주 지진 발생",
+        main_category: "재난",
+        sub_category: "지진",
+        latitude: "37.5665",
+        longitude: "126.978"
+      }
+    ]
+  };
+};
+
 export const ReportDetail: React.FC = () => {
-  // 실제로는 API나 props로 받아올 데이터
-  const reportData: ReportDetailData = {
+  const [reportsData, setReportsData] = useState<ReportData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadReports = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchRecentReports();
+        setReportsData(data.reports);
+        setError(null);
+        console.log('Reports loaded successfully:', data.reports);
+      } catch (err) {
+        // 이제 fetchRecentReports에서 목업 데이터를 반환하므로 
+        // 여기서는 실제 치명적인 오류만 처리
+        setError('데이터를 불러올 수 없습니다.');
+        console.error('Critical error loading reports:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReports();
+  }, []);
+
+  // 더미 데이터 (API에서 받아온 데이터가 부족한 경우 기본 표시용)
+  const defaultReportData = {
     pestType: '병해충',
     diseaseType: '노균병',
     location: '전북특별자치도 전주시 완산구 망내로 28',
@@ -343,6 +461,26 @@ export const ReportDetail: React.FC = () => {
     imageUrl: BakanaeImage,
     imageCaption: '벼 키다리병(못자리)'
   };
+
+  if (loading) {
+    return (
+      <PageContainer>
+        <LoadingContainer>
+          신고 정보를 불러오는 중...
+        </LoadingContainer>
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <ErrorContainer>
+          <div>{error}</div>
+        </ErrorContainer>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
@@ -354,7 +492,7 @@ export const ReportDetail: React.FC = () => {
       </Header>
       
       <MapContainer>
-        <Map />
+        <Map reports={reportsData} />
       </MapContainer>
       
       <Container>
@@ -362,17 +500,17 @@ export const ReportDetail: React.FC = () => {
           <InfoSection>
             <InfoItem>
               <InfoLabel>발생 유형 :</InfoLabel>
-              <InfoValue>{reportData.pestType}</InfoValue>
+              <InfoValue>{defaultReportData.pestType}</InfoValue>
             </InfoItem>
             
             <InfoItem>
               <InfoLabel>병해충명 :</InfoLabel>
-              <InfoValue>{reportData.diseaseType}</InfoValue>
+              <InfoValue>{defaultReportData.diseaseType}</InfoValue>
             </InfoItem>
             
             <InfoItem>
               <InfoLabel>발생 지역 주소 :</InfoLabel>
-              <InfoValue>{reportData.location}</InfoValue>
+              <InfoValue>{defaultReportData.location}</InfoValue>
             </InfoItem>
   
             <ImageSection>
@@ -381,10 +519,10 @@ export const ReportDetail: React.FC = () => {
               </ImageLabelContainer>
               <ImageContainer>
                 <ReportImage 
-                  src={reportData.imageUrl} 
-                  alt={reportData.imageCaption}
+                  src={defaultReportData.imageUrl} 
+                  alt={defaultReportData.imageCaption}
                 />
-                <ImageCaption>{reportData.imageCaption}</ImageCaption>
+                <ImageCaption>{defaultReportData.imageCaption}</ImageCaption>
               </ImageContainer>
             </ImageSection>
           </InfoSection>
@@ -394,9 +532,24 @@ export const ReportDetail: React.FC = () => {
               <InfoLabel>접수된 신고 내용:</InfoLabel>
             </InfoItem>
             <DetailContent>
-              {reportData.detailContent}
+              {defaultReportData.detailContent}
             </DetailContent>
           </DetailSection>
+
+          {/* 실시간 신고 목록 표시 */}
+          {reportsData.length > 0 && (
+            <DetailSection>
+              <InfoItem>
+                <InfoLabel>최근 신고 현황:</InfoLabel>
+              </InfoItem>
+              <DetailContent>
+                총 {reportsData.length}건의 신고가 접수되어 지도에 표시되고 있습니다.
+                {reportsData.some(report => report.latitude && report.longitude) && 
+                  ` (위치 정보가 있는 신고: ${reportsData.filter(report => report.latitude && report.longitude).length}건)`
+                }
+              </DetailContent>
+            </DetailSection>
+          )}
         </ContentWrapper>
       </Container>
     </PageContainer>
