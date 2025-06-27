@@ -1,4 +1,4 @@
-// pages/Report.tsx (정리된 버전)
+// pages/Report.tsx (위도/경도 포함 수정 버전)
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -10,10 +10,15 @@ import SubmitButton from '../Components/SubmitButton/SubmitButton';
 import Container from '../Components/Common/Container';
 import FindLocal from '../Components/FindLocal/FindLocal';
 
-
 // 타입 정의
 interface ReportResponse {
   message: string;
+}
+
+interface SelectedLocation {
+  address: string;
+  latitude: number;
+  longitude: number;
 }
 
 // API 설정
@@ -51,6 +56,8 @@ const Report: React.FC = () => {
   const [activeTab, setActiveTab] = useState('disaster');
   const [files, setFiles] = useState<File[]>([]);
   const [location, setLocation] = useState('');
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
@@ -62,8 +69,30 @@ const Report: React.FC = () => {
 
   // 지도에서 위치 선택 처리
   const handleLocationSelect = (selectedLocation: SelectedLocation) => {
-    setLocation(selectedLocation.address);
+    console.log('받은 위치 데이터:', selectedLocation);
+    
+    // 데이터 유효성 검사
+    if (!selectedLocation) {
+      console.error('선택된 위치 데이터가 없습니다.');
+      return;
+    }
+    
+    if (typeof selectedLocation.latitude !== 'number' || typeof selectedLocation.longitude !== 'number') {
+      console.error('위도/경도가 숫자 형태가 아닙니다:', selectedLocation);
+      return;
+    }
+    
+    setLocation(selectedLocation.address || '');
+    setLatitude(selectedLocation.latitude);
+    setLongitude(selectedLocation.longitude);
     setIsMapOpen(false);
+    
+    // 성공적으로 설정된 후 로그
+    console.log('위치 설정 완료:', {
+      address: selectedLocation.address,
+      latitude: selectedLocation.latitude,
+      longitude: selectedLocation.longitude
+    });
   };
 
   // 지역찾기 버튼 클릭
@@ -107,6 +136,14 @@ const Report: React.FC = () => {
       return false;
     }
 
+    // 위도/경도 검사를 더 엄격하게
+    if (latitude === null || longitude === null || 
+        typeof latitude !== 'number' || typeof longitude !== 'number' ||
+        isNaN(latitude) || isNaN(longitude)) {
+      setError('지도에서 정확한 위치를 선택해주세요.');
+      return false;
+    }
+
     if (!description.trim()) {
       setError('신고 내용을 입력해주세요.');
       return false;
@@ -139,6 +176,7 @@ const Report: React.FC = () => {
     try {
       const formData = new FormData();
       
+      // 백엔드 명세에 맞게 데이터 추가
       const categoryValues = getCategoryValues();
       if (!categoryValues) {
         setError('올바른 카테고리를 선택해주세요.');
@@ -146,14 +184,48 @@ const Report: React.FC = () => {
         return;
       }
 
-      formData.append('category', `${categoryValues.main}/${categoryValues.sub}`);
+      // 카테고리를 분리해서 전송 (백엔드에서 요구하는 형태에 맞게)
+      formData.append('main_category', categoryValues.main);
+      formData.append('sub_category', categoryValues.sub);
       formData.append('title', title.trim());
       formData.append('content', description.trim());
       formData.append('local', location.trim());
+      
+      // 위도/경도 안전하게 추가 (추가 검증 포함)
+      const lat = latitude;
+      const lng = longitude;
+      
+      console.log('위도/경도 확인:', { lat, lng, type_lat: typeof lat, type_lng: typeof lng });
+      
+      if (lat !== null && lng !== null && 
+          typeof lat === 'number' && typeof lng === 'number' && 
+          !isNaN(lat) && !isNaN(lng)) {
+        formData.append('latitude', lat.toString());
+        formData.append('longitude', lng.toString());
+        console.log('위도/경도 FormData에 추가됨:', lat.toString(), lng.toString());
+      } else {
+        console.error('위도/경도 값이 유효하지 않음:', { lat, lng });
+        setError('위치 정보가 올바르지 않습니다. 다시 지역을 선택해주세요.');
+        setLoading(false);
+        return;
+      }
 
-      files.forEach((file) => {
+      // 파일들 추가
+      files.forEach((file, index) => {
         formData.append('files', file);
+        console.log(`파일 ${index + 1} 추가:`, file.name, file.type, file.size);
       });
+
+      // 디버깅용 로그 - FormData 내용 확인
+      console.log('=== 전송할 FormData 내용 ===');
+      for (let pair of formData.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(pair[0] + ': [File]', pair[1].name, pair[1].type, pair[1].size + ' bytes');
+        } else {
+          console.log(pair[0] + ': ' + pair[1]);
+        }
+      }
+      console.log('==========================')
 
       const response = await submitReport(formData);
       
@@ -162,6 +234,8 @@ const Report: React.FC = () => {
       // 성공 시 폼 초기화
       setFiles([]);
       setLocation('');
+      setLatitude(null);
+      setLongitude(null);
       setTitle('');
       setDescription('');
       setSelectedDisasterType('');
@@ -169,6 +243,7 @@ const Report: React.FC = () => {
 
     } catch (err: any) {
       console.error('신고 제출 오류:', err);
+      console.error('에러 응답:', err.response);
       
       let errorMessage = '신고 제출 중 오류가 발생했습니다.';
       
@@ -178,6 +253,23 @@ const Report: React.FC = () => {
         errorMessage = '파일 크기가 너무 큽니다. 더 작은 파일을 업로드해주세요.';
       } else if (err.response?.status === 415) {
         errorMessage = '지원하지 않는 파일 형식입니다.';
+      } else if (err.response?.status === 422) {
+        // 422 에러에 대한 자세한 처리
+        console.error('422 에러 상세:', err.response.data);
+        if (err.response?.data?.detail) {
+          if (Array.isArray(err.response.data.detail)) {
+            const errors = err.response.data.detail.map((item: any) => {
+              const field = item.loc?.[1] || '알 수 없는 필드';
+              const message = item.msg || '유효하지 않은 값';
+              return `${field}: ${message}`;
+            }).join('\n');
+            errorMessage = `입력 데이터 오류:\n${errors}`;
+          } else {
+            errorMessage = `입력 데이터 오류: ${err.response.data.detail}`;
+          }
+        } else {
+          errorMessage = '입력 데이터 형식이 올바르지 않습니다. 모든 필드를 확인해주세요.';
+        }
       } else if (err.response?.status === 500) {
         errorMessage = '서버 내부 오류가 발생했습니다.';
       } else if (err.response?.data?.message) {
@@ -316,6 +408,11 @@ const Report: React.FC = () => {
                   🗺️ 지역찾기
                 </LocationButton>
               </LocationInputWrapper>
+              {latitude && longitude && (
+                <LocationInfo>
+                  📍 선택된 좌표: 위도 {latitude.toFixed(6)}, 경도 {longitude.toFixed(6)}
+                </LocationInfo>
+              )}
               <LocationHelpText>
                 💡 지역찾기 버튼을 누르면 지도가 열리고, 원하는 위치를 클릭하여 선택할 수 있습니다.
               </LocationHelpText>
@@ -354,7 +451,7 @@ const Report: React.FC = () => {
   );
 };
 
-// 스타일 컴포넌트들
+// 스타일 컴포넌트들 (기존과 동일)
 const MainWrapper = styled.main`
   display: flex;
   flex-direction: column;
@@ -576,6 +673,21 @@ const LocationButton = styled.button`
     width: 100%;
     padding: 0.75rem;
     font-size: 0.95rem;
+  }
+`;
+
+const LocationInfo = styled.div`
+  font-size: 0.85rem;
+  color: #007bff;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  background-color: #e7f3ff;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
   }
 `;
 

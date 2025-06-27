@@ -9,11 +9,11 @@ declare global {
   }
 }
 
-// 타입 정의를 먼저 export
+// 타입 정의를 latitude/longitude로 변경
 export interface SelectedLocation {
   address: string;
-  lat: number;
-  lng: number;
+  latitude: number;
+  longitude: number;
 }
 
 interface FindLocalProps {
@@ -84,14 +84,14 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
   };
 
   // 새 마커를 생성하는 함수
-  const createNewMarker = (lat: number, lng: number) => {
+  const createNewMarker = (latitude: number, longitude: number) => {
     if (!map) return null;
 
     // 기존 마커 완전 제거
     clearExistingMarker();
 
     // 새 마커 생성
-    const position = new window.kakao.maps.LatLng(lat, lng);
+    const position = new window.kakao.maps.LatLng(latitude, longitude);
     const newMarker = new window.kakao.maps.Marker({
       position: position,
       map: map
@@ -101,7 +101,7 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
     setMarker(newMarker);
     markerRef.current = newMarker;
     
-    console.log('새 마커 생성 완료:', lat, lng);
+    console.log('새 마커 생성 완료:', latitude, longitude);
     return newMarker;
   };
 
@@ -156,10 +156,10 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
     // 클릭 이벤트 핸들러
     const clickHandler = (mouseEvent: any) => {
       const latlng = mouseEvent.latLng;
-      const lat = latlng.getLat();
-      const lng = latlng.getLng();
-      console.log('지도 클릭됨:', lat, lng);
-      handleMapClick(lat, lng);
+      const latitude = latlng.getLat();
+      const longitude = latlng.getLng();
+      console.log('지도 클릭됨:', latitude, longitude);
+      handleMapClick(latitude, longitude);
     };
 
     // 이벤트 등록
@@ -172,23 +172,23 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
     };
   }, [map, isMapReady]);
 
-  // 지도 클릭 처리
-  const handleMapClick = async (lat: number, lng: number) => {
+  // 지도 클릭 처리 (변수명을 latitude/longitude로 변경)
+  const handleMapClick = async (latitude: number, longitude: number) => {
     if (!map) return;
 
     try {
-      console.log('지도 클릭 처리 시작:', lat, lng);
+      console.log('지도 클릭 처리 시작:', latitude, longitude);
 
       // 새 마커 생성 (기존 마커는 자동으로 제거됨)
-      createNewMarker(lat, lng);
+      createNewMarker(latitude, longitude);
 
       // 지도 중심 이동
-      const position = new window.kakao.maps.LatLng(lat, lng);
+      const position = new window.kakao.maps.LatLng(latitude, longitude);
       map.setCenter(position);
 
-      // 좌표를 주소로 변환
+      // 좌표를 주소로 변환 (kakao API는 lng, lat 순서)
       const geocoder = new window.kakao.maps.services.Geocoder();
-      geocoder.coord2Address(lng, lat, (result: any[], status: string) => {
+      geocoder.coord2Address(longitude, latitude, (result: any[], status: string) => {
         console.log('지오코딩 상태:', status);
         
         if (status === window.kakao.maps.services.Status.OK && result.length > 0) {
@@ -205,15 +205,15 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
 
           setSelectedLocation({
             address: addressName,
-            lat,
-            lng
+            latitude,  // lat -> latitude로 변경
+            longitude  // lng -> longitude로 변경
           });
         } else {
           console.log('주소 변환 실패, 좌표만 저장');
           setSelectedLocation({
-            address: `위도: ${lat.toFixed(6)}, 경도: ${lng.toFixed(6)}`,
-            lat,
-            lng
+            address: `위도: ${latitude.toFixed(6)}, 경도: ${longitude.toFixed(6)}`,
+            latitude,  // lat -> latitude로 변경
+            longitude  // lng -> longitude로 변경
           });
         }
       });
@@ -221,9 +221,9 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
     } catch (error) {
       console.error('지도 클릭 처리 실패:', error);
       setSelectedLocation({
-        address: `위도: ${lat.toFixed(6)}, 경도: ${lng.toFixed(6)}`,
-        lat,
-        lng
+        address: `위도: ${latitude.toFixed(6)}, 경도: ${longitude.toFixed(6)}`,
+        latitude,  // lat -> latitude로 변경
+        longitude  // lng -> longitude로 변경
       });
     }
   };
@@ -244,18 +244,18 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
       
       if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
         const firstPlace = data[0];
-        const targetLat = parseFloat(firstPlace.y);
-        const targetLng = parseFloat(firstPlace.x);
+        const targetLatitude = parseFloat(firstPlace.y);  // lat -> latitude로 변경
+        const targetLongitude = parseFloat(firstPlace.x); // lng -> longitude로 변경
         
-        console.log('검색 결과로 이동:', targetLat, targetLng);
+        console.log('검색 결과로 이동:', targetLatitude, targetLongitude);
         
         // 지도 중심 이동
-        const moveLatLng = new window.kakao.maps.LatLng(targetLat, targetLng);
+        const moveLatLng = new window.kakao.maps.LatLng(targetLatitude, targetLongitude);
         map.setCenter(moveLatLng);
         map.setLevel(3);
         
         // 검색 결과 위치에 마커 표시
-        handleMapClick(targetLat, targetLng);
+        handleMapClick(targetLatitude, targetLongitude);
       } else {
         console.log('검색 결과가 없습니다.');
         alert('검색 결과가 없습니다. 다른 키워드로 검색해보세요.');
@@ -272,18 +272,18 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
+        const latitude = position.coords.latitude;   // lat -> latitude로 변경
+        const longitude = position.coords.longitude; // lng -> longitude로 변경
         
-        console.log('현재 위치:', lat, lng);
+        console.log('현재 위치:', latitude, longitude);
         
         // 지도 중심 이동
-        const moveLatLng = new window.kakao.maps.LatLng(lat, lng);
+        const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
         map.setCenter(moveLatLng);
         map.setLevel(3);
         
         // 현재 위치에 마커 표시
-        handleMapClick(lat, lng);
+        handleMapClick(latitude, longitude);
       }, (error) => {
         console.error('위치 가져오기 오류:', error);
         alert('현재 위치를 가져올 수 없습니다.');
@@ -296,7 +296,7 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
   // 위치 선택 확인
   const handleConfirmLocation = () => {
     if (selectedLocation) {
-      console.log('위치 선택 확인:', selectedLocation);
+      console.log('위치 선택 확인 - 전달할 데이터:', selectedLocation);
       onLocationSelect(selectedLocation);
       handleCancel(); // 상태 초기화와 함께 닫기
     } else {
@@ -359,7 +359,7 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
             <InfoTitle>✅ 선택된 위치:</InfoTitle>
             <InfoAddress>{selectedLocation.address}</InfoAddress>
             <InfoCoords>
-              위도: {selectedLocation.lat.toFixed(6)}, 경도: {selectedLocation.lng.toFixed(6)}
+              위도: {selectedLocation.latitude.toFixed(6)}, 경도: {selectedLocation.longitude.toFixed(6)}
             </InfoCoords>
           </SelectedLocationInfo>
         )}
@@ -382,7 +382,7 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
   );
 };
 
-// 스타일 컴포넌트들
+// 스타일 컴포넌트들 (동일)
 const MapOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -664,5 +664,4 @@ const HelpText = styled.div`
   }
 `;
 
-// 기본 export로 변경
 export default FindLocal;
