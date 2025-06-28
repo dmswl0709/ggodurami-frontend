@@ -526,7 +526,7 @@ const MapControls = styled.div`
 `;
 
 const ControlButton = styled.button`
-  background: white;
+  background: skyblue;
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 8px 12px;
