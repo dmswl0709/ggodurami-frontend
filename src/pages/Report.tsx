@@ -1,4 +1,4 @@
-// pages/Report.tsx (위도/경도 포함 수정 버전)
+// pages/Report.tsx (API 엔드포인트 수정 버전)
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -13,6 +13,8 @@ import FindLocal from '../Components/FindLocal/FindLocal';
 // 타입 정의
 interface ReportResponse {
   message: string;
+  report_id?: string;
+  uploaded_files?: number;
 }
 
 interface SelectedLocation {
@@ -34,6 +36,7 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔑 Authorization 헤더 추가');
     }
     return config;
   },
@@ -42,14 +45,37 @@ apiClient.interceptors.request.use(
   }
 );
 
-// API 함수
+// 🔥 수정된 API 함수 - 엔드포인트 변경
 const submitReport = async (formData: FormData): Promise<ReportResponse> => {
-  const response = await apiClient.post<ReportResponse>('/report-damage', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-  return response.data;
+  try {
+    console.log('=== 신고 등록 API 호출 시작 ===');
+    
+    // FormData 내용 로깅
+    console.log('전송할 FormData:');
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}: [File] ${value.name} (${value.size} bytes, ${value.type})`);
+      } else {
+        console.log(`${key}: ${value}`);
+      }
+    }
+    
+    // 🔥 수정된 엔드포인트: /report-damage → /damage-report
+    const response = await apiClient.post<ReportResponse>('/damage-report', formData, {
+      headers: {
+        // FormData 사용 시 Content-Type 헤더는 자동으로 설정되므로 제거
+        // 'Content-Type': 'multipart/form-data', // 이 줄 제거
+      },
+    });
+    
+    console.log('✅ 신고 등록 성공:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ 신고 등록 실패:', error);
+    console.error('응답 데이터:', error.response?.data);
+    console.error('응답 상태:', error.response?.status);
+    throw error;
+  }
 };
 
 const Report: React.FC = () => {
@@ -69,7 +95,7 @@ const Report: React.FC = () => {
 
   // 지도에서 위치 선택 처리
   const handleLocationSelect = (selectedLocation: SelectedLocation) => {
-    console.log('받은 위치 데이터:', selectedLocation);
+    console.log('🗺️ 받은 위치 데이터:', selectedLocation);
     
     // 데이터 유효성 검사
     if (!selectedLocation) {
@@ -88,7 +114,7 @@ const Report: React.FC = () => {
     setIsMapOpen(false);
     
     // 성공적으로 설정된 후 로그
-    console.log('위치 설정 완료:', {
+    console.log('✅ 위치 설정 완료:', {
       address: selectedLocation.address,
       latitude: selectedLocation.latitude,
       longitude: selectedLocation.longitude
@@ -174,6 +200,8 @@ const Report: React.FC = () => {
     setLoading(true);
 
     try {
+      console.log('=== 신고 제출 시작 ===');
+      
       const formData = new FormData();
       
       // 백엔드 명세에 맞게 데이터 추가
@@ -195,16 +223,16 @@ const Report: React.FC = () => {
       const lat = latitude;
       const lng = longitude;
       
-      console.log('위도/경도 확인:', { lat, lng, type_lat: typeof lat, type_lng: typeof lng });
+      console.log('📍 위도/경도 확인:', { lat, lng, type_lat: typeof lat, type_lng: typeof lng });
       
       if (lat !== null && lng !== null && 
           typeof lat === 'number' && typeof lng === 'number' && 
           !isNaN(lat) && !isNaN(lng)) {
         formData.append('latitude', lat.toString());
         formData.append('longitude', lng.toString());
-        console.log('위도/경도 FormData에 추가됨:', lat.toString(), lng.toString());
+        console.log('✅ 위도/경도 FormData에 추가됨:', lat.toString(), lng.toString());
       } else {
-        console.error('위도/경도 값이 유효하지 않음:', { lat, lng });
+        console.error('❌ 위도/경도 값이 유효하지 않음:', { lat, lng });
         setError('위치 정보가 올바르지 않습니다. 다시 지역을 선택해주세요.');
         setLoading(false);
         return;
@@ -213,10 +241,10 @@ const Report: React.FC = () => {
       // 파일들 추가
       files.forEach((file, index) => {
         formData.append('files', file);
-        console.log(`파일 ${index + 1} 추가:`, file.name, file.type, file.size);
+        console.log(`📎 파일 ${index + 1} 추가:`, file.name, file.type, file.size + ' bytes');
       });
 
-      // 디버깅용 로그 - FormData 내용 확인
+      // 🔥 디버깅용 로그 - FormData 내용 확인
       console.log('=== 전송할 FormData 내용 ===');
       for (let pair of formData.entries()) {
         if (pair[1] instanceof File) {
@@ -225,11 +253,16 @@ const Report: React.FC = () => {
           console.log(pair[0] + ': ' + pair[1]);
         }
       }
-      console.log('==========================')
+      console.log('==============================');
 
       const response = await submitReport(formData);
       
       setSuccess(response.message || '✅ 신고가 성공적으로 접수되었습니다.');
+      
+      console.log('🎉 신고 제출 성공:', {
+        report_id: response.report_id,
+        uploaded_files: response.uploaded_files
+      });
       
       // 성공 시 폼 초기화
       setFiles([]);
@@ -242,13 +275,15 @@ const Report: React.FC = () => {
       setSelectedPestType('');
 
     } catch (err: any) {
-      console.error('신고 제출 오류:', err);
+      console.error('❌ 신고 제출 오류:', err);
       console.error('에러 응답:', err.response);
       
       let errorMessage = '신고 제출 중 오류가 발생했습니다.';
       
       if (err.response?.status === 401) {
         errorMessage = '로그인이 만료되었습니다. 다시 로그인해주세요.';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'API 엔드포인트를 찾을 수 없습니다. 서버 설정을 확인해주세요.';
       } else if (err.response?.status === 413) {
         errorMessage = '파일 크기가 너무 큽니다. 더 작은 파일을 업로드해주세요.';
       } else if (err.response?.status === 415) {
@@ -282,6 +317,8 @@ const Report: React.FC = () => {
         } else {
           errorMessage = err.response.data.detail;
         }
+      } else if (err.code === 'ERR_NETWORK') {
+        errorMessage = '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.';
       }
       
       setError(errorMessage);
@@ -720,6 +757,7 @@ const ErrorText = styled.div`
   background-color: #f8d7da;
   border: 1px solid #f5c6cb;
   border-radius: 4px;
+  white-space: pre-line;
 
   @media (max-width: 768px) {
     font-size: 0.85rem;

@@ -14,15 +14,40 @@ interface ReportData {
   title: string;
   main_category: string;
   sub_category: string;
-  latitude: string;
-  longitude: string;
-  id?: string; // ID 추가
+  latitude: string | number; // 🔥 number 타입도 허용
+  longitude: string | number; // 🔥 number 타입도 허용
+  id?: string;
 }
 
 interface MapProps {
   reports?: ReportData[];
-  onMarkerClick?: (reportId: string) => void; // 마커 클릭 콜백 추가
+  onMarkerClick?: (reportId: string) => void;
 }
+
+// 🔥 안전한 문자열 변환 함수 추가
+const safeToString = (value: any): string => {
+  if (value === null || value === undefined) return '';
+  return String(value);
+};
+
+// 🔥 유효한 좌표인지 확인하는 함수 추가
+const isValidCoordinate = (lat: any, lng: any): boolean => {
+  const latStr = safeToString(lat);
+  const lngStr = safeToString(lng);
+  
+  // 빈 문자열이나 공백만 있는 경우 제외
+  if (!latStr || !lngStr || latStr.trim() === '' || lngStr.trim() === '') {
+    return false;
+  }
+  
+  const latNum = parseFloat(latStr);
+  const lngNum = parseFloat(lngStr);
+  
+  // 숫자로 변환 가능하고, 한국 영역 내 좌표인지 확인
+  return !isNaN(latNum) && !isNaN(lngNum) && 
+         latNum > 33 && latNum < 39 && 
+         lngNum > 125 && lngNum < 130;
+};
 
 const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -38,131 +63,151 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
 
       const map = new window.kakao.maps.Map(mapContainer.current, {
         center: new window.kakao.maps.LatLng(36.5, 127.8), // 대한민국 중심 좌표
-        level: 13, // 대한민국 전체가 보이는 레벨 (13-14 정도가 적당)
+        level: 13, // 대한민국 전체가 보이는 레벨
       });
 
-      // reports 데이터에서 위도/경도가 있는 것들만 필터링 (빈 문자열도 제외)
-      const validReports = reports.filter(report => 
-        report.latitude && 
-        report.longitude && 
-        report.latitude !== "" && 
-        report.longitude !== "" &&
-        report.latitude.trim() !== "" &&
-        report.longitude.trim() !== ""
-      );
+      // 🔥 개선된 데이터 필터링
+      const validReports = reports.filter(report => {
+        try {
+          return isValidCoordinate(report.latitude, report.longitude);
+        } catch (error) {
+          console.warn('좌표 검증 중 오류:', error, report);
+          return false;
+        }
+      });
 
-      console.log('Valid reports with coordinates:', validReports); // 디버깅용
+      console.log('=== 지도 데이터 처리 ===');
+      console.log('전체 신고 수:', reports.length);
+      console.log('유효한 좌표를 가진 신고 수:', validReports.length);
+      console.log('유효한 신고 데이터:', validReports);
 
       if (validReports.length > 0) {
         // 실제 신고 데이터로 마커 생성
         validReports.forEach((report, index) => {
-          const lat = parseFloat(report.latitude);
-          const lng = parseFloat(report.longitude);
-          
-          console.log(`Creating marker ${index}:`, {
-            title: report.title,
-            id: report.id,
-            lat,
-            lng,
-            category: report.main_category
-          });
-          
-          // 유효한 좌표인지 확인 (한국 영역 내 좌표인지도 체크)
-          if (!isNaN(lat) && !isNaN(lng) && lat > 33 && lat < 39 && lng > 125 && lng < 130) {
+          try {
+            // 🔥 안전한 좌표 변환
+            const latStr = safeToString(report.latitude);
+            const lngStr = safeToString(report.longitude);
+            const lat = parseFloat(latStr);
+            const lng = parseFloat(lngStr);
             
-            // 카테고리에 따른 마커 색상 결정
-            let markerImageSrc = '';
-            let markerColor = '';
-            let imageSize = null;
-            
-            if (report.main_category === '재난' || report.main_category === '재해' || 
-                report.main_category.includes('재난') || report.main_category.includes('재해')) {
-              // 재난/재해: 빨간색 마커 (로컬 이미지)
-              markerImageSrc = redMarker;
-              markerColor = '빨간색 (재난/재해)';
-              imageSize = new window.kakao.maps.Size(32, 45); // 빨간색 마커 크기
-            } else if (report.main_category === '병해충' || report.main_category.includes('병해')) {
-              // 병해충: 파란색 마커 (로컬 이미지)
-              markerImageSrc = blueMarker;
-              markerColor = '파란색 (병해충)';
-              imageSize = new window.kakao.maps.Size(28, 40); // 파란색 마커 크기 (조금 작게)
-            } else {
-              // 기타: 기본 빨간색 마커
-              markerImageSrc = redMarker;
-              markerColor = '기본';
-              imageSize = new window.kakao.maps.Size(32, 45); // 기본 크기
-            }
-
-            // 마커 이미지 설정
-            const markerImage = new window.kakao.maps.MarkerImage(markerImageSrc, imageSize);
-
-            const marker = new window.kakao.maps.Marker({
-              position: new window.kakao.maps.LatLng(lat, lng),
-              title: report.title || `신고 ${index + 1}`,
-              image: markerImage
+            console.log(`마커 ${index + 1} 생성:`, {
+              title: report.title,
+              id: report.id,
+              originalLat: report.latitude,
+              originalLng: report.longitude,
+              convertedLat: lat,
+              convertedLng: lng,
+              category: report.main_category
             });
-            marker.setMap(map);
-
-            // 정보창 내용 구성
-            const categoryDisplay = report.main_category || '미분류';
-            const subCategoryDisplay = report.sub_category ? ` - ${report.sub_category}` : '';
             
-            const infoContent = `
-              <div style="padding:12px; min-width:220px; max-width:300px; border-radius: 8px;">
-                <strong style="color: #d32f2f; font-size: 15px; margin-bottom: 8px; display: block;">
-                  ${report.title || '신고 내용'}
-                </strong>
-                <div style="margin-bottom: 6px;">
-                  <span style="font-size: 13px; color: #666; background: #f5f5f5; padding: 2px 6px; border-radius: 4px;">
-                    ${categoryDisplay}${subCategoryDisplay}
-                  </span>
-                </div>
-                <div style="font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 6px; margin-top: 6px;">
-                  📍 위도: ${lat.toFixed(6)} | 경도: ${lng.toFixed(6)}<br/>
-                  🎯 마커: ${markerColor}
-                </div>
-              </div>
-            `;
+            // 한 번 더 유효성 검사
+            if (isValidCoordinate(lat, lng)) {
+              
+              // 카테고리에 따른 마커 색상 결정
+              let markerImageSrc = '';
+              let markerColor = '';
+              let imageSize = null;
+              
+              const mainCategory = safeToString(report.main_category).toLowerCase();
+              
+              if (mainCategory.includes('재난') || mainCategory.includes('재해') || 
+                  mainCategory === '재난' || mainCategory === '재해') {
+                // 재난/재해: 빨간색 마커
+                markerImageSrc = redMarker;
+                markerColor = '빨간색 (재난/재해)';
+                imageSize = new window.kakao.maps.Size(32, 45);
+              } else if (mainCategory.includes('병해충') || mainCategory.includes('병해') || 
+                         mainCategory === '병해충') {
+                // 병해충: 파란색 마커
+                markerImageSrc = blueMarker;
+                markerColor = '파란색 (병해충)';
+                imageSize = new window.kakao.maps.Size(28, 40);
+              } else {
+                // 기타: 기본 빨간색 마커
+                markerImageSrc = redMarker;
+                markerColor = '기본';
+                imageSize = new window.kakao.maps.Size(32, 45);
+              }
 
-            const infoWindow = new window.kakao.maps.InfoWindow({
-              content: infoContent,
-            });
+              // 마커 이미지 설정
+              const markerImage = new window.kakao.maps.MarkerImage(markerImageSrc, imageSize);
 
-            // 마커 클릭 시 정보창 표시 및 상세 정보 요청
-            window.kakao.maps.event.addListener(marker, 'click', () => {
-              console.log('Marker clicked:', {
-                title: report.title,
-                id: report.id,
-                hasOnMarkerClick: !!onMarkerClick
+              const marker = new window.kakao.maps.Marker({
+                position: new window.kakao.maps.LatLng(lat, lng),
+                title: safeToString(report.title) || `신고 ${index + 1}`,
+                image: markerImage
+              });
+              marker.setMap(map);
+
+              // 정보창 내용 구성
+              const title = safeToString(report.title) || '신고 내용';
+              const categoryDisplay = safeToString(report.main_category) || '미분류';
+              const subCategoryDisplay = report.sub_category ? ` - ${safeToString(report.sub_category)}` : '';
+              
+              const infoContent = `
+                <div style="padding:12px; min-width:220px; max-width:300px; border-radius: 8px;">
+                  <strong style="color: #d32f2f; font-size: 15px; margin-bottom: 8px; display: block;">
+                    ${title}
+                  </strong>
+                  <div style="margin-bottom: 6px;">
+                    <span style="font-size: 13px; color: #666; background: #f5f5f5; padding: 2px 6px; border-radius: 4px;">
+                      ${categoryDisplay}${subCategoryDisplay}
+                    </span>
+                  </div>
+                  <div style="font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 6px; margin-top: 6px;">
+                    📍 위도: ${lat.toFixed(6)} | 경도: ${lng.toFixed(6)}<br/>
+                    🎯 마커: ${markerColor}
+                  </div>
+                </div>
+              `;
+
+              const infoWindow = new window.kakao.maps.InfoWindow({
+                content: infoContent,
+              });
+
+              // 마커 클릭 시 정보창 표시 및 상세 정보 요청
+              window.kakao.maps.event.addListener(marker, 'click', () => {
+                console.log('🖱️ 마커 클릭:', {
+                  title: report.title,
+                  id: report.id,
+                  hasOnMarkerClick: !!onMarkerClick
+                });
+                
+                infoWindow.open(map, marker);
+                
+                // 상세 정보 요청
+                if (onMarkerClick) {
+                  if (report.id) {
+                    console.log(`✅ onMarkerClick 호출 - ID: ${report.id}`);
+                    onMarkerClick(report.id);
+                  } else {
+                    // ID가 없는 경우 임시로 인덱스나 제목 기반 ID 생성
+                    const safeTitle = safeToString(report.title).replace(/\s/g, '_');
+                    const tempId = `temp_${index}_${safeTitle}`;
+                    console.warn(`⚠️ Report ID 없음, 임시 ID 사용: ${tempId}`);
+                    onMarkerClick(tempId);
+                  }
+                } else {
+                  console.warn('⚠️ onMarkerClick 콜백이 제공되지 않음');
+                }
               });
               
-              infoWindow.open(map, marker);
-              
-              // 상세 정보 요청
-              if (onMarkerClick) {
-                if (report.id) {
-                  console.log(`Calling onMarkerClick with ID: ${report.id}`);
-                  onMarkerClick(report.id);
-                } else {
-                  // ID가 없는 경우 임시로 인덱스나 제목 기반 ID 생성
-                  const tempId = `temp_${index}_${report.title.replace(/\s/g, '_')}`;
-                  console.warn(`Report ID missing, using temporary ID: ${tempId}`);
-                  onMarkerClick(tempId);
-                }
-              } else {
-                console.warn('onMarkerClick callback not provided');
-              }
-            });
-          } else {
-            console.warn(`Invalid coordinates for report: ${report.title}, lat: ${lat}, lng: ${lng}`);
+              console.log(`✅ 마커 ${index + 1} 생성 완료`);
+            } else {
+              console.warn(`❌ 유효하지 않은 좌표: ${report.title}, lat: ${lat}, lng: ${lng}`);
+            }
+          } catch (error) {
+            console.error(`❌ 마커 ${index + 1} 생성 중 오류:`, error, report);
           }
         });
 
-        // 대한민국 전체 뷰 유지 (개별 신고 위치로 이동하지 않음)
-        console.log(`✅ ${validReports.length}개의 신고가 지도에 표시되었습니다.`);
+        console.log(`🗺️ 총 ${validReports.length}개의 신고가 지도에 표시되었습니다.`);
 
       } else {
         // 신고 데이터가 없거나 위도/경도가 없는 경우 기본 마커들 표시
+        console.log('📍 유효한 신고 데이터가 없어 기본 마커 표시');
+        
         const defaultMarkerPositions = [
           { lat: 37.5665, lng: 126.9780, title: '서울' },
           { lat: 35.1796, lng: 129.0756, title: '부산' },
@@ -217,7 +262,16 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
     };
 
     createScript();
-  }, [reports, onMarkerClick]); // reports와 onMarkerClick이 변경될 때마다 지도를 다시 그림
+  }, [reports, onMarkerClick]);
+
+  // 🔥 안전한 카운팅
+  const validReportsCount = reports.filter(report => {
+    try {
+      return isValidCoordinate(report.latitude, report.longitude);
+    } catch {
+      return false;
+    }
+  }).length;
 
   return (
     <MapContainer>
@@ -236,7 +290,7 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
             <ReportCounter>
               <CounterText>총 {reports.length}건의 신고</CounterText>
               <CounterSubText>
-                (위치 정보: {reports.filter(r => r.latitude && r.longitude && r.latitude !== "" && r.longitude !== "").length}건)
+                (위치 정보: {validReportsCount}건)
               </CounterSubText>
             </ReportCounter>
             
@@ -273,11 +327,11 @@ const MapWrapper = styled.div`
   background: #fff;
   
   @media (max-width: 768px) {
-    width: 95vw; /* 모바일에서 지도 크기 확대 */
+    width: 95vw;
   }
   
   @media (max-width: 480px) {
-    width: 98vw; /* 작은 모바일에서 더 크게 */
+    width: 98vw;
   }
 `;
 
@@ -287,11 +341,11 @@ const MapDiv = styled.div`
   background-color: #FFEFD5 !important;
   
   @media (max-width: 768px) {
-    height: 400px !important; /* 모바일에서 적당한 높이 유지 */
+    height: 400px !important;
   }
   
   @media (max-width: 480px) {
-    height: 350px !important; /* 작은 모바일에서 높이 조정 */
+    height: 350px !important;
   }
 `;
 

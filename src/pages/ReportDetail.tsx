@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import { Logo } from '../Components/Logo/Logo';
 import Map from '../Components/Map/Map';
 import { useNavigate } from "react-router-dom";
-import BakanaeImage from '../assets/images/Bakanae disease.jpeg';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -116,18 +115,18 @@ const ContentWrapper = styled.div`
   background-color: white;
   border-radius: 16px;
   padding: 50px;
-  width: 60vw; /* 지도와 동일한 너비 */
+  width: 60vw;
   margin: 0 auto 40px auto;
   box-sizing: border-box;
   
   @media (max-width: 768px) {
-    width: 95vw; /* 모바일에서 지도와 동일한 크기 */
+    width: 95vw;
     padding: 30px 20px;
     margin: 0 auto;
   }
   
   @media (max-width: 480px) {
-    width: 98vw; /* 작은 모바일에서 지도와 동일한 크기 */
+    width: 98vw;
     padding: 25px 15px;
     margin: 0 auto;
   }
@@ -343,7 +342,7 @@ interface ReportData {
   sub_category: string;
   latitude: string;
   longitude: string;
-  id?: string; // 신고 ID 추가
+  id?: string;
 }
 
 interface ReportDetailData {
@@ -365,23 +364,111 @@ interface ApiResponse {
   reports: ReportData[];
 }
 
+// 🔥 파일 URL 생성 함수 추가
+const getFileUrl = (filePath: string): string => {
+  if (!filePath) return '';
+  
+  // 이미 완전한 URL인 경우
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+    return filePath;
+  }
+  
+  // /static으로 시작하는 경우
+  if (filePath.startsWith('/static')) {
+    return `http://localhost:8000${filePath}`;
+  }
+  
+  // 파일명만 있는 경우
+  return `http://localhost:8000/static/uploads/reports/${filePath}`;
+};
+
+// 🔥 이미지 표시 컴포넌트
+const ImageDisplay: React.FC<{ files: string[] }> = ({ files }) => {
+  if (!files || files.length === 0) {
+    return (
+      <div style={{
+        padding: '40px 20px',
+        backgroundColor: '#f8f9fa',
+        border: '2px dashed #dee2e6',
+        borderRadius: '12px',
+        textAlign: 'center',
+        color: '#6c757d',
+        fontSize: '14px'
+      }}>
+        <div style={{ marginBottom: '10px' }}>📷</div>
+        <div>첨부된 파일이 없습니다</div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {files.map((file, index) => {
+        const fileUrl = getFileUrl(file);
+        console.log(`🖼️ 이미지 ${index + 1} URL:`, fileUrl);
+        
+        return (
+          <div key={index} style={{ marginBottom: '15px' }}>
+            <ReportImage 
+              src={fileUrl}
+              alt={`신고 첨부 파일 ${index + 1}`}
+              onLoad={() => {
+                console.log(`✅ 이미지 ${index + 1} 로드 성공:`, fileUrl);
+              }}
+              onError={(e) => {
+                console.error(`❌ 이미지 ${index + 1} 로드 실패:`, fileUrl);
+                
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                
+                // 오류 메시지 표시
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = `
+                  padding: 40px 20px;
+                  background-color: #f8f9fa;
+                  border: 2px dashed #dee2e6;
+                  border-radius: 12px;
+                  text-align: center;
+                  color: #6c757d;
+                  font-size: 14px;
+                `;
+                errorDiv.innerHTML = `
+                  <div style="margin-bottom: 10px;">📷</div>
+                  <div>이미지를 불러올 수 없습니다</div>
+                  <div style="font-size: 12px; margin-top: 5px; color: #999;">
+                    URL: ${fileUrl}
+                  </div>
+                  <div style="font-size: 11px; margin-top: 5px; color: #999;">
+                    원본 경로: ${file}
+                  </div>
+                `;
+                
+                target.parentNode?.insertBefore(errorDiv, target.nextSibling);
+              }}
+            />
+            <ImageCaption>첨부 파일 {index + 1}</ImageCaption>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // API 함수들
 const fetchRecentReports = async (): Promise<ApiResponse> => {
   try {
     console.log('Attempting to fetch reports from API...');
     
-    // CORS 헤더와 함께 요청
     const response = await fetch('http://localhost:8000/reports/recent', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      mode: 'cors', // CORS 모드 명시
+      mode: 'cors',
     });
     
     console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
     
     if (!response.ok) {
       console.warn(`API call failed with status: ${response.status}. Using mock data.`);
@@ -434,7 +521,7 @@ const fetchReportDetail = async (reportId: string): Promise<ReportDetailData | n
   }
 };
 
-// 목업 데이터 함수 (실제 API 응답 형태로 수정)
+// 목업 데이터 함수
 const getMockData = (): ApiResponse => {
   console.log('📋 Using mock data');
   return {
@@ -484,7 +571,6 @@ export const ReportDetail: React.FC = () => {
         
         console.log('Reports loaded successfully:', data.reports);
         
-        // 각 신고에 ID가 있는지 확인
         data.reports.forEach((report, index) => {
           console.log(`Report ${index}:`, {
             title: report.title,
@@ -493,8 +579,6 @@ export const ReportDetail: React.FC = () => {
           });
         });
       } catch (err) {
-        // 이제 fetchRecentReports에서 목업 데이터를 반환하므로 
-        // 여기서는 실제 치명적인 오류만 처리
         setError('데이터를 불러올 수 없습니다.');
         console.error('Critical error loading reports:', err);
       } finally {
@@ -520,7 +604,6 @@ export const ReportDetail: React.FC = () => {
       if (reportId.startsWith('temp_') || reportId.startsWith('mock_')) {
         console.log('Using mock detail data for:', reportId);
         
-        // 제목 기반으로 목업 데이터 생성
         const mockDetail: ReportDetailData = {
           user_id: "mock_user_id",
           username: "테스트 사용자",
@@ -550,6 +633,23 @@ export const ReportDetail: React.FC = () => {
       setLoadingDetail(false);
     }
   };
+
+  // 🔥 파일 정보 디버깅을 위한 useEffect 추가
+  useEffect(() => {
+    if (selectedReportDetail) {
+      console.log('=== 선택된 신고 상세 정보 ===');
+      console.log('제목:', selectedReportDetail.title);
+      console.log('파일 정보:', selectedReportDetail.files);
+      console.log('파일 개수:', selectedReportDetail.files?.length || 0);
+      
+      if (selectedReportDetail.files && selectedReportDetail.files.length > 0) {
+        selectedReportDetail.files.forEach((file, index) => {
+          console.log(`파일 ${index + 1}:`, file);
+          console.log(`파일 ${index + 1} URL:`, getFileUrl(file));
+        });
+      }
+    }
+  }, [selectedReportDetail]);
 
   if (loading) {
     return (
@@ -585,7 +685,6 @@ export const ReportDetail: React.FC = () => {
       </MapContainer>
       
       <ContentWrapper>
-        {/* 선택된 신고의 상세 정보만 표시 */}
         {selectedReportDetail ? (
           <InfoSection>
             <InfoItem>
@@ -644,30 +743,19 @@ export const ReportDetail: React.FC = () => {
                   </DetailContent>
                 </DetailSection>
                 
-                {/* 첨부 파일이 있는 경우 표시 */}
-                {selectedReportDetail.files && selectedReportDetail.files.length > 0 && (
-                  <ImageSection>
-                    <ImageLabelContainer>
-                      <InfoLabel>첨부 파일:</InfoLabel>
-                    </ImageLabelContainer>
-                    <ImageContainer>
-                      <ReportImage 
-                        src={`http://localhost:8000${selectedReportDetail.files[0]}`}
-                        alt="신고 첨부 파일"
-                        onError={(e) => {
-                          console.error('이미지 로드 실패:', selectedReportDetail.files[0]);
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                      <ImageCaption>신고 첨부 이미지</ImageCaption>
-                    </ImageContainer>
-                  </ImageSection>
-                )}
+                {/* 🔥 수정된 첨부 파일 표시 부분 */}
+                <ImageSection>
+                  <ImageLabelContainer>
+                    <InfoLabel>첨부 파일:</InfoLabel>
+                  </ImageLabelContainer>
+                  <ImageContainer>
+                    <ImageDisplay files={selectedReportDetail.files || []} />
+                  </ImageContainer>
+                </ImageSection>
               </>
             )}
           </InfoSection>
         ) : (
-          /* 마커를 클릭하지 않은 초기 상태 */
           <InfoSection>
             <InfoItem>
               <InfoLabel style={{ color: '#666', fontWeight: 600, fontSize: '18px' }}>
@@ -685,7 +773,6 @@ export const ReportDetail: React.FC = () => {
           </InfoSection>
         )}
 
-        {/* 실시간 신고 목록 요약만 표시 */}
         {reportsData.length > 0 && (
           <DetailSection>
             <InfoItem>
@@ -705,3 +792,4 @@ export const ReportDetail: React.FC = () => {
 };
 
 export default ReportDetail;
+                
