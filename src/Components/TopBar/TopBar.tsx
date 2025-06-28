@@ -2,8 +2,8 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { logout, initializeAuth, setUser } from '../../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '../../Store/hooks';
+import { logout, initializeAuth, setUser } from '../../Store/slices/authSlice';
 import axios from 'axios';
 
 // API 설정

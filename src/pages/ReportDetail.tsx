@@ -522,7 +522,7 @@ interface AIDetectionResult {
       x2: number;
       y2: number;
     };
-  };
+  } | null;
 }
 
 interface ApiResponse {
@@ -544,8 +544,13 @@ const getFileUrl = (filePath: string): string => {
   return `http://localhost:8000/static/uploads/reports/${filePath}`;
 };
 
-// 🔥 AI 진단 결과 표시 컴포넌트
-const AIResultDisplay: React.FC<{ aiResult: AIDetectionResult | null; loading: boolean }> = ({ aiResult, loading }) => {
+// 🔥 수정된 AI 진단 결과 표시 컴포넌트
+const AIResultDisplay: React.FC<{ 
+  aiResult: AIDetectionResult | null; 
+  loading: boolean; 
+  error?: string | null;
+}> = ({ aiResult, loading, error }) => {
+  // 로딩 중일 때
   if (loading) {
     return (
       <AIResultContainer>
@@ -557,6 +562,17 @@ const AIResultDisplay: React.FC<{ aiResult: AIDetectionResult | null; loading: b
     );
   }
 
+  // 에러가 있을 때
+  if (error) {
+    return (
+      <NoAIResult>
+        <div style={{ marginBottom: '10px' }}>⚠️ AI 진단 중 오류 발생</div>
+        <div style={{ fontSize: '12px', color: '#999' }}>{error}</div>
+      </NoAIResult>
+    );
+  }
+
+  // AI 결과가 없거나 null일 때
   if (!aiResult) {
     return (
       <NoAIResult>
@@ -565,57 +581,77 @@ const AIResultDisplay: React.FC<{ aiResult: AIDetectionResult | null; loading: b
     );
   }
 
-  const confidencePercentage = Math.round(aiResult.primary_detection.confidence * 100);
+  // primary_detection이 없거나 null일 때
+  if (!aiResult.primary_detection) {
+    return (
+      <NoAIResult>
+        🤖 AI가 병해충을 탐지하지 못했습니다
+      </NoAIResult>
+    );
+  }
 
-  return (
-    <AIResultContainer>
-      <AIBadge>AI 분석</AIBadge>
-      
-      <AIResultItem>
-        <AILabel>탐지 카테고리:</AILabel>
-        <AIValue>{aiResult.category}</AIValue>
-      </AIResultItem>
-      
-      <AIResultItem>
-        <AILabel>주요 진단:</AILabel>
-        <AIValue>{aiResult.primary_detection.class_name}</AIValue>
-      </AIResultItem>
-      
-      <AIResultItem>
-        <AILabel>신뢰도:</AILabel>
-        <div style={{ flex: 1 }}>
-          <AIValue>{confidencePercentage}%</AIValue>
-          <ConfidenceBar confidence={confidencePercentage} />
-        </div>
-      </AIResultItem>
-      
-      <AIResultItem>
-        <AILabel>총 탐지 수:</AILabel>
-        <AIValue>{aiResult.total_detections}개</AIValue>
-      </AIResultItem>
-      
-      {aiResult.detections.length > 1 && (
-        <AIResultItem style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-          <AILabel style={{ marginBottom: '8px' }}>추가 탐지 결과:</AILabel>
-          <div style={{ width: '100%' }}>
-            {aiResult.detections.slice(1).map((detection, index) => (
-              <div key={index} style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                padding: '4px 0',
-                fontSize: '14px',
-                color: '#6c757d'
-              }}>
-                <span>{detection.class_name}</span>
-                <span>{Math.round(detection.confidence * 100)}%</span>
-              </div>
-            ))}
+  // 정상적인 AI 결과 표시
+  try {
+    const confidencePercentage = Math.round(aiResult.primary_detection.confidence * 100);
+
+    return (
+      <AIResultContainer>
+        <AIBadge>AI 분석</AIBadge>
+        
+        <AIResultItem>
+          <AILabel>탐지 카테고리:</AILabel>
+          <AIValue>{aiResult.category || '알 수 없음'}</AIValue>
+        </AIResultItem>
+        
+        <AIResultItem>
+          <AILabel>주요 진단:</AILabel>
+          <AIValue>{aiResult.primary_detection.class_name || '알 수 없음'}</AIValue>
+        </AIResultItem>
+        
+        <AIResultItem>
+          <AILabel>신뢰도:</AILabel>
+          <div style={{ flex: 1 }}>
+            <AIValue>{confidencePercentage}%</AIValue>
+            <ConfidenceBar confidence={confidencePercentage} />
           </div>
         </AIResultItem>
-      )}
-    </AIResultContainer>
-  );
+        
+        <AIResultItem>
+          <AILabel>총 탐지 수:</AILabel>
+          <AIValue>{aiResult.total_detections || 0}개</AIValue>
+        </AIResultItem>
+        
+        {aiResult.detections && aiResult.detections.length > 1 && (
+          <AIResultItem style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+            <AILabel style={{ marginBottom: '8px' }}>추가 탐지 결과:</AILabel>
+            <div style={{ width: '100%' }}>
+              {aiResult.detections.slice(1).map((detection, index) => (
+                <div key={index} style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  padding: '4px 0',
+                  fontSize: '14px',
+                  color: '#6c757d'
+                }}>
+                  <span>{detection.class_name || '알 수 없음'}</span>
+                  <span>{Math.round((detection.confidence || 0) * 100)}%</span>
+                </div>
+              ))}
+            </div>
+          </AIResultItem>
+        )}
+      </AIResultContainer>
+    );
+  } catch (renderError) {
+    console.error('AI 결과 렌더링 오류:', renderError);
+    return (
+      <NoAIResult>
+        <div style={{ marginBottom: '10px' }}>⚠️ AI 결과 표시 중 오류 발생</div>
+        <div style={{ fontSize: '12px', color: '#999' }}>결과 데이터 형식이 올바르지 않습니다</div>
+      </NoAIResult>
+    );
+  }
 };
 
 // 🔥 이미지 표시 컴포넌트
@@ -692,7 +728,7 @@ const ImageDisplay: React.FC<{ files: string[] }> = ({ files }) => {
 // 🔥 API 함수들
 const fetchRecentReports = async (): Promise<ApiResponse> => {
   try {
-    console.log('Attempting to fetch reports from API...');
+    console.log('🔄 신고 목록 조회 시작...');
     
     const response = await fetch('http://localhost:8000/reports/recent', {
       method: 'GET',
@@ -703,61 +739,88 @@ const fetchRecentReports = async (): Promise<ApiResponse> => {
       mode: 'cors',
     });
     
-    console.log('Response status:', response.status);
+    console.log('API 응답 상태:', response.status);
     
     if (!response.ok) {
-      console.warn(`API call failed with status: ${response.status}. Using mock data.`);
+      console.warn(`API 호출 실패: ${response.status}. 목업 데이터 사용.`);
       return getMockData();
     }
 
     const contentType = response.headers.get('content-type');
-    console.log('Content-Type:', contentType);
-    
     if (!contentType || !contentType.includes('application/json')) {
-      console.warn('API did not return JSON. Using mock data.');
+      console.warn('JSON 응답이 아님. 목업 데이터 사용.');
       return getMockData();
     }
 
     const data = await response.json();
-    console.log('✅ API Response successful:', data);
+    console.log('✅ 신고 목록 조회 성공:', data);
     return data;
   } catch (error) {
-    console.error('❌ API call failed:', error);
-    console.log('🔄 Falling back to mock data');
+    console.error('❌ API 호출 실패:', error);
+    console.log('🔄 목업 데이터로 대체');
     return getMockData();
   }
 };
 
 const fetchReportDetail = async (reportId: string): Promise<ReportDetailData | null> => {
   try {
-    console.log(`Fetching report detail for ID: ${reportId}`);
+    console.log(`🔍 신고 상세 정보 조회: ${reportId}`);
     
-    const response = await fetch(`http://localhost:8000/report/${reportId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      mode: 'cors',
-    });
+    // 🔥 여러 가능한 엔드포인트를 시도
+    const possibleEndpoints = [
+      `http://localhost:8000/damage-report/${reportId}`,
+      `http://localhost:8000/reports/${reportId}`,
+      `http://localhost:8000/report/${reportId}`,
+      `http://localhost:8000/damage-reports/${reportId}`
+    ];
     
-    if (!response.ok) {
-      console.warn(`Failed to fetch report detail: ${response.status}`);
-      return null;
+    for (const endpoint of possibleEndpoints) {
+      try {
+        console.log(`🔄 시도 중인 엔드포인트: ${endpoint}`);
+        
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          mode: 'cors',
+        });
+        
+        console.log(`📡 ${endpoint} 응답 상태: ${response.status}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ 신고 상세 정보 조회 성공:', data);
+          return data;
+        } else if (response.status === 404) {
+          console.log(`❌ ${endpoint}에서 404 - 다음 엔드포인트 시도`);
+          continue;
+        } else {
+          console.warn(`⚠️ ${endpoint}에서 ${response.status} 오류`);
+          continue;
+        }
+      } catch (endpointError) {
+        console.error(`❌ ${endpoint} 호출 실패:`, endpointError);
+        continue;
+      }
     }
-
-    const data = await response.json();
-    console.log('✅ Report detail fetched:', data);
-    return data;
+    
+    console.warn('❌ 모든 엔드포인트에서 신고 상세 조회 실패');
+    return null;
   } catch (error) {
-    console.error('❌ Failed to fetch report detail:', error);
+    console.error('❌ 신고 상세 조회 실패:', error);
     return null;
   }
 };
 
-const fetchAIDiagnosis = async (reportId: string): Promise<AIDetectionResult | null> => {
+// 🔥 수정된 AI 진단 API 함수
+const fetchAIDiagnosis = async (reportId: string): Promise<{ 
+  result: AIDetectionResult | null; 
+  error?: string | null 
+}> => {
   try {
-    console.log(`🤖 Fetching AI diagnosis for report ID: ${reportId}`);
+    console.log(`🤖 AI 진단 요청: ${reportId}`);
     
     const response = await fetch(`http://localhost:8000/damage-report/detect-damage/${reportId}`, {
       method: 'GET',
@@ -768,22 +831,64 @@ const fetchAIDiagnosis = async (reportId: string): Promise<AIDetectionResult | n
       mode: 'cors',
     });
     
+    console.log('AI 진단 응답 상태:', response.status);
+    
     if (!response.ok) {
-      console.warn(`❌ AI diagnosis API failed with status: ${response.status}`);
-      return null;
+      const errorText = await response.text();
+      console.warn(`❌ AI diagnosis API failed with status: ${response.status}, body: ${errorText}`);
+      
+      let errorMessage = 'AI 진단 서비스에 연결할 수 없습니다';
+      if (response.status === 404) {
+        errorMessage = '해당 신고를 찾을 수 없습니다';
+      } else if (response.status === 500) {
+        errorMessage = 'AI 분석 중 서버 오류가 발생했습니다';
+      } else if (response.status >= 400 && response.status < 500) {
+        errorMessage = '잘못된 요청입니다';
+      }
+      
+      return { result: null, error: errorMessage };
     }
 
     const data = await response.json();
-    console.log('✅ AI diagnosis fetched:', data);
-    return data;
+    console.log('AI 진단 응답 데이터:', data);
+    
+    // 에러 응답 처리
+    if (data.error) {
+      console.warn(`❌ AI 진단 에러: ${data.error}`);
+      return { result: null, error: data.error };
+    }
+    
+    // 빈 결과 처리
+    if (!data || typeof data !== 'object') {
+      console.warn('❌ AI 진단 결과 형식 오류');
+      return { result: null, error: '응답 데이터 형식이 올바르지 않습니다' };
+    }
+    
+    // primary_detection이 없는 경우 처리
+    if (!data.primary_detection) {
+      console.log('ℹ️ AI 진단 완료 - 탐지 결과 없음');
+      return { result: { ...data, primary_detection: null }, error: null };
+    }
+    
+    console.log('✅ AI 진단 성공:', data);
+    return { result: data, error: null };
+    
   } catch (error) {
-    console.error('❌ Failed to fetch AI diagnosis:', error);
-    return null;
+    console.error('❌ AI 진단 요청 실패:', error);
+    
+    let errorMessage = 'AI 진단 중 오류가 발생했습니다';
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      errorMessage = '네트워크 연결을 확인해주세요';
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    return { result: null, error: errorMessage };
   }
 };
 
 const getMockData = (): ApiResponse => {
-  console.log('📋 Using mock data');
+  console.log('📋 목업 데이터 사용');
   return {
     reports: [
       {
@@ -823,6 +928,7 @@ export const ReportDetail: React.FC = () => {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [aiDiagnosis, setAiDiagnosis] = useState<AIDetectionResult | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null); // 🔥 AI 에러 상태 추가
 
   // 🔥 초기 데이터 로드
   useEffect(() => {
@@ -830,21 +936,13 @@ export const ReportDetail: React.FC = () => {
       try {
         setLoading(true);
         const data = await fetchRecentReports();
-        setReportsData(data.reports);
+        setReportsData(data.reports || []);
         setError(null);
         
-        console.log('Reports loaded successfully:', data.reports);
-        
-        data.reports.forEach((report, index) => {
-          console.log(`Report ${index}:`, {
-            title: report.title,
-            id: report.id,
-            hasId: !!report.id
-          });
-        });
+        console.log('신고 목록 로드 완료:', data.reports);
       } catch (err) {
         setError('데이터를 불러올 수 없습니다.');
-        console.error('Critical error loading reports:', err);
+        console.error('신고 목록 로드 중 치명적 오류:', err);
       } finally {
         setLoading(false);
       }
@@ -853,32 +951,35 @@ export const ReportDetail: React.FC = () => {
     loadReports();
   }, []);
 
-  // 🔥 마커 클릭 핸들러
+  // 🔥 수정된 마커 클릭 핸들러
   const handleMarkerClick = async (reportId: string) => {
-    console.log('handleMarkerClick called with:', reportId);
+    console.log('🗺️ 마커 클릭:', reportId);
     
     if (!reportId) {
-      console.warn('Report ID is missing');
+      console.warn('❌ Report ID가 없습니다');
       return;
     }
 
+    // 상태 초기화
     setLoadingDetail(true);
-    setLoadingAI(true);
+    setLoadingAI(false);
     setAiDiagnosis(null);
+    setAiError(null); // AI 에러 상태도 초기화
+    setSelectedReportDetail(null);
     
     try {
       if (reportId.startsWith('temp_') || reportId.startsWith('mock_')) {
-        console.log('Using mock detail data for:', reportId);
+        console.log('🎭 목업 데이터 사용:', reportId);
         
         const mockDetail: ReportDetailData = {
           user_id: "mock_user_id",
           username: "테스트 사용자",
           main_category: "병해충",
-          sub_category: "병해",
+          sub_category: "해충",
           title: reportId.includes('다저벌악') ? "다저벌악" : 
                  reportId.includes('태풍') ? "제주도 태풍" :
                  reportId.includes('지진') ? "전주 지진 발생" : "테스트 신고",
-          content: "이것은 테스트 신고 내용입니다. 실제 API 연동 시 실제 데이터로 대체됩니다.",
+          content: `이것은 ${reportId} 신고에 대한 상세 내용입니다.`,
           local: "테스트 지역",
           latitude: "37.5665",
           longitude: "126.978",
@@ -889,8 +990,9 @@ export const ReportDetail: React.FC = () => {
         
         setSelectedReportDetail(mockDetail);
         
-        // 병해충 신고인 경우만 AI 진단 (목업 데이터)
+        // 병해충 신고인 경우만 AI 진단 (목업)
         if (mockDetail.main_category === "병해충") {
+          setLoadingAI(true);
           setTimeout(() => {
             const mockAIResult: AIDetectionResult = {
               category: "해충",
@@ -920,30 +1022,90 @@ export const ReportDetail: React.FC = () => {
             };
             setAiDiagnosis(mockAIResult);
             setLoadingAI(false);
-          }, 1500);
-        } else {
-          setLoadingAI(false);
+          }, 2000);
         }
       } else {
         // 실제 API 호출
+        console.log('🌐 실제 API 호출 시작');
         const detail = await fetchReportDetail(reportId);
-        setSelectedReportDetail(detail);
         
-        // 병해충 신고인 경우만 AI 진단 실행
-        if (detail && detail.main_category === "병해충") {
-          try {
-            const aiResult = await fetchAIDiagnosis(reportId);
-            setAiDiagnosis(aiResult);
-          } catch (aiError) {
-            console.error('AI diagnosis failed:', aiError);
-            setAiDiagnosis(null);
+        if (detail) {
+          setSelectedReportDetail(detail);
+          console.log('✅ 신고 상세 정보 로드 완료:', detail);
+          
+          // 병해충 신고인 경우만 AI 진단 실행
+          if (detail.main_category === "병해충") {
+            console.log('🤖 병해충 신고 감지 - AI 진단 시작');
+            setLoadingAI(true);
+            
+            try {
+              const { result: aiResult, error: aiErrorMessage } = await fetchAIDiagnosis(reportId);
+              setAiDiagnosis(aiResult);
+              setAiError(aiErrorMessage);
+              
+              if (aiResult) {
+                console.log('🎉 AI 진단 성공:', aiResult);
+              } else if (aiErrorMessage) {
+                console.log('⚠️ AI 진단 에러:', aiErrorMessage);
+              } else {
+                console.log('ℹ️ AI 진단 완료 - 탐지 결과 없음');
+              }
+            } catch (aiError) {
+              console.error('AI 진단 중 예외 발생:', aiError);
+              setAiDiagnosis(null);
+              setAiError('AI 진단 중 예상치 못한 오류가 발생했습니다');
+            } finally {
+              setLoadingAI(false);
+            }
+          }
+        } else {
+          console.error('❌ 신고 상세 정보 로드 실패 - 목업 데이터 사용');
+          
+          // 🔥 API 실패 시 목업 데이터로 대체
+          const fallbackDetail: ReportDetailData = {
+            user_id: "fallback_user",
+            username: "신고자",
+            main_category: "병해충",
+            sub_category: "해충",
+            title: `신고 ID: ${reportId}`,
+            content: `API 연결에 실패하여 임시 데이터를 표시합니다. 신고 ID: ${reportId}`,
+            local: "위치 정보 불명",
+            latitude: "37.5665",
+            longitude: "126.978",
+            files: [],
+            created_at: new Date().toISOString(),
+            id: reportId
+          };
+          setSelectedReportDetail(fallbackDetail);
+          
+          // 병해충 신고인 경우 목업 AI 결과도 제공
+          if (fallbackDetail.main_category === "병해충") {
+            setLoadingAI(true);
+            setTimeout(() => {
+              const fallbackAIResult: AIDetectionResult = {
+                category: "해충",
+                total_detections: 1,
+                detections: [{
+                  class_id: 0,
+                  class_name: "알 수 없는 병해충",
+                  confidence: 0.5,
+                  bbox: { x1: 0, y1: 0, x2: 100, y2: 100 }
+                }],
+                primary_detection: {
+                  class_id: 0,
+                  class_name: "알 수 없는 병해충",
+                  confidence: 0.5,
+                  bbox: { x1: 0, y1: 0, x2: 100, y2: 100 }
+                }
+              };
+              setAiDiagnosis(fallbackAIResult);
+              setLoadingAI(false);
+            }, 1000);
           }
         }
-        setLoadingAI(false);
       }
     } catch (error) {
-      console.error('Error fetching report detail:', error);
-      setLoadingAI(false);
+      console.error('❌ 마커 클릭 처리 중 전체 오류:', error);
     } finally {
       setLoadingDetail(false);
     }
@@ -1064,7 +1226,11 @@ export const ReportDetail: React.FC = () => {
                     <InfoItem>
                       <InfoLabel>🤖 AI 진단 결과:</InfoLabel>
                     </InfoItem>
-                    <AIResultDisplay aiResult={aiDiagnosis} loading={loadingAI} />
+                    <AIResultDisplay 
+                      aiResult={aiDiagnosis} 
+                      loading={loadingAI} 
+                      error={aiError}
+                    />
                   </AISection>
                 )}
                 
