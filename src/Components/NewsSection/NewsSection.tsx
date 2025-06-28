@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import axios from 'axios';
 
 interface NewsItem {
   id: number;
@@ -9,50 +10,151 @@ interface NewsItem {
   description: string;
   date: string;
   author: string;
+  link?: string;
 }
+
+interface Project {
+  title: string;
+  link: string;
+}
+
+// 🔥 API 설정
+const API_BASE_URL = 'http://localhost:8000';
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 8000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+});
+
+// 🔥 API 함수
+const fetchOngoingProjects = async (): Promise<Project[]> => {
+  try {
+    console.log('🔄 NewsSection: 세미나/행사 정보 조회 시작...');
+    
+    const response = await apiClient.get('/rda/ongoing-projects');
+    
+    console.log('NewsSection API 응답 상태:', response.status);
+    console.log('NewsSection API 응답 데이터:', response.data);
+    
+    if (response.status === 200 && Array.isArray(response.data)) {
+      console.log('✅ NewsSection: 세미나/행사 정보 조회 성공:', response.data.length, '건');
+      return response.data;
+    } else {
+      console.warn('❌ NewsSection: 예상과 다른 응답 형식:', response.data);
+      throw new Error('Invalid response format');
+    }
+  } catch (error) {
+    console.error('❌ NewsSection: 세미나/행사 정보 조회 실패:', error);
+    throw error;
+  }
+};
+
+// 🔥 목업 데이터 (백엔드 연결 실패 시 사용)
+const getMockNewsData = (): NewsItem[] => {
+  console.log('📋 NewsSection: 목업 데이터 사용');
+  return [
+    {
+      id: 1,
+      category: '공지사항',
+      title: '스마트 농업 현장 문제점 찾아 지원금 지원 세미나',
+      description: '농촌진흥청에서 주관하는 스마트 농업 현장의 다양한 문제 해결을 위한 데이터 수집 및 지원금 안내',
+      date: '2025-06-29',
+      author: '농촌진흥청'
+    },
+    {
+      id: 2,
+      category: '교육',
+      title: '디지털 농업 기술 교육 프로그램 안내',
+      description: '최신 디지털 농업 기술 및 스마트팜 운영 노하우에 대한 실무 교육 프로그램',
+      date: '2025-06-28',
+      author: '농촌진흥청'
+    },
+    {
+      id: 3,
+      category: '지원사업',
+      title: '친환경 농업 지원 사업 설명회',
+      description: '친환경 농업 실천을 위한 각종 지원 사업 및 혜택에 대한 상세 안내',
+      date: '2025-06-27',
+      author: '농촌진흥청'
+    },
+    {
+      id: 4,
+      category: '창업지원',
+      title: '농업인 창업 지원 프로그램',
+      description: '신규 농업인 및 창업을 희망하는 농업인을 위한 맞춤형 지원 프로그램',
+      date: '2025-06-26',
+      author: '농촌진흥청'
+    }
+  ];
+};
 
 const NewsSection: React.FC = () => {
   const navigate = useNavigate();
   const newsGridRef = useRef<HTMLDivElement>(null);
+  
+  // 🔥 상태 관리
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const newsItems: NewsItem[] = [
-    {
-      id: 1,
-      category: '공지사항',
-      title: '스마트 농업 현장 문제점 찾아 시설물...',
-      description: '미강의 스마트 농업 현장에서 다양한 문제 해결 데이터 수집',
-      date: '2025-05-29',
-      author: '민혜경'
-    },
-    {
-      id: 2,
-      category: '공지사항',
-      title: '마을 공동체 참여 없어도 질블금 수령...',
-      description: '미강의 스마트 농업 현장에서 다양한 문제 해결 데이터 수집',
-      date: '2025-05-29',
-      author: '민혜경'
-    },
-    {
-      id: 3,
-      category: '공지사항',
-      title: '마을 공동체 참여 없어도 질블금 수령...',
-      description: '미강의 스마트 농업 현장에서 다양한 문제 해결 데이터 수집',
-      date: '2025-05-29',
-      author: '민혜경'
-    },
-    {
-      id: 4,
-      category: '공지사항',
-      title: '마을 공동체 참여 없어도 질블금 수령...',
-      description: '미강의 스마트 농업 현장에서 다양한 문제 해결 데이터 수집',
-      date: '2025-05-29',
-      author: '민혜경'
+  // 🔥 데이터 로드 함수
+  const loadNewsData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const projects = await fetchOngoingProjects();
+      
+      // Project[] 형식을 NewsItem[] 형식으로 변환
+      const transformedData: NewsItem[] = projects.slice(0, 8).map((project, index) => ({
+        id: index + 1,
+        category: '공지사항',
+        title: project.title,
+        description: `농촌진흥청에서 제공하는 ${project.title.includes('교육') ? '교육' : 
+          project.title.includes('지원') ? '지원사업' : 
+          project.title.includes('세미나') ? '세미나' : '프로그램'} 정보입니다.`,
+        date: new Date().toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).replace(/\./g, '-').replace(/ /g, ''),
+        author: '농촌진흥청',
+        link: project.link
+      }));
+      
+      setNewsItems(transformedData);
+      
+      console.log('✅ NewsSection: 뉴스 데이터 로드 완료:', transformedData.length, '건');
+    } catch (err) {
+      console.error('❌ NewsSection: 데이터 로드 실패:', err);
+      setError(err instanceof Error ? err.message : '데이터를 불러올 수 없습니다.');
+      
+      // 에러 발생 시 목업 데이터 사용
+      setNewsItems(getMockNewsData());
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const handleCardClick = (newsId: number) => {
-    navigate('/SupportDetail');
-    // 나중에 백엔드 연결 시: navigate(`/SupportDetail/${newsId}`);
+  // 🔥 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadNewsData();
+  }, []);
+
+  const handleCardClick = (newsItem: NewsItem) => {
+    if (newsItem.link && newsItem.link.startsWith('http')) {
+      // 외부 링크인 경우 새 탭에서 열기
+      window.open(newsItem.link, '_blank', 'noopener,noreferrer');
+      console.log('🔗 NewsSection: 외부 링크 열기:', newsItem.link);
+    } else {
+      // 내부 페이지로 이동
+      navigate('/SupportDetail', { state: { supportItem: newsItem } });
+      console.log('📄 NewsSection: 내부 페이지 이동:', newsItem.title);
+    }
   };
 
   const handleScrollLeft = () => {
@@ -80,26 +182,37 @@ const NewsSection: React.FC = () => {
   return (
     <NewsContainer>
       <NewsHeader>
-        <NewsTitle>지원금 및 세미나 정보</NewsTitle>
+        <NewsTitle>
+          지원금 및 세미나 정보
+          {loading && <LoadingText> (로딩 중...)</LoadingText>}
+          {error && <ErrorText> (연결 오류 - 목업 데이터 표시)</ErrorText>}
+        </NewsTitle>
         <NavButtons>
-          <NavButton onClick={handleScrollLeft}>◀</NavButton>
-          <NavButton onClick={handleScrollRight}>▶</NavButton>
+          <NavButton onClick={handleScrollLeft} disabled={loading}>◀</NavButton>
+          <NavButton onClick={handleScrollRight} disabled={loading}>▶</NavButton>
           <NavButton onClick={handleNavigateToList}>≡</NavButton>
         </NavButtons>
       </NewsHeader>
-      <NewsGrid ref={newsGridRef}>
-        {newsItems.map((item) => (
-          <NewsCard key={item.id} onClick={() => handleCardClick(item.id)}>
-            <CategoryTag>{item.category}</CategoryTag>
-            <NewsCardTitle>{item.title}</NewsCardTitle>
-            <NewsDescription>{item.description}</NewsDescription>
-            <NewsFooter>
-              <NewsDate>{item.date}</NewsDate>
-              <NewsAuthor>{item.author}</NewsAuthor>
-            </NewsFooter>
-          </NewsCard>
-        ))}
-      </NewsGrid>
+      
+      {loading ? (
+        <LoadingContainer>
+          🔄 세미나 정보를 불러오는 중...
+        </LoadingContainer>
+      ) : (
+        <NewsGrid ref={newsGridRef}>
+          {newsItems.map((item) => (
+            <NewsCard key={item.id} onClick={() => handleCardClick(item)}>
+              <CategoryTag>{item.category}</CategoryTag>
+              <NewsCardTitle title={item.title}>{item.title}</NewsCardTitle>
+              <NewsDescription>{item.description}</NewsDescription>
+              <NewsFooter>
+                <NewsDate>{item.date}</NewsDate>
+                <NewsAuthor>{item.author}</NewsAuthor>
+              </NewsFooter>
+            </NewsCard>
+          ))}
+        </NewsGrid>
+      )}
     </NewsContainer>
   );
 };
@@ -144,6 +257,8 @@ const NewsTitle = styled.h2`
   color: #333;
   font-weight: bold;
   margin: 0;
+  display: flex;
+  align-items: center;
 
   @media (max-width: 768px) {
     font-size: 20px;
@@ -152,6 +267,40 @@ const NewsTitle = styled.h2`
   @media (max-width: 480px) {
     font-size: 18px;
   }
+`;
+
+const LoadingText = styled.span`
+  font-size: 14px;
+  color: #666;
+  font-weight: normal;
+  margin-left: 8px;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+`;
+
+const ErrorText = styled.span`
+  font-size: 12px;
+  color: #e74c3c;
+  font-weight: normal;
+  margin-left: 8px;
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 16px;
+  color: #666;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  border: 2px dashed #ddd;
 `;
 
 const NavButtons = styled.div`
@@ -178,9 +327,14 @@ const NavButton = styled.button`
   transition: all 0.2s;
   cursor: pointer;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: #f5f5f5;
     border-color: #999;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   @media (max-width: 768px) {
