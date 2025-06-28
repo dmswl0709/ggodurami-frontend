@@ -6,8 +6,8 @@ import axios from 'axios';
 import { Input } from '../Components/Input/Input';
 import { Button } from '../Components/Button/Button';
 import { Logo } from '../Components/Logo/Logo';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { loginStart, loginSuccess, loginFailure, clearError } from '../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '../Store/hooks';
+import { loginStart, loginSuccess, loginFailure, clearError } from '../Store/slices/authSlice';
 
 // 타입 정의
 interface LoginRequest {

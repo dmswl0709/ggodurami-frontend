@@ -14,8 +14,8 @@ import {
   initializeAuth,
   setUserInfo,
   fetchUserInfo
-} from '../store/slices/authSlice';
-import type { RootState } from '../store/store';
+} from '../Store/slices/authSlice';
+import type { RootState } from '../Store/store';
 
 // 타입 정의
 interface PostDetailData {

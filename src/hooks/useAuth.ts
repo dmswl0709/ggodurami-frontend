@@ -1,7 +1,7 @@
 // src/hooks/useAuth.ts
 import { useState } from 'react';
 import { authAPI } from '../api/auth';
-import { RegisterRequest, ApiError } from '../types/auth';
+import { RegisterRequest } from '../types/auth';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
