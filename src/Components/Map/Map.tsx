@@ -7,6 +7,7 @@ import blueMarker from '../../assets/images/blue_marker.png';
 declare global {
   interface Window {
     kakao: any;
+    handleReportBoxClick?: () => void; // 🔥 전역 함수 타입 추가
   }
 }
 
@@ -14,14 +15,16 @@ interface ReportData {
   title: string;
   main_category: string;
   sub_category: string;
-  latitude: string | number; // 🔥 number 타입도 허용
-  longitude: string | number; // 🔥 number 타입도 허용
+  latitude: string | number;
+  longitude: string | number;
   id?: string;
 }
 
 interface MapProps {
   reports?: ReportData[];
   onMarkerClick?: (reportId: string) => void;
+  selectedReport?: ReportData | null; // 🔥 새로운 prop 추가
+  onReportBoxClick?: () => void; // 🔥 새로운 prop 추가
 }
 
 // 🔥 안전한 문자열 변환 함수 추가
@@ -35,7 +38,6 @@ const isValidCoordinate = (lat: any, lng: any): boolean => {
   const latStr = safeToString(lat);
   const lngStr = safeToString(lng);
   
-  // 빈 문자열이나 공백만 있는 경우 제외
   if (!latStr || !lngStr || latStr.trim() === '' || lngStr.trim() === '') {
     return false;
   }
@@ -43,30 +45,176 @@ const isValidCoordinate = (lat: any, lng: any): boolean => {
   const latNum = parseFloat(latStr);
   const lngNum = parseFloat(lngStr);
   
-  // 숫자로 변환 가능하고, 한국 영역 내 좌표인지 확인
   return !isNaN(latNum) && !isNaN(lngNum) && 
          latNum > 33 && latNum < 39 && 
          lngNum > 125 && lngNum < 130;
 };
 
-const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
+const MapSection: React.FC<MapProps> = ({ 
+  reports = [], 
+  onMarkerClick, 
+  selectedReport, // 🔥 새로운 prop
+  onReportBoxClick // 🔥 새로운 prop
+}) => {
   const mapContainer = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null); // 🔥 지도 인스턴스 참조 추가
+  const infoWindowRef = useRef<any>(null); // 🔥 InfoWindow 참조 추가
+
+  // 🔥 selectedReport 변경 시 InfoWindow 업데이트
+  useEffect(() => {
+    console.log('🔄 selectedReport useEffect 실행:', {
+      selectedReport: selectedReport?.title,
+      hasMapInstance: !!mapInstanceRef.current,
+      hasInfoWindow: !!infoWindowRef.current
+    });
+    
+    if (mapInstanceRef.current && infoWindowRef.current) {
+      console.log('🔄 selectedReport 변경됨, InfoWindow 업데이트:', selectedReport?.title);
+      // 약간의 지연을 두고 실행 (지도가 완전히 로드된 후)
+      setTimeout(() => {
+        updateInfoWindow();
+      }, 50);
+    }
+  }, [selectedReport, onReportBoxClick]);
+
+  // 🔥 InfoWindow 업데이트 함수
+  const updateInfoWindow = () => {
+    const map = mapInstanceRef.current;
+    const infoWindow = infoWindowRef.current;
+    
+    console.log('🔄 updateInfoWindow 호출됨:', {
+      hasMap: !!map,
+      hasInfoWindow: !!infoWindow,
+      selectedReport: selectedReport?.title
+    });
+    
+    if (!map || !infoWindow) {
+      console.warn('⚠️ map 또는 infoWindow가 준비되지 않음');
+      return;
+    }
+
+    if (selectedReport) {
+      console.log('✅ InfoWindow 표시 시작:', selectedReport.title);
+      
+      const lat = parseFloat(safeToString(selectedReport.latitude));
+      const lng = parseFloat(safeToString(selectedReport.longitude));
+      
+      console.log('📍 좌표:', { lat, lng });
+      
+      if (!isValidCoordinate(lat, lng)) {
+        console.warn('❌ 유효하지 않은 좌표:', lat, lng);
+        return;
+      }
+
+      const position = new window.kakao.maps.LatLng(lat, lng);
+
+      // 🔥 클릭 가능한 InfoWindow 내용 생성 (두 번째 사진과 동일하게)
+      const content = `
+        <div style="
+          padding: 12px; 
+          background: white; 
+          border-radius: 8px; 
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          min-width: 220px;
+          max-width: 300px;
+          cursor: pointer;
+          border: 1px solid #ddd;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        " 
+        onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)';"
+        onmouseout="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+        onclick="window.handleReportBoxClick && window.handleReportBoxClick()">
+          <div style="
+            color: #d32f2f; 
+            font-size: 15px; 
+            font-weight: bold; 
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 6px;
+          ">${selectedReport.title}</div>
+          <div style="
+            font-size: 13px; 
+            color: #666; 
+            background: #f5f5f5; 
+            padding: 4px 8px; 
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: inline-block;
+          ">${selectedReport.main_category} - ${selectedReport.sub_category}</div>
+          <div style="
+            font-size: 11px; 
+            color: #999; 
+            border-top: 1px solid #eee; 
+            padding-top: 6px;
+            line-height: 1.4;
+          ">
+            📍 위도: ${lat.toFixed(6)} | 경도: ${lng.toFixed(6)}<br/>
+            🎯 마커: ${selectedReport.main_category === '재난' ? '빨간색 (재난/재해)' : '파란색 (병해충)'}
+          </div>
+        </div>
+      `;
+
+      // 🔥 전역 함수로 클릭 핸들러 등록
+      window.handleReportBoxClick = onReportBoxClick;
+
+      // 🔥 InfoWindow 설정 및 표시
+      infoWindow.setContent(content);
+      infoWindow.setPosition(position);
+      infoWindow.setMap(map);
+
+      // 해당 위치로 지도 중심 이동 (부드럽게)
+      map.panTo(position);
+      
+      console.log('✅ InfoWindow 표시 완료', {
+        position: { lat, lng },
+        content: content.substring(0, 100) + '...'
+      });
+    } else {
+      console.log('🔄 InfoWindow 숨김');
+      // selectedReport가 없으면 InfoWindow 숨김
+      infoWindow.setMap(null);
+      // 전역 함수 정리
+      delete window.handleReportBoxClick;
+    }
+  };
 
   useEffect(() => {
     const loadKakaoMap = () => {
       if (!mapContainer.current || !window.kakao?.maps) return;
 
-      // 지도 컨테이너 스타일 설정
       mapContainer.current.style.width = '100%';
       mapContainer.current.style.height = '500px';
       mapContainer.current.style.backgroundColor = '#FFEFD5';
 
       const map = new window.kakao.maps.Map(mapContainer.current, {
-        center: new window.kakao.maps.LatLng(36.5, 127.8), // 대한민국 중심 좌표
-        level: 13, // 대한민국 전체가 보이는 레벨
+        center: new window.kakao.maps.LatLng(36.5, 127.8),
+        level: 13,
       });
 
-      // 🔥 개선된 데이터 필터링
+      // 🔥 지도와 InfoWindow 인스턴스 저장
+      mapInstanceRef.current = map;
+      infoWindowRef.current = new window.kakao.maps.InfoWindow({
+        zIndex: 1000,
+        removable: false
+      });
+
+      console.log('✅ 지도 및 InfoWindow 초기화 완료');
+
+      // 🔥 지도 클릭 시 InfoWindow 닫기
+      window.kakao.maps.event.addListener(map, 'click', () => {
+        console.log('🗺️ 지도 클릭됨, InfoWindow 닫기');
+        if (onMarkerClick) {
+          onMarkerClick(''); // 빈 문자열로 selectedReport 초기화
+        }
+      });
+
+      // 🔥 지도 초기화 완료 후 selectedReport가 있으면 InfoWindow 표시
+      if (selectedReport) {
+        setTimeout(() => {
+          updateInfoWindow();
+        }, 100);
+      }
+
       const validReports = reports.filter(report => {
         try {
           return isValidCoordinate(report.latitude, report.longitude);
@@ -82,10 +230,8 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
       console.log('유효한 신고 데이터:', validReports);
 
       if (validReports.length > 0) {
-        // 실제 신고 데이터로 마커 생성
         validReports.forEach((report, index) => {
           try {
-            // 🔥 안전한 좌표 변환
             const latStr = safeToString(report.latitude);
             const lngStr = safeToString(report.longitude);
             const lat = parseFloat(latStr);
@@ -101,10 +247,7 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
               category: report.main_category
             });
             
-            // 한 번 더 유효성 검사
             if (isValidCoordinate(lat, lng)) {
-              
-              // 카테고리에 따른 마커 색상 결정
               let markerImageSrc = '';
               let markerColor = '';
               let imageSize = null;
@@ -113,24 +256,20 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
               
               if (mainCategory.includes('재난') || mainCategory.includes('재해') || 
                   mainCategory === '재난' || mainCategory === '재해') {
-                // 재난/재해: 빨간색 마커
                 markerImageSrc = redMarker;
                 markerColor = '빨간색 (재난/재해)';
                 imageSize = new window.kakao.maps.Size(32, 45);
               } else if (mainCategory.includes('병해충') || mainCategory.includes('병해') || 
                          mainCategory === '병해충') {
-                // 병해충: 파란색 마커
                 markerImageSrc = blueMarker;
                 markerColor = '파란색 (병해충)';
                 imageSize = new window.kakao.maps.Size(28, 40);
               } else {
-                // 기타: 기본 빨간색 마커
                 markerImageSrc = redMarker;
                 markerColor = '기본';
                 imageSize = new window.kakao.maps.Size(32, 45);
               }
 
-              // 마커 이미지 설정
               const markerImage = new window.kakao.maps.MarkerImage(markerImageSrc, imageSize);
 
               const marker = new window.kakao.maps.Marker({
@@ -140,33 +279,7 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
               });
               marker.setMap(map);
 
-              // 정보창 내용 구성
-              const title = safeToString(report.title) || '신고 내용';
-              const categoryDisplay = safeToString(report.main_category) || '미분류';
-              const subCategoryDisplay = report.sub_category ? ` - ${safeToString(report.sub_category)}` : '';
-              
-              const infoContent = `
-                <div style="padding:12px; min-width:220px; max-width:300px; border-radius: 8px;">
-                  <strong style="color: #d32f2f; font-size: 15px; margin-bottom: 8px; display: block;">
-                    ${title}
-                  </strong>
-                  <div style="margin-bottom: 6px;">
-                    <span style="font-size: 13px; color: #666; background: #f5f5f5; padding: 2px 6px; border-radius: 4px;">
-                      ${categoryDisplay}${subCategoryDisplay}
-                    </span>
-                  </div>
-                  <div style="font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 6px; margin-top: 6px;">
-                    📍 위도: ${lat.toFixed(6)} | 경도: ${lng.toFixed(6)}<br/>
-                    🎯 마커: ${markerColor}
-                  </div>
-                </div>
-              `;
-
-              const infoWindow = new window.kakao.maps.InfoWindow({
-                content: infoContent,
-              });
-
-              // 마커 클릭 시 정보창 표시 및 상세 정보 요청
+              // 🔥 마커 클릭 시 onMarkerClick 호출 (InfoWindow는 selectedReport로 관리)
               window.kakao.maps.event.addListener(marker, 'click', () => {
                 console.log('🖱️ 마커 클릭:', {
                   title: report.title,
@@ -174,15 +287,11 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
                   hasOnMarkerClick: !!onMarkerClick
                 });
                 
-                infoWindow.open(map, marker);
-                
-                // 상세 정보 요청
                 if (onMarkerClick) {
                   if (report.id) {
                     console.log(`✅ onMarkerClick 호출 - ID: ${report.id}`);
                     onMarkerClick(report.id);
                   } else {
-                    // ID가 없는 경우 임시로 인덱스나 제목 기반 ID 생성
                     const safeTitle = safeToString(report.title).replace(/\s/g, '_');
                     const tempId = `temp_${index}_${safeTitle}`;
                     console.warn(`⚠️ Report ID 없음, 임시 ID 사용: ${tempId}`);
@@ -205,7 +314,6 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
         console.log(`🗺️ 총 ${validReports.length}개의 신고가 지도에 표시되었습니다.`);
 
       } else {
-        // 신고 데이터가 없거나 위도/경도가 없는 경우 기본 마커들 표시
         console.log('📍 유효한 신고 데이터가 없어 기본 마커 표시');
         
         const defaultMarkerPositions = [
@@ -262,9 +370,16 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
     };
 
     createScript();
+
+    // 🔥 컴포넌트 언마운트 시 정리
+    return () => {
+      if (infoWindowRef.current) {
+        infoWindowRef.current.setMap(null);
+      }
+      delete window.handleReportBoxClick;
+    };
   }, [reports, onMarkerClick]);
 
-  // 🔥 안전한 카운팅
   const validReportsCount = reports.filter(report => {
     try {
       return isValidCoordinate(report.latitude, report.longitude);
@@ -284,7 +399,6 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
             🔄 새로고침
           </ControlButton>
         </MapControls>
-        {/* 범례와 신고 수 표시 */}
         {reports.length > 0 && (
           <>
             <ReportCounter>
@@ -312,13 +426,23 @@ const MapSection: React.FC<MapProps> = ({ reports = [], onMarkerClick }) => {
   );
 };
 
+// 🔥 개선된 반응형 스타일
 const MapContainer = styled.section`
   padding: 20px;
   background-color: #FFEFD5;
+  
+  @media (max-width: 768px) {
+    padding: 15px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px;
+  }
 `;
 
 const MapWrapper = styled.div`
-  width: 60vw;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   position: relative;
   border-radius: 12px;
@@ -326,12 +450,23 @@ const MapWrapper = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   background: #fff;
   
+  @media (min-width: 1400px) {
+    width: 60vw;
+  }
+  
+  @media (max-width: 1399px) {
+    width: 80vw;
+  }
+  
   @media (max-width: 768px) {
     width: 95vw;
+    border-radius: 8px;
   }
   
   @media (max-width: 480px) {
-    width: 98vw;
+    width: 100%;
+    border-radius: 6px;
+    margin: 0;
   }
 `;
 
@@ -340,12 +475,24 @@ const MapDiv = styled.div`
   height: 500px !important;
   background-color: #FFEFD5 !important;
   
+  @media (max-width: 1024px) {
+    height: 450px !important;
+  }
+  
   @media (max-width: 768px) {
     height: 400px !important;
   }
   
-  @media (max-width: 480px) {
+  @media (max-width: 640px) {
     height: 350px !important;
+  }
+  
+  @media (max-width: 480px) {
+    height: 300px !important;
+  }
+  
+  @media (max-width: 360px) {
+    height: 280px !important;
   }
 `;
 
@@ -354,6 +501,16 @@ const LoadingText = styled.div`
   color: #666;
   text-align: center;
   padding-top: 240px;
+  
+  @media (max-width: 768px) {
+    padding-top: 190px;
+    font-size: 14px;
+  }
+  
+  @media (max-width: 480px) {
+    padding-top: 140px;
+    font-size: 13px;
+  }
 `;
 
 const MapControls = styled.div`
@@ -361,6 +518,11 @@ const MapControls = styled.div`
   top: 10px;
   right: 10px;
   z-index: 10;
+  
+  @media (max-width: 480px) {
+    top: 5px;
+    right: 5px;
+  }
 `;
 
 const ControlButton = styled.button`
@@ -382,6 +544,11 @@ const ControlButton = styled.button`
   &:active {
     transform: translateY(0);
   }
+  
+  @media (max-width: 480px) {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
 `;
 
 const ReportCounter = styled.div`
@@ -393,6 +560,13 @@ const ReportCounter = styled.div`
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  
+  @media (max-width: 480px) {
+    bottom: 5px;
+    left: 5px;
+    padding: 8px 10px;
+    border-radius: 6px;
+  }
 `;
 
 const CounterText = styled.div`
@@ -400,11 +574,19 @@ const CounterText = styled.div`
   font-weight: 600;
   color: #d32f2f;
   margin-bottom: 2px;
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
 `;
 
 const CounterSubText = styled.div`
   font-size: 11px;
   color: #666;
+  
+  @media (max-width: 480px) {
+    font-size: 10px;
+  }
 `;
 
 const Legend = styled.div`
@@ -416,6 +598,18 @@ const Legend = styled.div`
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
+  
+  @media (max-width: 480px) {
+    top: 5px;
+    left: 5px;
+    padding: 8px;
+    border-radius: 6px;
+    max-width: 120px;
+  }
 `;
 
 const LegendTitle = styled.div`
@@ -423,6 +617,11 @@ const LegendTitle = styled.div`
   font-weight: 600;
   color: #333;
   margin-bottom: 8px;
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
 `;
 
 const LegendItem = styled.div`
@@ -433,6 +632,10 @@ const LegendItem = styled.div`
   &:last-child {
     margin-bottom: 0;
   }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 3px;
+  }
 `;
 
 const RedMarker = styled.span`
@@ -440,6 +643,11 @@ const RedMarker = styled.span`
   font-size: 16px;
   margin-right: 6px;
   font-weight: bold;
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin-right: 4px;
+  }
 `;
 
 const BlueMarker = styled.span`
@@ -447,11 +655,22 @@ const BlueMarker = styled.span`
   font-size: 16px;
   margin-right: 6px;
   font-weight: bold;
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin-right: 4px;
+  }
 `;
 
 const LegendText = styled.span`
   font-size: 11px;
   color: #666;
+  
+  @media (max-width: 480px) {
+    font-size: 10px;
+  }
 `;
+
+// 🔥 디버깅용 스타일 제거
 
 export default MapSection;
