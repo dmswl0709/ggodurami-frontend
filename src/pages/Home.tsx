@@ -194,17 +194,6 @@ const Home: React.FC = () => {
         <MainWrapper>
           {/* 🔥 ReportDetail과 동일한 Map 컴포넌트 사용 */}
           <MapWrapper>
-            <SectionTitle>📍 실시간 신고 현황</SectionTitle>
-            <SectionSubtitle>
-              {loading ? (
-                '신고 데이터를 불러오는 중...'
-              ) : error ? (
-                error
-              ) : (
-                `최근 ${reportsData.length}건의 신고가 지도에 표시됩니다. 마커를 클릭하면 신고내역을 확인할 수 있습니다.`
-              )}
-            </SectionSubtitle>
-            
             <MapContainer>
               <MapSection 
                 reports={reportsData} 
