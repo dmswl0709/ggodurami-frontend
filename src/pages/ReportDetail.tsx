@@ -335,7 +335,145 @@ const ErrorContainer = styled.div`
   text-align: center;
 `;
 
-// API 응답 타입 정의
+// 🔥 AI 진단 결과 관련 스타일
+const AISection = styled.div`
+  margin-bottom: 35px;
+  
+  @media (max-width: 1024px) {
+    margin-bottom: 30px;
+  }
+  
+  @media (max-width: 768px) {
+    margin-bottom: 25px;
+  }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 20px;
+  }
+`;
+
+const AIResultContainer = styled.div`
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid #007bff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 10px;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 14px;
+  }
+`;
+
+const AIBadge = styled.div`
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+`;
+
+const AIResultItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    margin-bottom: 10px;
+  }
+`;
+
+const AILabel = styled.span`
+  font-size: 16px;
+  font-weight: 600;
+  color: #495057;
+  min-width: 120px;
+  margin-right: 12px;
+  
+  @media (max-width: 1024px) {
+    font-size: 15px;
+    min-width: 110px;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 14px;
+    min-width: 100px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin-bottom: 4px;
+    min-width: auto;
+    margin-right: 0;
+  }
+`;
+
+const AIValue = styled.span`
+  font-size: 16px;
+  color: #212529;
+  font-weight: 500;
+  
+  @media (max-width: 1024px) {
+    font-size: 15px;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+`;
+
+const ConfidenceBar = styled.div<{ confidence: number }>`
+  width: 100%;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: ${props => props.confidence}%;
+    background: linear-gradient(90deg, 
+      ${props => props.confidence >= 80 ? '#28a745' : 
+        props.confidence >= 60 ? '#ffc107' : '#dc3545'} 0%, 
+      ${props => props.confidence >= 80 ? '#20c997' : 
+        props.confidence >= 60 ? '#fd7e14' : '#e74c3c'} 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+`;
+
+const NoAIResult = styled.div`
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+`;
+
+// 🔥 타입 정의
 interface ReportData {
   title: string;
   main_category: string;
@@ -360,26 +498,124 @@ interface ReportDetailData {
   id: string;
 }
 
+interface AIDetectionResult {
+  category: string;
+  total_detections: number;
+  detections: Array<{
+    class_id: number;
+    class_name: string;
+    confidence: number;
+    bbox: {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    };
+  }>;
+  primary_detection: {
+    class_id: number;
+    class_name: string;
+    confidence: number;
+    bbox: {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    };
+  };
+}
+
 interface ApiResponse {
   reports: ReportData[];
 }
 
-// 🔥 파일 URL 생성 함수 추가
+// 🔥 유틸리티 함수들
 const getFileUrl = (filePath: string): string => {
   if (!filePath) return '';
   
-  // 이미 완전한 URL인 경우
   if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
     return filePath;
   }
   
-  // /static으로 시작하는 경우
   if (filePath.startsWith('/static')) {
     return `http://localhost:8000${filePath}`;
   }
   
-  // 파일명만 있는 경우
   return `http://localhost:8000/static/uploads/reports/${filePath}`;
+};
+
+// 🔥 AI 진단 결과 표시 컴포넌트
+const AIResultDisplay: React.FC<{ aiResult: AIDetectionResult | null; loading: boolean }> = ({ aiResult, loading }) => {
+  if (loading) {
+    return (
+      <AIResultContainer>
+        <AIBadge>AI 분석</AIBadge>
+        <div style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>
+          🤖 AI가 이미지를 분석하는 중...
+        </div>
+      </AIResultContainer>
+    );
+  }
+
+  if (!aiResult) {
+    return (
+      <NoAIResult>
+        🤖 AI 진단 결과가 없습니다
+      </NoAIResult>
+    );
+  }
+
+  const confidencePercentage = Math.round(aiResult.primary_detection.confidence * 100);
+
+  return (
+    <AIResultContainer>
+      <AIBadge>AI 분석</AIBadge>
+      
+      <AIResultItem>
+        <AILabel>탐지 카테고리:</AILabel>
+        <AIValue>{aiResult.category}</AIValue>
+      </AIResultItem>
+      
+      <AIResultItem>
+        <AILabel>주요 진단:</AILabel>
+        <AIValue>{aiResult.primary_detection.class_name}</AIValue>
+      </AIResultItem>
+      
+      <AIResultItem>
+        <AILabel>신뢰도:</AILabel>
+        <div style={{ flex: 1 }}>
+          <AIValue>{confidencePercentage}%</AIValue>
+          <ConfidenceBar confidence={confidencePercentage} />
+        </div>
+      </AIResultItem>
+      
+      <AIResultItem>
+        <AILabel>총 탐지 수:</AILabel>
+        <AIValue>{aiResult.total_detections}개</AIValue>
+      </AIResultItem>
+      
+      {aiResult.detections.length > 1 && (
+        <AIResultItem style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+          <AILabel style={{ marginBottom: '8px' }}>추가 탐지 결과:</AILabel>
+          <div style={{ width: '100%' }}>
+            {aiResult.detections.slice(1).map((detection, index) => (
+              <div key={index} style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                padding: '4px 0',
+                fontSize: '14px',
+                color: '#6c757d'
+              }}>
+                <span>{detection.class_name}</span>
+                <span>{Math.round(detection.confidence * 100)}%</span>
+              </div>
+            ))}
+          </div>
+        </AIResultItem>
+      )}
+    </AIResultContainer>
+  );
 };
 
 // 🔥 이미지 표시 컴포넌트
@@ -421,7 +657,6 @@ const ImageDisplay: React.FC<{ files: string[] }> = ({ files }) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
                 
-                // 오류 메시지 표시
                 const errorDiv = document.createElement('div');
                 errorDiv.style.cssText = `
                   padding: 40px 20px;
@@ -454,7 +689,7 @@ const ImageDisplay: React.FC<{ files: string[] }> = ({ files }) => {
   );
 };
 
-// API 함수들
+// 🔥 API 함수들
 const fetchRecentReports = async (): Promise<ApiResponse> => {
   try {
     console.log('Attempting to fetch reports from API...');
@@ -493,7 +728,6 @@ const fetchRecentReports = async (): Promise<ApiResponse> => {
   }
 };
 
-// 신고 상세 정보 가져오기
 const fetchReportDetail = async (reportId: string): Promise<ReportDetailData | null> => {
   try {
     console.log(`Fetching report detail for ID: ${reportId}`);
@@ -521,7 +755,33 @@ const fetchReportDetail = async (reportId: string): Promise<ReportDetailData | n
   }
 };
 
-// 목업 데이터 함수
+const fetchAIDiagnosis = async (reportId: string): Promise<AIDetectionResult | null> => {
+  try {
+    console.log(`🤖 Fetching AI diagnosis for report ID: ${reportId}`);
+    
+    const response = await fetch(`http://localhost:8000/damage-report/detect-damage/${reportId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      mode: 'cors',
+    });
+    
+    if (!response.ok) {
+      console.warn(`❌ AI diagnosis API failed with status: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log('✅ AI diagnosis fetched:', data);
+    return data;
+  } catch (error) {
+    console.error('❌ Failed to fetch AI diagnosis:', error);
+    return null;
+  }
+};
+
 const getMockData = (): ApiResponse => {
   console.log('📋 Using mock data');
   return {
@@ -554,13 +814,17 @@ const getMockData = (): ApiResponse => {
   };
 };
 
+// 🔥 메인 컴포넌트
 export const ReportDetail: React.FC = () => {
   const [reportsData, setReportsData] = useState<ReportData[]>([]);
   const [selectedReportDetail, setSelectedReportDetail] = useState<ReportDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [aiDiagnosis, setAiDiagnosis] = useState<AIDetectionResult | null>(null);
+  const [loadingAI, setLoadingAI] = useState(false);
 
+  // 🔥 초기 데이터 로드
   useEffect(() => {
     const loadReports = async () => {
       try {
@@ -589,7 +853,7 @@ export const ReportDetail: React.FC = () => {
     loadReports();
   }, []);
 
-  // 마커 클릭 시 호출되는 함수
+  // 🔥 마커 클릭 핸들러
   const handleMarkerClick = async (reportId: string) => {
     console.log('handleMarkerClick called with:', reportId);
     
@@ -599,8 +863,10 @@ export const ReportDetail: React.FC = () => {
     }
 
     setLoadingDetail(true);
+    setLoadingAI(true);
+    setAiDiagnosis(null);
+    
     try {
-      // 임시 ID인 경우 목업 데이터 표시
       if (reportId.startsWith('temp_') || reportId.startsWith('mock_')) {
         console.log('Using mock detail data for:', reportId);
         
@@ -622,19 +888,68 @@ export const ReportDetail: React.FC = () => {
         };
         
         setSelectedReportDetail(mockDetail);
+        
+        // 병해충 신고인 경우만 AI 진단 (목업 데이터)
+        if (mockDetail.main_category === "병해충") {
+          setTimeout(() => {
+            const mockAIResult: AIDetectionResult = {
+              category: "해충",
+              total_detections: 1,
+              detections: [{
+                class_id: 2,
+                class_name: "담배가루이",
+                confidence: 0.9696160554885864,
+                bbox: {
+                  x1: 90.16170501708984,
+                  y1: 64.73558044433594,
+                  x2: 161.48237609863282,
+                  y2: 155.47138977050781
+                }
+              }],
+              primary_detection: {
+                class_id: 2,
+                class_name: "담배가루이",
+                confidence: 0.9696160554885864,
+                bbox: {
+                  x1: 90.16170501708984,
+                  y1: 64.73558044433594,
+                  x2: 161.48237609863282,
+                  y2: 155.47138977050781
+                }
+              }
+            };
+            setAiDiagnosis(mockAIResult);
+            setLoadingAI(false);
+          }, 1500);
+        } else {
+          setLoadingAI(false);
+        }
       } else {
         // 실제 API 호출
         const detail = await fetchReportDetail(reportId);
         setSelectedReportDetail(detail);
+        
+        // 병해충 신고인 경우만 AI 진단 실행
+        if (detail && detail.main_category === "병해충") {
+          try {
+            const aiResult = await fetchAIDiagnosis(reportId);
+            setAiDiagnosis(aiResult);
+          } catch (aiError) {
+            console.error('AI diagnosis failed:', aiError);
+            setAiDiagnosis(null);
+          }
+        }
+        setLoadingAI(false);
       }
     } catch (error) {
       console.error('Error fetching report detail:', error);
+      setLoadingAI(false);
     } finally {
       setLoadingDetail(false);
     }
   };
 
-  // 🔥 파일 정보 디버깅을 위한 useEffect 추가
+  // 🔥 파일 정보 디버깅
   useEffect(() => {
     if (selectedReportDetail) {
       console.log('=== 선택된 신고 상세 정보 ===');
@@ -743,7 +1058,17 @@ export const ReportDetail: React.FC = () => {
                   </DetailContent>
                 </DetailSection>
                 
-                {/* 🔥 수정된 첨부 파일 표시 부분 */}
+                {/* 🔥 AI 진단 결과 섹션 - 병해충 신고인 경우만 표시 */}
+                {selectedReportDetail.main_category === "병해충" && (
+                  <AISection>
+                    <InfoItem>
+                      <InfoLabel>🤖 AI 진단 결과:</InfoLabel>
+                    </InfoItem>
+                    <AIResultDisplay aiResult={aiDiagnosis} loading={loadingAI} />
+                  </AISection>
+                )}
+                
+                {/* 🔥 첨부 파일 표시 */}
                 <ImageSection>
                   <ImageLabelContainer>
                     <InfoLabel>첨부 파일:</InfoLabel>
@@ -768,6 +1093,8 @@ export const ReportDetail: React.FC = () => {
               <br />
               <span style={{ fontSize: '14px', color: '#999' }}>
                 💡 빨간색 마커: 재난/재해 신고 | 파란색 마커: 병해충 신고
+                <br />
+                🤖 병해충 신고의 경우 AI 진단 결과도 함께 확인할 수 있습니다.
               </span>
             </DetailContent>
           </InfoSection>
@@ -783,6 +1110,10 @@ export const ReportDetail: React.FC = () => {
               {reportsData.some(report => report.latitude && report.longitude) && 
                 ` (위치 정보가 있는 신고: ${reportsData.filter(report => report.latitude && report.longitude).length}건)`
               }
+              <br />
+              <span style={{ fontSize: '14px', color: '#666', marginTop: '8px', display: 'inline-block' }}>
+                🤖 병해충 관련 신고: {reportsData.filter(report => report.main_category === "병해충").length}건 (AI 진단 가능)
+              </span>
             </DetailContent>
           </DetailSection>
         )}
@@ -792,4 +1123,3 @@ export const ReportDetail: React.FC = () => {
 };
 
 export default ReportDetail;
-                

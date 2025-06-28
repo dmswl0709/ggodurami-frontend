@@ -1,4 +1,4 @@
-// pages/Report.tsx (API 엔드포인트 수정 버전)
+// pages/Report.tsx (백엔드 연동 최종 버전)
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -15,6 +15,34 @@ interface ReportResponse {
   message: string;
   report_id?: string;
   uploaded_files?: number;
+}
+
+interface AIAnalysisResponse {
+  category: string;
+  total_detections: number;
+  detections: Array<{
+    class_id: number;
+    class_name: string;
+    confidence: number;
+    bbox: {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    };
+  }>;
+  primary_detection: {
+    class_id: number;
+    class_name: string;
+    confidence: number;
+    bbox: {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    };
+  } | null;
+  error?: string;
 }
 
 interface SelectedLocation {
@@ -45,7 +73,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// 🔥 수정된 API 함수 - 엔드포인트 변경
+// 🔥 신고 등록 API 함수 (백엔드 구조에 맞게 수정)
 const submitReport = async (formData: FormData): Promise<ReportResponse> => {
   try {
     console.log('=== 신고 등록 API 호출 시작 ===');
@@ -60,11 +88,9 @@ const submitReport = async (formData: FormData): Promise<ReportResponse> => {
       }
     }
     
-    // 🔥 수정된 엔드포인트: /report-damage → /damage-report
     const response = await apiClient.post<ReportResponse>('/damage-report', formData, {
       headers: {
-        // FormData 사용 시 Content-Type 헤더는 자동으로 설정되므로 제거
-        // 'Content-Type': 'multipart/form-data', // 이 줄 제거
+        // FormData 사용 시 Content-Type 헤더는 자동으로 설정
       },
     });
     
@@ -75,6 +101,37 @@ const submitReport = async (formData: FormData): Promise<ReportResponse> => {
     console.error('응답 데이터:', error.response?.data);
     console.error('응답 상태:', error.response?.status);
     throw error;
+  }
+};
+
+// 🔥 AI 분석 API 함수 (백엔드 구조에 맞게 수정)
+const requestAIAnalysis = async (reportId: string): Promise<AIAnalysisResponse | null> => {
+  try {
+    console.log('=== AI 분석 API 호출 시작 ===');
+    console.log('분석할 신고 ID:', reportId);
+    
+    const response = await apiClient.get<AIAnalysisResponse>(`/damage-report/detect-damage/${reportId}`);
+    
+    console.log('✅ AI 분석 API 응답:', response.data);
+    
+    // 에러 응답 처리
+    if (response.data.error) {
+      console.error('❌ AI 분석 에러:', response.data.error);
+      return null;
+    }
+    
+    // 필수 필드 확인
+    if (!response.data.primary_detection) {
+      console.warn('⚠️ AI 분석 결과에 primary_detection이 없음');
+      return null;
+    }
+    
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ AI 분석 실패:', error);
+    console.error('AI 분석 응답 데이터:', error.response?.data);
+    console.error('AI 분석 응답 상태:', error.response?.status);
+    return null;
   }
 };
 
@@ -92,12 +149,15 @@ const Report: React.FC = () => {
   const [selectedDisasterType, setSelectedDisasterType] = useState('');
   const [selectedPestType, setSelectedPestType] = useState('');
   const [isMapOpen, setIsMapOpen] = useState(false);
+  
+  // 🔥 AI 분석 관련 상태
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [aiResult, setAiResult] = useState<AIAnalysisResponse | null>(null);
 
   // 지도에서 위치 선택 처리
   const handleLocationSelect = (selectedLocation: SelectedLocation) => {
     console.log('🗺️ 받은 위치 데이터:', selectedLocation);
     
-    // 데이터 유효성 검사
     if (!selectedLocation) {
       console.error('선택된 위치 데이터가 없습니다.');
       return;
@@ -113,7 +173,6 @@ const Report: React.FC = () => {
     setLongitude(selectedLocation.longitude);
     setIsMapOpen(false);
     
-    // 성공적으로 설정된 후 로그
     console.log('✅ 위치 설정 완료:', {
       address: selectedLocation.address,
       latitude: selectedLocation.latitude,
@@ -121,7 +180,6 @@ const Report: React.FC = () => {
     });
   };
 
-  // 지역찾기 버튼 클릭
   const handleLocationSearch = () => {
     setIsMapOpen(true);
   };
@@ -162,7 +220,6 @@ const Report: React.FC = () => {
       return false;
     }
 
-    // 위도/경도 검사를 더 엄격하게
     if (latitude === null || longitude === null || 
         typeof latitude !== 'number' || typeof longitude !== 'number' ||
         isNaN(latitude) || isNaN(longitude)) {
@@ -183,9 +240,11 @@ const Report: React.FC = () => {
     return true;
   };
 
+  // 🔥 수정된 handleSubmit - 백엔드 구조에 맞게 업데이트
   const handleSubmit = async () => {
     setError('');
     setSuccess('');
+    setAiResult(null);
 
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -204,7 +263,6 @@ const Report: React.FC = () => {
       
       const formData = new FormData();
       
-      // 백엔드 명세에 맞게 데이터 추가
       const categoryValues = getCategoryValues();
       if (!categoryValues) {
         setError('올바른 카테고리를 선택해주세요.');
@@ -212,18 +270,16 @@ const Report: React.FC = () => {
         return;
       }
 
-      // 카테고리를 분리해서 전송 (백엔드에서 요구하는 형태에 맞게)
+      // 백엔드 API 명세에 맞게 FormData 구성
       formData.append('main_category', categoryValues.main);
       formData.append('sub_category', categoryValues.sub);
       formData.append('title', title.trim());
       formData.append('content', description.trim());
       formData.append('local', location.trim());
       
-      // 위도/경도 안전하게 추가 (추가 검증 포함)
+      // 위도/경도 추가
       const lat = latitude;
       const lng = longitude;
-      
-      console.log('📍 위도/경도 확인:', { lat, lng, type_lat: typeof lat, type_lng: typeof lng });
       
       if (lat !== null && lng !== null && 
           typeof lat === 'number' && typeof lng === 'number' && 
@@ -232,37 +288,65 @@ const Report: React.FC = () => {
         formData.append('longitude', lng.toString());
         console.log('✅ 위도/경도 FormData에 추가됨:', lat.toString(), lng.toString());
       } else {
-        console.error('❌ 위도/경도 값이 유효하지 않음:', { lat, lng });
         setError('위치 정보가 올바르지 않습니다. 다시 지역을 선택해주세요.');
         setLoading(false);
         return;
       }
 
-      // 파일들 추가
+      // 파일들 추가 (백엔드에서 'files' 필드명으로 받음)
       files.forEach((file, index) => {
         formData.append('files', file);
         console.log(`📎 파일 ${index + 1} 추가:`, file.name, file.type, file.size + ' bytes');
       });
 
-      // 🔥 디버깅용 로그 - FormData 내용 확인
-      console.log('=== 전송할 FormData 내용 ===');
-      for (let pair of formData.entries()) {
-        if (pair[1] instanceof File) {
-          console.log(pair[0] + ': [File]', pair[1].name, pair[1].type, pair[1].size + ' bytes');
-        } else {
-          console.log(pair[0] + ': ' + pair[1]);
-        }
-      }
-      console.log('==============================');
-
+      // 1단계: 신고 등록
       const response = await submitReport(formData);
       
-      setSuccess(response.message || '✅ 신고가 성공적으로 접수되었습니다.');
+      let successMessage = response.message || '✅ 신고가 성공적으로 접수되었습니다.';
       
       console.log('🎉 신고 제출 성공:', {
         report_id: response.report_id,
         uploaded_files: response.uploaded_files
       });
+
+      // 🔥 2단계: 병해충 신고인 경우 AI 분석 실행
+      if (categoryValues.main === '병해충' && response.report_id) {
+        console.log('🤖 병해충 신고 감지 - AI 분석 시작');
+        setAiAnalyzing(true);
+        
+        // AI 분석 요청 (5초 지연 후 - 백엔드에서 파일 처리 완료 대기)
+        setTimeout(async () => {
+          try {
+            console.log('🔍 AI 분석 실행 중...');
+            const aiAnalysisResult = await requestAIAnalysis(response.report_id!);
+            
+            if (aiAnalysisResult && aiAnalysisResult.primary_detection) {
+              setAiResult(aiAnalysisResult);
+              
+              const confidence = Math.round(aiAnalysisResult.primary_detection.confidence * 100);
+              const className = aiAnalysisResult.primary_detection.class_name;
+              
+              successMessage += `\n\n🤖 AI 분석도 완료되었습니다!\n주요 진단: ${className} (신뢰도: ${confidence}%)`;
+              console.log('🎉 AI 분석 완료:', aiAnalysisResult);
+            } else {
+              successMessage += '\n\n⚠️ AI 분석에서 병해충을 감지하지 못했거나 분석에 실패했습니다.';
+              console.log('⚠️ AI 분석 결과 없음');
+            }
+            
+            setSuccess(successMessage);
+            setAiAnalyzing(false);
+          } catch (aiError) {
+            console.error('AI 분석 중 오류:', aiError);
+            successMessage += '\n\n⚠️ AI 분석 중 오류가 발생했지만 신고는 정상적으로 접수되었습니다.';
+            setSuccess(successMessage);
+            setAiAnalyzing(false);
+          }
+        }, 5000); // 5초 지연
+        
+      } else {
+        // 재난 신고인 경우는 AI 분석 없이 바로 성공 메시지 표시
+        setSuccess(successMessage);
+      }
       
       // 성공 시 폼 초기화
       setFiles([]);
@@ -276,7 +360,6 @@ const Report: React.FC = () => {
 
     } catch (err: any) {
       console.error('❌ 신고 제출 오류:', err);
-      console.error('에러 응답:', err.response);
       
       let errorMessage = '신고 제출 중 오류가 발생했습니다.';
       
@@ -289,7 +372,6 @@ const Report: React.FC = () => {
       } else if (err.response?.status === 415) {
         errorMessage = '지원하지 않는 파일 형식입니다.';
       } else if (err.response?.status === 422) {
-        // 422 에러에 대한 자세한 처리
         console.error('422 에러 상세:', err.response.data);
         if (err.response?.data?.detail) {
           if (Array.isArray(err.response.data.detail)) {
@@ -309,14 +391,6 @@ const Report: React.FC = () => {
         errorMessage = '서버 내부 오류가 발생했습니다.';
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
-      } else if (err.response?.data?.detail) {
-        if (Array.isArray(err.response.data.detail)) {
-          errorMessage = err.response.data.detail.map((item: any) => 
-            `${item.loc?.[1] || '필드'}: ${item.msg}`
-          ).join(', ');
-        } else {
-          errorMessage = err.response.data.detail;
-        }
       } else if (err.code === 'ERR_NETWORK') {
         errorMessage = '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.';
       }
@@ -333,6 +407,7 @@ const Report: React.FC = () => {
     setSelectedPestType('');
     setError('');
     setSuccess('');
+    setAiResult(null);
   };
 
   const renderRadioButtons = () => {
@@ -409,6 +484,42 @@ const Report: React.FC = () => {
     return null;
   };
 
+  // 🔥 AI 분석 결과 표시 컴포넌트
+  const renderAIResult = () => {
+    if (!aiResult && !aiAnalyzing) return null;
+
+    return (
+      <AIResultSection>
+        {aiAnalyzing ? (
+          <AIAnalyzingContainer>
+            <AIIcon>🤖</AIIcon>
+            <AIAnalyzingText>
+              AI가 업로드된 이미지를 분석하고 있습니다...
+              <br />
+              <small style={{ color: '#666' }}>잠시만 기다려주세요. (약 5초 소요)</small>
+            </AIAnalyzingText>
+          </AIAnalyzingContainer>
+        ) : aiResult ? (
+          <AIResultContainer>
+            <AIIcon>🎉</AIIcon>
+            <AIResultContent>
+              <AIResultTitle>AI 분석 완료!</AIResultTitle>
+              <AIResultDetail>
+                <strong>탐지된 병해충:</strong> {aiResult.primary_detection?.class_name || '감지되지 않음'}
+                <br />
+                <strong>신뢰도:</strong> {aiResult.primary_detection ? Math.round(aiResult.primary_detection.confidence * 100) : 0}%
+                <br />
+                <strong>총 탐지 수:</strong> {aiResult.total_detections}개
+                <br />
+                <strong>카테고리:</strong> {aiResult.category}
+              </AIResultDetail>
+            </AIResultContent>
+          </AIResultContainer>
+        ) : null}
+      </AIResultSection>
+    );
+  };
+
   return (
     <>
       <Container>
@@ -465,14 +576,40 @@ const Report: React.FC = () => {
               />
             </LocationSection>
 
+            {/* 🔥 병해충 탭일 때 AI 분석 안내 메시지 */}
+            {activeTab === 'pest' && (
+              <AINoticeSection>
+                <AINoticeContainer>
+                  <AINoticeIcon>🤖</AINoticeIcon>
+                  <AINoticeContent>
+                    <AINoticeTitle>AI 자동 분석 서비스</AINoticeTitle>
+                    <AINoticeText>
+                      병해충 신고 시 업로드된 이미지를 YOLO AI가 자동으로 분석하여 
+                      병해충 종류를 식별해드립니다. 분석에는 약 5초가 소요됩니다.
+                    </AINoticeText>
+                  </AINoticeContent>
+                </AINoticeContainer>
+              </AINoticeSection>
+            )}
+
             <SubmitButtonWrapper>
               {error && <ErrorText>{error}</ErrorText>}
               {success && <SuccessText>{success}</SuccessText>}
+              
+              {/* 🔥 AI 분석 결과 표시 */}
+              {renderAIResult()}
+              
               <SubmitButton 
                 onClick={handleSubmit} 
-                disabled={loading}
+                disabled={loading || aiAnalyzing}
               />
-              {loading && <LoadingText>제출 중...</LoadingText>}
+              {(loading || aiAnalyzing) && (
+                <LoadingText>
+                  {loading && !aiAnalyzing ? '신고 제출 중...' : 
+                   aiAnalyzing ? 'AI 분석 중...' : 
+                   '처리 중...'}
+                </LoadingText>
+              )}
             </SubmitButtonWrapper>
           </ContentWrapper>
         </MainWrapper>
@@ -488,7 +625,7 @@ const Report: React.FC = () => {
   );
 };
 
-// 스타일 컴포넌트들 (기존과 동일)
+// 🔥 스타일 컴포넌트들
 const MainWrapper = styled.main`
   display: flex;
   flex-direction: column;
@@ -739,6 +876,194 @@ const LocationHelpText = styled.div`
   }
 `;
 
+// 🔥 AI 관련 스타일 컴포넌트들
+const AINoticeSection = styled.section`
+  width: 100%;
+  margin-bottom: 2rem;
+`;
+
+const AINoticeContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  border: 2px solid #2196f3;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
+
+  @media (max-width: 768px) {
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 8px;
+    padding: 12px 14px;
+  }
+`;
+
+const AINoticeIcon = styled.div`
+  font-size: 24px;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    font-size: 20px;
+  }
+`;
+
+const AINoticeContent = styled.div`
+  flex: 1;
+`;
+
+const AINoticeTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  color: #1976d2;
+  margin: 0 0 6px 0;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+`;
+
+const AINoticeText = styled.p`
+  font-size: 14px;
+  color: #424242;
+  margin: 0;
+  line-height: 1.4;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+`;
+
+const AIResultSection = styled.div`
+  width: 100%;
+  margin: 1rem 0;
+`;
+
+const AIAnalyzingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%);
+  border: 2px solid #ff9800;
+  border-radius: 12px;
+  padding: 16px 20px;
+  animation: pulse 2s infinite;
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+
+  @media (max-width: 768px) {
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 8px;
+    padding: 12px 14px;
+    flex-direction: column;
+    text-align: center;
+  }
+`;
+
+const AIResultContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+
+  @media (max-width: 768px) {
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 8px;
+    padding: 12px 14px;
+    flex-direction: column;
+    text-align: center;
+  }
+`;
+
+const AIIcon = styled.div`
+  font-size: 24px;
+  flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    font-size: 20px;
+  }
+`;
+
+const AIAnalyzingText = styled.div`
+  font-size: 14px;
+  color: #e65100;
+  font-weight: 500;
+  line-height: 1.4;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+`;
+
+const AIResultContent = styled.div`
+  flex: 1;
+`;
+
+const AIResultTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  color: #2e7d32;
+  margin: 0 0 8px 0;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+`;
+
+const AIResultDetail = styled.div`
+  font-size: 14px;
+  color: #424242;
+  line-height: 1.6;
+
+  strong {
+    color: #2e7d32;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+`;
+
 const SubmitButtonWrapper = styled.div`
   width: 100%;
   display: flex;
@@ -777,6 +1102,7 @@ const SuccessText = styled.div`
   background-color: #d4edda;
   border: 1px solid #c3e6cb;
   border-radius: 4px;
+  white-space: pre-line;
 
   @media (max-width: 768px) {
     font-size: 0.85rem;
