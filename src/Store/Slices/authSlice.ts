@@ -37,6 +37,16 @@ const saveLikedPostsToStorage = (likedPosts: { [postId: string]: boolean }) => {
   }
 };
 
+// JWT 토큰에서 user_id 추출하는 함수
+const getUserIdFromToken = (token: string): string => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.user_id || payload.sub || '';
+  } catch {
+    return '';
+  }
+};
+
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
@@ -54,16 +64,28 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    loginSuccess: (state, action: PayloadAction<{ user?: User; token: string }>) => {
       state.loading = false;
       state.isAuthenticated = true;
-      state.user = action.payload.user;
       state.token = action.payload.token;
       state.error = null;
       
-      // localStorage에 토큰과 사용자 정보 저장
+      // 사용자 정보가 제공된 경우 설정
+      if (action.payload.user) {
+        state.user = action.payload.user;
+        localStorage.setItem('userInfo', JSON.stringify(action.payload.user));
+      } else {
+        // 토큰에서 user_id만 추출하여 임시 사용자 정보 생성
+        const userId = getUserIdFromToken(action.payload.token);
+        state.user = {
+          user_id: userId,
+          username: 'loading...', // 나중에 업데이트됨
+          email: 'loading...',   // 나중에 업데이트됨
+        };
+      }
+      
+      // localStorage에 토큰 저장
       localStorage.setItem('accessToken', action.payload.token);
-      localStorage.setItem('userInfo', JSON.stringify(action.payload.user));
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
@@ -87,6 +109,12 @@ const authSlice = createSlice({
     },
     setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
+      localStorage.setItem('userInfo', JSON.stringify(action.payload));
+    },
+    // 사용자 정보 업데이트를 위한 새로운 액션
+    setUserInfo: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+      localStorage.setItem('userInfo', JSON.stringify(action.payload));
     },
     initializeAuth: (state) => {
       // 페이지 새로고침 시 localStorage에서 토큰 확인
@@ -107,6 +135,25 @@ const authSlice = createSlice({
           localStorage.removeItem('accessToken');
           localStorage.removeItem('userInfo');
           localStorage.removeItem('likedPosts');
+        }
+      } else if (token) {
+        // 토큰만 있고 사용자 정보가 없는 경우 토큰에서 user_id 추출
+        try {
+          const userId = getUserIdFromToken(token);
+          if (userId) {
+            state.token = token;
+            state.isAuthenticated = true;
+            state.user = {
+              user_id: userId,
+              username: 'loading...', // API에서 가져올 예정
+              email: 'loading...',
+            };
+            state.likedPosts = loadLikedPostsFromStorage();
+          } else {
+            localStorage.removeItem('accessToken');
+          }
+        } catch (error) {
+          localStorage.removeItem('accessToken');
         }
       } else {
         // 토큰이 없으면 좋아요 상태만 로드 (비로그인 사용자도 볼 수 있도록)
@@ -173,6 +220,7 @@ export const {
   loginFailure,
   logout,
   setUser,
+  setUserInfo,        // 새로 추가된 액션
   initializeAuth,
   clearError,
   setLikeStatus,        // 좋아요 상태 설정
@@ -180,5 +228,47 @@ export const {
   setMultipleLikeStatus, // 여러 좋아요 상태 설정
   clearAllLikeStatus,   // 모든 좋아요 상태 초기화
 } = authSlice.actions;
+
+// 로그인 API 호출 함수 (컴포넌트에서 사용)
+export const loginUser = async (credentials: { email: string; password: string }): Promise<string> => {
+  const response = await fetch('http://localhost:8000/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(credentials),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || '로그인 실패');
+  }
+
+  const data = await response.json();
+  return data.access_token; // 백엔드에서 access_token으로 반환
+};
+
+// 사용자 정보 가져오는 API 함수
+export const fetchUserInfo = async (token: string): Promise<User> => {
+  const response = await fetch('http://localhost:8000/mypage', {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('사용자 정보를 가져올 수 없습니다');
+  }
+
+  const data = await response.json();
+  const userId = getUserIdFromToken(token);
+  
+  return {
+    user_id: userId,
+    username: data.mypage.username,
+    email: data.mypage.email,
+  };
+};
 
 export default authSlice.reducer;

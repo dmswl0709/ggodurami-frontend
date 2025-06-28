@@ -1,4 +1,4 @@
-// pages/CommunityDetail.tsx (개선된 좋아요 상태 관리 - 완전한 코드)
+// pages/CommunityDetail.tsx (댓글 수정/삭제 + 게시글 삭제 완전한 코드)
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -11,7 +11,9 @@ import {
   logout,
   setLikeStatus,
   removeLikeStatus,
-  initializeAuth
+  initializeAuth,
+  setUserInfo,
+  fetchUserInfo
 } from '../store/slices/authSlice';
 import type { RootState } from '../store/store';
 
@@ -66,6 +68,10 @@ interface CommentCreateRequest {
   content: string;
 }
 
+interface CommentUpdateRequest {
+  content: string;
+}
+
 interface CommentCreateResponse {
   id: string;
   user_id: string;
@@ -73,6 +79,16 @@ interface CommentCreateResponse {
   content: string;
   post_id: string;
   created_at: string;
+}
+
+interface CommentUpdateResponse {
+  id: string;
+  user_id: string;
+  username: string;
+  content: string;
+  post_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface DeleteResponse {
@@ -140,12 +156,10 @@ const toggleLike = async (postId: string): Promise<LikeResponse> => {
   }
 };
 
-// 🔥 핵심: 개별 사용자 좋아요 상태 조회 (Authorization 헤더 포함)
 const getMyLikeStatus = async (postId: string): Promise<MyLikeStatusResponse> => {
   try {
     console.log('🎯 개별 좋아요 상태 조회 시도:', postId);
     
-    // 토큰 확인
     const token = localStorage.getItem('accessToken');
     if (!token) {
       throw new Error('토큰이 없습니다');
@@ -195,6 +209,28 @@ const getComments = async (postId: string): Promise<CommentsResponse> => {
   }
 };
 
+// 🔥 댓글 수정 API
+const updateComment = async (commentId: string, data: CommentUpdateRequest): Promise<CommentUpdateResponse> => {
+  try {
+    const response = await apiClient.patch<CommentUpdateResponse>(`/comments/${commentId}`, data);
+    return response.data;
+  } catch (error: any) {
+    console.error('댓글 수정 오류:', error);
+    throw error;
+  }
+};
+
+// 🔥 댓글 삭제 API
+const deleteComment = async (commentId: string): Promise<DeleteResponse> => {
+  try {
+    const response = await apiClient.delete<DeleteResponse>(`/comments/${commentId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('댓글 삭제 오류:', error);
+    throw error;
+  }
+};
+
 const deletePost = async (postId: string): Promise<DeleteResponse> => {
   try {
     const response = await apiClient.delete<DeleteResponse>(`/posts/${postId}`);
@@ -235,6 +271,19 @@ const getCommentsPublic = async (postId: string): Promise<CommentsResponse> => {
   }
 };
 
+// JWT 토큰에서 user_id를 추출하는 함수
+const getCurrentUserIdFromToken = (): string | null => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) return null;
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.user_id || payload.sub || null;
+  } catch {
+    return null;
+  }
+};
+
 // JWT 토큰 유효성 검사 함수
 const isTokenValid = (token: string): boolean => {
   try {
@@ -246,19 +295,21 @@ const isTokenValid = (token: string): boolean => {
   }
 };
 
-const getCurrentUserIdFromToken = (): string | null => {
+// 사용자 정보를 mypage API에서 가져오는 함수
+const fetchCurrentUserInfo = async (): Promise<any> => {
   const token = localStorage.getItem('accessToken');
   if (!token) return null;
-  
+
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.sub || payload.user_id || null;
-  } catch {
+    const response = await apiClient.get('/mypage');
+    return response.data.mypage;
+  } catch (error) {
+    console.error('사용자 정보 가져오기 실패:', error);
     return null;
   }
 };
 
-// 스타일 컴포넌트들
+// 스타일 컴포넌트들 (동일하므로 생략)
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: #FFEFD5;
@@ -545,6 +596,90 @@ const CommentText = styled.div`
   }
 `;
 
+// 🔥 댓글 수정/삭제 관련 스타일 컴포넌트
+const CommentActionButtons = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const CommentActionButton = styled.button`
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  &:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+const EditCommentInput = styled.textarea`
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  
+  &:focus {
+    outline: none;
+    border-color: #FBBF77;
+  }
+`;
+
+const EditActions = styled.div`
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+`;
+
+const EditButton = styled.button`
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+`;
+
+const SaveButton = styled(EditButton)`
+  background-color: #FBBF77;
+  color: white;
+  
+  &:hover {
+    background-color: #E6AB65;
+  }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+const CancelButton = styled(EditButton)`
+  background-color: #6c757d;
+  color: white;
+  
+  &:hover {
+    background-color: #5a6268;
+  }
+`;
+
 const CommentForm = styled.div`
   background-color: #f8f8f8;
   border-radius: 8px;
@@ -796,10 +931,86 @@ export const CommunityDetail: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // 🔥 댓글 수정/삭제 관련 state
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
+  const [commentUpdateLoading, setCommentUpdateLoading] = useState(false);
+  const [commentDeleteLoading, setCommentDeleteLoading] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+
   // Redux에서 현재 게시글의 좋아요 상태 가져오기
   const isLiked = id ? (likedPosts[id] || false) : false;
 
-  // 🔥 핵심: 좋아요 상태 동기화 함수
+  // 🔥 현재 사용자가 댓글 작성자인지 확인 (수정된 버전)
+  const isCommentOwner = (comment: CommentData): boolean => {
+    console.log('=== 댓글 권한 체크 ===');
+    console.log('isAuthenticated:', isAuthenticated);
+    console.log('user:', user);
+    console.log('comment.user_id:', comment.user_id);
+    console.log('comment.username:', comment.username);
+    
+    if (!isAuthenticated) {
+      console.log('❌ 인증되지 않음');
+      return false;
+    }
+    
+    // 방법 1: Redux의 user 정보 사용 (있는 경우)
+    if (user && user.user_id && user.username !== 'loading...') {
+      const currentUserId = String(user.user_id);
+      const commentUserId = String(comment.user_id);
+      const isOwner = currentUserId === commentUserId && currentUserId !== '';
+      console.log('Redux 사용자 ID로 비교:', currentUserId, '===', commentUserId, '=', isOwner);
+      return isOwner;
+    }
+    
+    // 방법 2: 토큰에서 직접 user_id 추출
+    const tokenUserId = getCurrentUserIdFromToken();
+    if (tokenUserId) {
+      const commentUserId = String(comment.user_id);
+      const isOwner = tokenUserId === commentUserId;
+      console.log('토큰 사용자 ID로 비교:', tokenUserId, '===', commentUserId, '=', isOwner);
+      return isOwner;
+    }
+    
+    console.log('❌ 사용자 ID를 확인할 수 없음');
+    return false;
+  };
+
+  // 🔥 현재 사용자가 게시글 작성자인지 확인 (수정된 버전)
+  const isPostOwner = (): boolean => {
+    console.log('=== 게시글 권한 체크 ===');
+    console.log('isAuthenticated:', isAuthenticated);
+    console.log('post:', post);
+    console.log('user:', user);
+    
+    if (!isAuthenticated || !post) {
+      console.log('❌ 인증되지 않음 또는 게시글 없음');
+      return false;
+    }
+    
+    // 방법 1: Redux의 user 정보 사용 (있는 경우)
+    if (user && user.user_id && user.username !== 'loading...') {
+      const currentUserId = String(user.user_id);
+      const postUserId = String(post.user_id);
+      const isOwner = currentUserId === postUserId && currentUserId !== '';
+      console.log('Redux 사용자 ID로 비교:', currentUserId, '===', postUserId, '=', isOwner);
+      return isOwner;
+    }
+    
+    // 방법 2: 토큰에서 직접 user_id 추출
+    const tokenUserId = getCurrentUserIdFromToken();
+    if (tokenUserId) {
+      const postUserId = String(post.user_id);
+      const isOwner = tokenUserId === postUserId;
+      console.log('토큰 사용자 ID로 비교:', tokenUserId, '===', postUserId, '=', isOwner);
+      return isOwner;
+    }
+    
+    console.log('❌ 사용자 ID를 확인할 수 없음');
+    return false;
+  };
+
+  // 좋아요 상태 동기화 함수
   const syncLikeStatusWithServer = async (postId: string) => {
     console.log('🔄 서버와 좋아요 상태 동기화 시작');
     
@@ -810,22 +1021,18 @@ export const CommunityDetail: React.FC = () => {
     }
 
     try {
-      // 1. 서버에서 최신 좋아요 상태 가져오기
       const serverLikeData = await getMyLikeStatus(postId);
       console.log('📡 서버에서 받은 좋아요 데이터:', serverLikeData);
       
-      // 2. Redux와 localStorage 모두 업데이트
       dispatch(setLikeStatus({ 
         postId, 
         liked: serverLikeData.liked 
       }));
       
-      // 3. localStorage에도 저장
       const currentLikedPosts = JSON.parse(localStorage.getItem('likedPosts') || '{}');
       currentLikedPosts[postId] = serverLikeData.liked;
       localStorage.setItem('likedPosts', JSON.stringify(currentLikedPosts));
       
-      // 4. 좋아요 수 업데이트
       setLikeCount(serverLikeData.total_likes);
       
       console.log('✅ 서버 동기화 완료:', {
@@ -843,7 +1050,6 @@ export const CommunityDetail: React.FC = () => {
   useEffect(() => {
     console.log('=== 컴포넌트 마운트 - 인증 상태 복원 ===');
     
-    // 인증 상태 초기화
     dispatch(initializeAuth());
     
     const token = localStorage.getItem('accessToken');
@@ -870,13 +1076,36 @@ export const CommunityDetail: React.FC = () => {
     }
   }, [dispatch]);
 
-  // 현재 사용자가 게시글 작성자인지 확인
-  const isPostOwner = (): boolean => {
-    if (!isAuthenticated || !post || !user) return false;
-    return user.id === post.user_id || user.user_id === post.user_id;
-  };
+  // 사용자 정보 로드 useEffect
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      if (isAuthenticated && (!user || !user.user_id || user.username === 'loading...')) {
+        console.log('🔄 사용자 정보 로드 시도');
+        try {
+          const userInfo = await fetchCurrentUserInfo();
+          if (userInfo) {
+            // 토큰에서 user_id 추출
+            const tokenUserId = getCurrentUserIdFromToken();
+            
+            const completeUserInfo = {
+              user_id: tokenUserId || 'unknown',
+              username: userInfo.username,
+              email: userInfo.email,
+            };
+            
+            dispatch(setUserInfo(completeUserInfo));
+            console.log('✅ 사용자 정보 로드 완료:', completeUserInfo);
+          }
+        } catch (error) {
+          console.error('❌ 사용자 정보 로드 실패:', error);
+        }
+      }
+    };
 
-  // 🔥 핵심: 개선된 좋아요 상태 로드 함수
+    loadUserInfo();
+  }, [isAuthenticated, user, dispatch]);
+
+  // 좋아요 상태 로드 함수
   const loadLikeStatus = async (postId: string) => {
     console.log('=== 좋아요 상태 로드 시작 ===');
     console.log('postId:', postId);
@@ -886,7 +1115,6 @@ export const CommunityDetail: React.FC = () => {
       if (isAuthenticated) {
         const token = localStorage.getItem('accessToken');
         if (token && isTokenValid(token)) {
-          // 🎯 로그인된 사용자: 개별 좋아요 상태 조회 (Authorization 헤더 자동 포함)
           console.log('✅ 로그인된 사용자 - 개별 좋아요 상태 조회');
           await syncLikeStatusWithServer(postId);
           return;
@@ -897,7 +1125,6 @@ export const CommunityDetail: React.FC = () => {
         }
       }
       
-      // 비로그인 사용자: 공개 좋아요 수만 조회
       console.log('👤 비로그인 사용자 - 공개 좋아요 수 조회');
       const publicLikeData = await getLikeStatusPublic(postId);
       setLikeCount(publicLikeData.total_likes || 0);
@@ -968,7 +1195,6 @@ export const CommunityDetail: React.FC = () => {
       
       setPost(postData);
       
-      // 데이터 로드
       await Promise.all([
         loadLikeStatus(id),
         loadComments(id)
@@ -1000,20 +1226,15 @@ export const CommunityDetail: React.FC = () => {
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     const initializeAndLoadData = async () => {
-      // 1. 인증 상태 복원
       dispatch(initializeAuth());
-      
-      // 2. 잠시 기다린 후 데이터 로드
       await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // 3. 게시글 데이터 로드
       await loadPost();
     };
 
     initializeAndLoadData();
   }, [id, dispatch]);
 
-  // 🔥 인증 상태 변경 시 좋아요 상태 서버 동기화
+  // 인증 상태 변경 시 좋아요 상태 서버 동기화
   useEffect(() => {
     const handleAuthChange = async () => {
       if (isAuthenticated && id) {
@@ -1025,7 +1246,7 @@ export const CommunityDetail: React.FC = () => {
     handleAuthChange();
   }, [isAuthenticated, id]);
 
-  // 🔥 좋아요 토글 개선
+  // 좋아요 토글
   const handleLike = async () => {
     if (!id) return;
 
@@ -1042,7 +1263,6 @@ export const CommunityDetail: React.FC = () => {
       const response = await toggleLike(id);
       console.log('🎯 좋아요 토글 API 응답:', response);
       
-      // Redux와 localStorage 동시 업데이트
       dispatch(setLikeStatus({ 
         postId: id, 
         liked: response.liked 
@@ -1121,6 +1341,135 @@ export const CommunityDetail: React.FC = () => {
     }
   };
 
+  // 🔥 댓글 수정 시작
+  const startEditComment = (comment: CommentData) => {
+    setEditingCommentId(comment.id);
+    setEditingCommentText(comment.content);
+  };
+  
+  // 🔥 댓글 수정 취소
+  const cancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+  
+  // CommunityDetail.tsx의 updateComment 함수 수정
+const updateComment = async (commentId: string, data: CommentUpdateRequest): Promise<CommentUpdateResponse> => {
+    try {
+      console.log('댓글 수정 요청:', { commentId, data });
+      
+      // 백엔드 API 호출 시 정확한 형태로 전송
+      const response = await apiClient.patch<CommentUpdateResponse>(`/comments/${commentId}`, {
+        content: data.content  // content 필드만 전송
+      });
+      
+      console.log('댓글 수정 응답:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('댓글 수정 오류:', error);
+      console.error('요청 URL:', `/comments/${commentId}`);
+      console.error('요청 데이터:', data);
+      console.error('응답 오류:', error.response?.data);
+      throw error;
+    }
+  };
+  
+  // saveEditComment 함수도 수정
+const saveEditComment = async (commentId: string) => {
+    if (!editingCommentText.trim()) {
+      alert('댓글 내용을 입력해주세요.');
+      return;
+    }
+  
+    try {
+      setCommentUpdateLoading(true);
+      
+      console.log('댓글 수정 시도:', {
+        commentId,
+        content: editingCommentText.trim()
+      });
+      
+      const updateData: CommentUpdateRequest = {
+        content: editingCommentText.trim()
+      };
+  
+      // 직접 API 호출로 변경
+      const response = await apiClient.patch(`/comments/${commentId}`, updateData);
+      
+      console.log('댓글 수정 성공:', response.data);
+      
+      // 성공 시 댓글 목록 업데이트
+      setComments(prev => prev.map(comment => 
+        comment.id === commentId 
+          ? { ...comment, content: editingCommentText.trim() }
+          : comment
+      ));
+      
+      setEditingCommentId(null);
+      setEditingCommentText('');
+      
+      alert('댓글이 수정되었습니다.');
+      
+    } catch (err: any) {
+      console.error('댓글 수정 오류:', err);
+      console.error('오류 상세:', {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message
+      });
+      
+      if (err.response?.status === 401) {
+        dispatch(logout());
+        localStorage.clear();
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+      } else if (err.response?.status === 403) {
+        alert('댓글 수정 권한이 없습니다.');
+      } else if (err.response?.status === 422) {
+        alert('요청 데이터 형식이 올바르지 않습니다.');
+      } else {
+        alert('댓글 수정 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setCommentUpdateLoading(false);
+    }
+  };
+  
+  // 🔥 댓글 삭제
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      setCommentDeleteLoading(true);
+      setDeletingCommentId(commentId);
+      
+      await deleteComment(commentId);
+      
+      setComments(prev => prev.filter(comment => comment.id !== commentId));
+      
+      alert('댓글이 삭제되었습니다.');
+      
+    } catch (err: any) {
+      console.error('댓글 삭제 오류:', err);
+      
+      if (err.response?.status === 401) {
+        dispatch(logout());
+        localStorage.clear();
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+      } else if (err.response?.status === 403) {
+        alert('댓글 삭제 권한이 없습니다.');
+      } else {
+        alert('댓글 삭제 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setCommentDeleteLoading(false);
+      setDeletingCommentId(null);
+    }
+  };
+
   // 게시글 삭제
   const handleDeletePost = async () => {
     if (!id) return;
@@ -1131,10 +1480,8 @@ export const CommunityDetail: React.FC = () => {
       const response = await deletePost(id);
       console.log('삭제 성공:', response.message);
       
-      // Redux에서 좋아요 상태 제거
       dispatch(removeLikeStatus(id));
       
-      // localStorage에서도 제거
       const currentLikedPosts = JSON.parse(localStorage.getItem('likedPosts') || '{}');
       delete currentLikedPosts[id];
       localStorage.setItem('likedPosts', JSON.stringify(currentLikedPosts));
@@ -1207,7 +1554,19 @@ export const CommunityDetail: React.FC = () => {
     loadPost();
   };
 
-  // 🔥 디버깅을 위한 useEffect
+  // ESC 키로 수정 모드 취소
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && editingCommentId) {
+        cancelEditComment();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [editingCommentId]);
+
+  // 디버깅을 위한 useEffect
   useEffect(() => {
     console.log('=== Redux 상태 변경 감지 ===');
     console.log('isAuthenticated:', isAuthenticated);
@@ -1215,7 +1574,17 @@ export const CommunityDetail: React.FC = () => {
     console.log('likedPosts:', likedPosts);
     console.log('현재 게시글 좋아요 상태 (isLiked):', isLiked);
     console.log('localStorage likedPosts:', localStorage.getItem('likedPosts'));
-  }, [isAuthenticated, user, likedPosts, isLiked]);
+    console.log('토큰에서 추출한 user_id:', getCurrentUserIdFromToken());
+    console.log('현재 게시글:', post);
+    console.log('댓글 수:', comments.length);
+    if (comments.length > 0) {
+      console.log('첫 번째 댓글:', comments[0]);
+      console.log('첫 번째 댓글 소유자 여부:', isCommentOwner(comments[0]));
+    }
+    if (post) {
+      console.log('게시글 소유자 여부:', isPostOwner());
+    }
+  }, [isAuthenticated, user, likedPosts, isLiked, post, comments]);
 
   if (loading) {
     return (
@@ -1286,6 +1655,7 @@ export const CommunityDetail: React.FC = () => {
           <PostHeader>
             <PostHeaderTop>
               <PostTitle>{post.title}</PostTitle>
+              {/* 🔥 게시글 삭제 버튼 - 본인이 작성한 게시글에만 표시 */}
               {isPostOwner() && (
                 <DeleteButton 
                   onClick={openDeleteModal}
@@ -1321,7 +1691,63 @@ export const CommunityDetail: React.FC = () => {
               <CommentMeta>
                 {comment.username} · {formatDate(comment.created_at)}
               </CommentMeta>
-              <CommentText>{comment.content}</CommentText>
+              
+              {editingCommentId === comment.id ? (
+                // 🔥 수정 모드
+                <div>
+                  <EditCommentInput
+                    value={editingCommentText}
+                    onChange={(e) => setEditingCommentText(e.target.value)}
+                    maxLength={3000}
+                    disabled={commentUpdateLoading}
+                    placeholder="댓글을 수정해주세요."
+                  />
+                  <div style={{ fontSize: '12px', color: '#999', marginBottom: '8px' }}>
+                    {editingCommentText.length}/3000
+                  </div>
+                  <EditActions>
+                    <CancelButton 
+                      onClick={cancelEditComment}
+                      disabled={commentUpdateLoading}
+                    >
+                      취소
+                    </CancelButton>
+                    <SaveButton 
+                      onClick={() => saveEditComment(comment.id)}
+                      disabled={commentUpdateLoading || !editingCommentText.trim()}
+                    >
+                      {commentUpdateLoading ? '저장 중...' : '저장'}
+                    </SaveButton>
+                  </EditActions>
+                </div>
+              ) : (
+                // 🔥 일반 모드
+                <div>
+                  <CommentText>{comment.content}</CommentText>
+                  
+                  {/* 🔥 댓글 수정/삭제 버튼 (본인 댓글에만 표시) */}
+                  {isAuthenticated && isCommentOwner(comment) && (
+                    <CommentActionButtons>
+                      <CommentActionButton
+                        onClick={() => startEditComment(comment)}
+                        disabled={editingCommentId !== null || commentDeleteLoading}
+                      >
+                        수정
+                      </CommentActionButton>
+                      <CommentActionButton
+                        onClick={() => handleDeleteComment(comment.id)}
+                        disabled={
+                          editingCommentId !== null || 
+                          commentDeleteLoading || 
+                          deletingCommentId === comment.id
+                        }
+                      >
+                        {deletingCommentId === comment.id ? '삭제 중...' : '삭제'}
+                      </CommentActionButton>
+                    </CommentActionButtons>
+                  )}
+                </div>
+              )}
             </CommentItem>
           ))}
           
@@ -1332,12 +1758,17 @@ export const CommunityDetail: React.FC = () => {
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 maxLength={3000}
+                disabled={editingCommentId !== null}
               />
               <CommentActions>
                 <CharCount>{commentText.length}/3000</CharCount>
                 <SubmitButton 
                   onClick={handleCommentSubmit}
-                  disabled={commentLoading || !commentText.trim()}
+                  disabled={
+                    commentLoading || 
+                    !commentText.trim() || 
+                    editingCommentId !== null
+                  }
                 >
                   {commentLoading ? '등록 중...' : '등록'}
                 </SubmitButton>
@@ -1351,9 +1782,8 @@ export const CommunityDetail: React.FC = () => {
           )}
         </CommentSection>
         
-        {/* 🔥 핵심: HeartButton 컴포넌트 - 개선된 Redux 상태 사용 */}
         <HeartButton 
-          isLiked={isLiked}  // Redux에서 가져온 실시간 좋아요 상태
+          isLiked={isLiked}
           likeCount={likeCount}
           onLike={handleLike}
           showText={true}
