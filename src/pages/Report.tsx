@@ -1,5 +1,5 @@
-// pages/Report.tsx (백엔드 연동 최종 버전 + 자동 이동 기능)
-import React, { useState } from 'react';
+// pages/Report.tsx (백엔드 연동 최종 버전 + 자동 이동 기능 + 자동 새로고침)
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
@@ -156,6 +156,55 @@ const Report: React.FC = () => {
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<AIAnalysisResponse | null>(null);
 
+  // 🔥 자동 새로고침 로직
+  useEffect(() => {
+    const handleAutoRefresh = () => {
+      const hasRefreshed = sessionStorage.getItem('reportPageRefreshed');
+      
+      if (!hasRefreshed) {
+        console.log('🔄 Report 페이지 최초 접근 - 자동 새로고침 실행');
+        sessionStorage.setItem('reportPageRefreshed', 'true');
+        
+        // 약간의 지연 후 새로고침 (로딩 표시를 위해)
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      } else {
+        console.log('✅ Report 페이지 새로고침 완료 - 정상 진행');
+      }
+    };
+
+    handleAutoRefresh();
+
+    // 컴포넌트 언마운트 시 세션 스토리지 정리
+    return () => {
+      // 다른 페이지로 이동할 때는 플래그 제거하지 않음 (뒤로가기 대응)
+    };
+  }, []);
+
+  // 🔥 페이지 떠날 때 새로고침 플래그 정리
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // 페이지를 완전히 떠날 때만 플래그 제거
+      if (window.performance?.navigation?.type === 1) { // reload가 아닌 경우
+        sessionStorage.removeItem('reportPageRefreshed');
+      }
+    };
+
+    const handlePopState = () => {
+      // 뒤로가기 시 플래그 제거
+      sessionStorage.removeItem('reportPageRefreshed');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   // 지도에서 위치 선택 처리
   const handleLocationSelect = (selectedLocation: SelectedLocation) => {
     console.log('🗺️ 받은 위치 데이터:', selectedLocation);
@@ -242,9 +291,11 @@ const Report: React.FC = () => {
     return true;
   };
 
-  // 🔥 페이지 이동 함수
+  // 🔥 페이지 이동 함수 (새로고침 플래그 정리 추가)
   const navigateToReportDetail = () => {
     console.log('📍 ReportDetail 페이지로 이동');
+    // 다음 페이지로 이동 전 플래그 정리
+    sessionStorage.removeItem('reportPageRefreshed');
     navigate('/ReportDetail');
   };
 
@@ -547,6 +598,26 @@ const Report: React.FC = () => {
     );
   };
 
+  // 🔥 새로고침 상태 확인 및 로딩 화면 표시
+  const hasRefreshed = sessionStorage.getItem('reportPageRefreshed');
+  
+  if (!hasRefreshed) {
+    return (
+      <Container>
+        <RefreshLoadingWrapper>
+          <RefreshLoadingContainer>
+            <RefreshLoadingSpinner />
+            <RefreshLoadingText>
+              페이지를 준비하고 있습니다...
+              <br />
+              <small>잠시만 기다려주세요.</small>
+            </RefreshLoadingText>
+          </RefreshLoadingContainer>
+        </RefreshLoadingWrapper>
+      </Container>
+    );
+  }
+
   return (
     <>
       <Container>
@@ -659,7 +730,53 @@ const Report: React.FC = () => {
   );
 };
 
-// 🔥 스타일 컴포넌트들
+// 🔥 새로고침 로딩 관련 스타일 컴포넌트들
+const RefreshLoadingWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+`;
+
+const RefreshLoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+`;
+
+const RefreshLoadingSpinner = styled.div`
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #FBBF77;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const RefreshLoadingText = styled.div`
+  color: #666;
+  font-size: 16px;
+  text-align: center;
+  line-height: 1.5;
+  
+  small {
+    font-size: 14px;
+    color: #999;
+  }
+`;
+
+// 🔥 기존 스타일 컴포넌트들
 const MainWrapper = styled.main`
   display: flex;
   flex-direction: column;
