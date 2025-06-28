@@ -1,5 +1,6 @@
-// pages/Report.tsx (백엔드 연동 최종 버전)
+// pages/Report.tsx (백엔드 연동 최종 버전 + 자동 이동 기능)
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
 import Logo from '../Components/Logo/Logo';
@@ -136,6 +137,7 @@ const requestAIAnalysis = async (reportId: string): Promise<AIAnalysisResponse |
 };
 
 const Report: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('disaster');
   const [files, setFiles] = useState<File[]>([]);
   const [location, setLocation] = useState('');
@@ -240,7 +242,13 @@ const Report: React.FC = () => {
     return true;
   };
 
-  // 🔥 수정된 handleSubmit - 백엔드 구조에 맞게 업데이트
+  // 🔥 페이지 이동 함수
+  const navigateToReportDetail = () => {
+    console.log('📍 ReportDetail 페이지로 이동');
+    navigate('/ReportDetail');
+  };
+
+  // 🔥 수정된 handleSubmit - 신고 완료 후 자동 이동 기능 추가
   const handleSubmit = async () => {
     setError('');
     setSuccess('');
@@ -335,17 +343,36 @@ const Report: React.FC = () => {
             
             setSuccess(successMessage);
             setAiAnalyzing(false);
+            
+            // 🔥 AI 분석 완료 후 2초 뒤 자동 이동
+            setTimeout(() => {
+              console.log('🔄 AI 분석 완료 - ReportDetail 페이지로 이동');
+              navigateToReportDetail();
+            }, 2000);
+            
           } catch (aiError) {
             console.error('AI 분석 중 오류:', aiError);
             successMessage += '\n\n⚠️ AI 분석 중 오류가 발생했지만 신고는 정상적으로 접수되었습니다.';
             setSuccess(successMessage);
             setAiAnalyzing(false);
+            
+            // 🔥 AI 분석 실패해도 2초 뒤 자동 이동
+            setTimeout(() => {
+              console.log('🔄 AI 분석 실패했지만 ReportDetail 페이지로 이동');
+              navigateToReportDetail();
+            }, 2000);
           }
         }, 5000); // 5초 지연
         
       } else {
-        // 재난 신고인 경우는 AI 분석 없이 바로 성공 메시지 표시
+        // 🔥 재난 신고인 경우는 AI 분석 없이 바로 성공 메시지 표시 후 자동 이동
         setSuccess(successMessage);
+        
+        // 2초 후 자동 이동
+        setTimeout(() => {
+          console.log('🔄 재난 신고 완료 - ReportDetail 페이지로 이동');
+          navigateToReportDetail();
+        }, 2000);
       }
       
       // 성공 시 폼 초기화
@@ -594,7 +621,14 @@ const Report: React.FC = () => {
 
             <SubmitButtonWrapper>
               {error && <ErrorText>{error}</ErrorText>}
-              {success && <SuccessText>{success}</SuccessText>}
+              {success && (
+                <SuccessTextWrapper>
+                  <SuccessText>{success}</SuccessText>
+                  <NavigationNotice>
+                    📍 잠시 후 신고 상세 페이지로 자동 이동됩니다...
+                  </NavigationNotice>
+                </SuccessTextWrapper>
+              )}
               
               {/* 🔥 AI 분석 결과 표시 */}
               {renderAIResult()}
@@ -1093,16 +1127,26 @@ const ErrorText = styled.div`
   }
 `;
 
+const SuccessTextWrapper = styled.div`
+  width: 100%;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
 const SuccessText = styled.div`
   color: #155724;
   font-size: 0.9rem;
-  margin-bottom: 1rem;
   text-align: center;
   padding: 8px 12px;
   background-color: #d4edda;
   border: 1px solid #c3e6cb;
   border-radius: 4px;
   white-space: pre-line;
+  width: 100%;
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
     font-size: 0.85rem;
@@ -1110,6 +1154,34 @@ const SuccessText = styled.div`
 
   @media (max-width: 480px) {
     font-size: 0.85rem;
+  }
+`;
+
+const NavigationNotice = styled.div`
+  color: #0066cc;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 6px 12px;
+  background-color: #e6f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 4px;
+  font-weight: 500;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeInOut 2s infinite;
+
+  @keyframes fadeInOut {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
   }
 `;
 
