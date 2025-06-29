@@ -453,7 +453,7 @@ const getFileUrl = (filePath) => {
         return filePath;
     }
     if (filePath.startsWith('/static')) {
-        return `http://baekend.onrender.com${filePath}`;
+        return `https://baekend.onrender.com${filePath}`;
     }
     return `https://baekend.onrender.com/static/uploads/reports/${filePath}`;
 };
