@@ -588,6 +588,7 @@ const FindLocal: React.FC<FindLocalProps> = ({ isOpen, onClose, onLocationSelect
 
         <HelpText>
           💡 지도에서 원하는 위치를 클릭하면 마커가 표시됩니다
+          🔄 지도가 보이지 않거나 로딩이 길어지면 페이지 새로고침을 해주세요.
         </HelpText>
       </MapPopupContainer>
     </MapOverlay>
