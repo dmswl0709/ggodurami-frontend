@@ -1,5 +1,5 @@
 // pages/SupportList.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { Logo } from '../Components/Logo/Logo';
@@ -251,9 +251,12 @@ const PaginationContainer = styled.div`
   align-items: center;
   margin-top: 30px;
   gap: 8px;
+  flex-wrap: wrap;
 `;
 
-const PaginationButton = styled.button<{ active?: boolean }>`
+const PaginationButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== 'active',
+})<{ active?: boolean }>`
   width: 35px;
   height: 35px;
   border: 1px solid #ddd;
@@ -265,7 +268,7 @@ const PaginationButton = styled.button<{ active?: boolean }>`
   font-weight: 500;
   transition: all 0.2s ease;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${props => props.active ? '#E6AB65' : '#f5f5f5'};
   }
   
@@ -277,6 +280,7 @@ const PaginationButton = styled.button<{ active?: boolean }>`
 
 const ArrowButton = styled(PaginationButton)`
   border-radius: 8px;
+  width: 40px;
 `;
 
 const RefreshButton = styled.button`
@@ -318,7 +322,17 @@ const StatusInfo = styled.div`
   }
 `;
 
-// 🔥 타입 정의
+const PaginationInfo = styled.div`
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+`;
+
+// 페이지네이션 상수
+const ITEMS_PER_PAGE = 10;
+
+// 타입 정의
 interface Project {
   title: string;
   link: string;
@@ -332,7 +346,7 @@ interface SupportData {
   source: string;
 }
 
-// 🔥 API 설정
+// API 설정
 const API_BASE_URL = 'http://localhost:8000';
 
 // Axios 인스턴스 생성
@@ -345,7 +359,7 @@ const apiClient = axios.create({
   },
 });
 
-// 🔥 API 함수
+// API 함수
 const fetchOngoingProjects = async (): Promise<Project[]> => {
   try {
     console.log('🔄 세미나/행사 정보 조회 시작...');
@@ -379,7 +393,7 @@ const fetchOngoingProjects = async (): Promise<Project[]> => {
   }
 };
 
-// 🔥 목업 데이터 (백엔드 연결 실패 시 사용)
+// 목업 데이터 (백엔드 연결 실패 시 사용) - 더 많은 데이터로 확장
 const getMockData = (): SupportData[] => {
   console.log('📋 목업 데이터 사용');
   return [
@@ -417,6 +431,76 @@ const getMockData = (): SupportData[] => {
       link: 'https://www.rda.go.kr/example5',
       date: '25.05.28',
       source: '농촌진흥청'
+    },
+    {
+      id: 6,
+      title: '첨단농업 기술 도입 지원사업 안내',
+      link: 'https://www.rda.go.kr/example6',
+      date: '25.05.27',
+      source: '농촌진흥청'
+    },
+    {
+      id: 7,
+      title: '농업 6차 산업화 지원 프로그램',
+      link: 'https://www.rda.go.kr/example7',
+      date: '25.05.26',
+      source: '농촌진흥청'
+    },
+    {
+      id: 8,
+      title: '스마트팜 구축 지원사업 설명회',
+      link: 'https://www.rda.go.kr/example8',
+      date: '25.05.25',
+      source: '농촌진흥청'
+    },
+    {
+      id: 9,
+      title: '농업인 교육프로그램 운영 안내',
+      link: 'https://www.rda.go.kr/example9',
+      date: '25.05.24',
+      source: '농촌진흥청'
+    },
+    {
+      id: 10,
+      title: '농촌융복합산업 활성화 세미나',
+      link: 'https://www.rda.go.kr/example10',
+      date: '25.05.23',
+      source: '농촌진흥청'
+    },
+    {
+      id: 11,
+      title: '농업 신기술 보급사업 안내',
+      link: 'https://www.rda.go.kr/example11',
+      date: '25.05.22',
+      source: '농촌진흥청'
+    },
+    {
+      id: 12,
+      title: '청년농업인 정착 지원 프로그램',
+      link: 'https://www.rda.go.kr/example12',
+      date: '25.05.21',
+      source: '농촌진흥청'
+    },
+    {
+      id: 13,
+      title: '농업 빅데이터 활용 교육과정',
+      link: 'https://www.rda.go.kr/example13',
+      date: '25.05.20',
+      source: '농촌진흥청'
+    },
+    {
+      id: 14,
+      title: '농업분야 인공지능 기술 세미나',
+      link: 'https://www.rda.go.kr/example14',
+      date: '25.05.19',
+      source: '농촌진흥청'
+    },
+    {
+      id: 15,
+      title: '농산물 가공기술 교육 프로그램',
+      link: 'https://www.rda.go.kr/example15',
+      date: '25.05.18',
+      source: '농촌진흥청'
     }
   ];
 };
@@ -424,21 +508,57 @@ const getMockData = (): SupportData[] => {
 export const SupportList: React.FC = () => {
   const navigate = useNavigate();
   
-  // 🔥 상태 관리
-  const [supportData, setSupportData] = useState<SupportData[]>([]);
+  // 상태 관리
+  const [allSupportData, setAllSupportData] = useState<SupportData[]>([]); // 전체 데이터
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1); // 현재 페이지
   
-  // 🔥 페이지네이션 상태
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 10;
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(allSupportData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
   
-  // 🔥 데이터 로드 함수
+  // 현재 페이지에 표시할 데이터
+  const currentItems = useMemo(() => {
+    return allSupportData.slice(startIndex, endIndex);
+  }, [allSupportData, startIndex, endIndex]);
+
+  // 페이지 버튼 배열 생성
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 7;
+    
+    if (totalPages <= maxVisiblePages) {
+      // 전체 페이지가 7개 이하면 모두 표시
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // 현재 페이지를 중심으로 표시할 페이지 계산
+      let startPage = Math.max(1, currentPage - 3);
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      // 끝 페이지가 총 페이지보다 작으면 시작 페이지 조정
+      if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+    }
+    
+    return pageNumbers;
+  };
+  
+  // 데이터 로드 함수
   const loadSupportData = async () => {
     try {
       setLoading(true);
       setError(null);
+      setCurrentPage(1); // 데이터 새로고침 시 첫 페이지로 이동
       
       const projects = await fetchOngoingProjects();
       
@@ -455,7 +575,7 @@ export const SupportList: React.FC = () => {
         source: '농촌진흥청'
       }));
       
-      setSupportData(transformedData);
+      setAllSupportData(transformedData);
       setLastUpdated(new Date());
       
       console.log('✅ 지원 데이터 로드 완료:', transformedData.length, '건');
@@ -464,25 +584,19 @@ export const SupportList: React.FC = () => {
       setError(err instanceof Error ? err.message : '데이터를 불러올 수 없습니다.');
       
       // 에러 발생 시 목업 데이터 사용
-      setSupportData(getMockData());
+      setAllSupportData(getMockData());
       setLastUpdated(new Date());
     } finally {
       setLoading(false);
     }
   };
   
-  // 🔥 컴포넌트 마운트 시 데이터 로드
+  // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadSupportData();
   }, []);
   
-  // 🔥 페이지네이션 계산
-  const totalPages = Math.ceil(supportData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = supportData.slice(startIndex, endIndex);
-  
-  // 🔥 행 클릭 핸들러
+  // 행 클릭 핸들러
   const handleRowClick = (item: SupportData) => {
     if (item.link && item.link.startsWith('http')) {
       // 외부 링크인 경우 새 탭에서 열기
@@ -495,13 +609,31 @@ export const SupportList: React.FC = () => {
     }
   };
   
-  // 🔥 페이지 변경 핸들러
+  // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    console.log('📄 페이지 변경:', page);
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      setCurrentPage(page);
+      // 페이지 변경 시 맨 위로 스크롤
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      console.log('📄 페이지 변경:', page);
+    }
+  };
+
+  // 이전 페이지로 이동
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  // 다음 페이지로 이동
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
+    }
   };
   
-  // 🔥 새로고침 핸들러
+  // 새로고침 핸들러
   const handleRefresh = () => {
     console.log('🔄 데이터 새로고침');
     loadSupportData();
@@ -517,10 +649,10 @@ export const SupportList: React.FC = () => {
       </Header>
       
       <ContentWrapper>
-        {/* 🔥 상태 정보 및 새로고침 버튼 */}
+        {/* 상태 정보 및 새로고침 버튼 */}
         <StatusInfo>
           <div>
-            총 {supportData.length}건의 세미나/행사 정보 
+            총 {allSupportData.length}건의 세미나/행사 정보 
             {lastUpdated && (
               <span style={{ marginLeft: '10px', fontSize: '12px' }}>
                 (마지막 업데이트: {lastUpdated.toLocaleTimeString('ko-KR')})
@@ -532,7 +664,7 @@ export const SupportList: React.FC = () => {
           </RefreshButton>
         </StatusInfo>
         
-        {/* 🔥 에러 상태 */}
+        {/* 에러 상태 */}
         {error && (
           <ErrorContainer>
             <div>⚠️ {error}</div>
@@ -543,14 +675,14 @@ export const SupportList: React.FC = () => {
           </ErrorContainer>
         )}
         
-        {/* 🔥 로딩 상태 */}
+        {/* 로딩 상태 */}
         {loading ? (
           <LoadingContainer>
             🔄 세미나/행사 정보를 불러오는 중...
           </LoadingContainer>
         ) : (
           <>
-            {/* 🔥 테이블 */}
+            {/* 테이블 */}
             <TableContainer>
               <Table>
                 <TableHeader>
@@ -563,9 +695,9 @@ export const SupportList: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {currentItems.length > 0 ? (
-                    currentItems.map((item) => (
+                    currentItems.map((item, index) => (
                       <TableRow key={item.id} onClick={() => handleRowClick(item)}>
-                        <TableCell>{startIndex + currentItems.indexOf(item) + 1}</TableCell>
+                        <TableCell>{startIndex + index + 1}</TableCell>
                         <TableCell title={item.title}>{item.title}</TableCell>
                         <TableCell>{item.source}</TableCell>
                         <TableCell>{item.date}</TableCell>
@@ -582,29 +714,18 @@ export const SupportList: React.FC = () => {
               </Table>
             </TableContainer>
             
-            {/* 🔥 페이지네이션 */}
+            {/* 페이지네이션 */}
             {totalPages > 1 && (
-              <PaginationContainer>
-                <ArrowButton 
-                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                >
-                  ←
-                </ArrowButton>
-                
-                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 7) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 4) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 3) {
-                    pageNum = totalPages - 6 + i;
-                  } else {
-                    pageNum = currentPage - 3 + i;
-                  }
+              <>
+                <PaginationContainer>
+                  <ArrowButton 
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    ←
+                  </ArrowButton>
                   
-                  return (
+                  {getPageNumbers().map((pageNum) => (
                     <PaginationButton
                       key={pageNum}
                       active={currentPage === pageNum}
@@ -612,16 +733,25 @@ export const SupportList: React.FC = () => {
                     >
                       {pageNum}
                     </PaginationButton>
-                  );
-                })}
+                  ))}
+                  
+                  <ArrowButton 
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    →
+                  </ArrowButton>
+                </PaginationContainer>
                 
-                <ArrowButton 
-                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  →
-                </ArrowButton>
-              </PaginationContainer>
+                <PaginationInfo>
+                  {allSupportData.length > 0 && (
+                    <>
+                      {startIndex + 1}-{Math.min(endIndex, allSupportData.length)} / 총 {allSupportData.length}개 
+                      (페이지 {currentPage}/{totalPages})
+                    </>
+                  )}
+                </PaginationInfo>
+              </>
             )}
           </>
         )}
