@@ -13,7 +13,7 @@ import MapSection from '../Components/Map/Map';
 const fetchRecentReports = async () => {
     try {
         console.log('🏠 Home: 최근 신고 데이터 조회 시작...');
-        const response = await fetch('http://baekend.onrender.com/reports/recent', {
+        const response = await fetch('https://baekend.onrender.com/reports/recent', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
