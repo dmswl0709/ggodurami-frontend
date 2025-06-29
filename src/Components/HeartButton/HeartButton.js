@@ -62,6 +62,6 @@ const LikeCount = styled.span `
   }
 `;
 export const HeartButton = ({ isLiked, likeCount, onLike, showText = true, showCount = true }) => {
-    return (_jsxs(LikeSection, { children: [showText && _jsx(LikeText, { children: "\uAE00 \uB0B4\uC6A9\uC774 \uB9C8\uC74C\uC5D0 \uB4DC\uC168\uB2E4\uBA74" }), _jsx(StyleHeartButton, { onClick: onLike, children: _jsx("img", { src: isLiked ? '/src/assets/images/ffavv.png' : '/src/assets/images/fav.png', alt: isLiked ? '좋아요 취소' : '좋아요' }) }), showCount && _jsxs(LikeCount, { children: ["\uC88B\uC544\uC694 ", likeCount, "\uAC1C"] })] }));
+    return (_jsxs(LikeSection, { children: [showText && _jsx(LikeText, { children: "\uAE00 \uB0B4\uC6A9\uC774 \uB9C8\uC74C\uC5D0 \uB4DC\uC168\uB2E4\uBA74" }), _jsx(StyleHeartButton, { onClick: onLike, children: _jsx("img", { src: isLiked ? '/images/ffavv.png' : '/images/fav.png', alt: isLiked ? '좋아요 취소' : '좋아요' }) }), showCount && _jsxs(LikeCount, { children: ["\uC88B\uC544\uC694 ", likeCount, "\uAC1C"] })] }));
 };
 export default HeartButton;
