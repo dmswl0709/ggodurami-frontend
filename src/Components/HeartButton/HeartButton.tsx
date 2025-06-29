@@ -87,7 +87,7 @@ export const HeartButton: React.FC<HeartButtonProps> = ({
       {showText && <LikeText>글 내용이 마음에 드셨다면</LikeText>}
       <StyleHeartButton onClick={onLike}>
         <img 
-          src={isLiked ? '/src/assets/images/ffavv.png' : '/src/assets/images/fav.png'} 
+          src={isLiked ? '/images/ffavv.png' : '/images/fav.png'} 
           alt={isLiked ? '좋아요 취소' : '좋아요'} 
         />
       </StyleHeartButton>
