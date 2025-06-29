@@ -27,7 +27,7 @@ const LOCAL_CODES = {
     17: "제주특별자치도",
 };
 // API 설정 - 직접 백엔드 URL 사용
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
 const apiClient = axios.create({
     baseURL: BASE_URL,
     headers: {

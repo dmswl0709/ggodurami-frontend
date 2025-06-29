@@ -310,7 +310,7 @@ const PaginationInfo = styled.div `
 // 페이지네이션 상수
 const ITEMS_PER_PAGE = 10;
 // API 설정
-const API_BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
 // Axios 인스턴스 생성
 const apiClient = axios.create({
     baseURL: API_BASE_URL,

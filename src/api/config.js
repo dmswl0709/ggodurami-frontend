@@ -1,6 +1,6 @@
 // src/api/config.ts
 import axios from 'axios';
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
 // Axios 인스턴스 생성
 export const apiClient = axios.create({
     baseURL: BASE_URL,

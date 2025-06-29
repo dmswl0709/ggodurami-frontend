@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../../Store/hooks';
 import { logout, initializeAuth, setUser } from '../../Store/slices/authSlice';
 import axios from 'axios';
 // API 설정
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
 const apiClient = axios.create({
     baseURL: BASE_URL,
     headers: {

@@ -538,10 +538,10 @@ const getFileUrl = (filePath: string): string => {
   }
   
   if (filePath.startsWith('/static')) {
-    return `http://localhost:8000${filePath}`;
+    return `http://baekend.onrender.com${filePath}`;
   }
   
-  return `http://localhost:8000/static/uploads/reports/${filePath}`;
+  return `http://baekend.onrender.com/static/uploads/reports/${filePath}`;
 };
 
 // 🔥 수정된 AI 진단 결과 표시 컴포넌트
@@ -730,7 +730,7 @@ const fetchRecentReports = async (): Promise<ApiResponse> => {
   try {
     console.log('🔄 신고 목록 조회 시작...');
     
-    const response = await fetch('http://localhost:8000/reports/recent', {
+    const response = await fetch('http://baekend.onrender.com/reports/recent', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -768,10 +768,10 @@ const fetchReportDetail = async (reportId: string): Promise<ReportDetailData | n
     
     // 🔥 여러 가능한 엔드포인트를 시도
     const possibleEndpoints = [
-      `http://localhost:8000/damage-report/${reportId}`,
-      `http://localhost:8000/reports/${reportId}`,
-      `http://localhost:8000/report/${reportId}`,
-      `http://localhost:8000/damage-reports/${reportId}`
+      `http://baekend.onrender.com/damage-report/${reportId}`,
+      `http://baekend.onrender.com/reports/${reportId}`,
+      `http://baekend.onrender.com/report/${reportId}`,
+      `http://baekend.onrender.com/damage-reports/${reportId}`
     ];
     
     for (const endpoint of possibleEndpoints) {
@@ -822,7 +822,7 @@ const fetchAIDiagnosis = async (reportId: string): Promise<{
   try {
     console.log(`🤖 AI 진단 요청: ${reportId}`);
     
-    const response = await fetch(`http://localhost:8000/damage-report/detect-damage/${reportId}`, {
+    const response = await fetch(`http://baekend.onrender.com/damage-report/detect-damage/${reportId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

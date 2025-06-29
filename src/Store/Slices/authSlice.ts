@@ -231,7 +231,7 @@ export const {
 
 // 로그인 API 호출 함수 (컴포넌트에서 사용)
 export const loginUser = async (credentials: { email: string; password: string }): Promise<string> => {
-  const response = await fetch('http://localhost:8000/login', {
+  const response = await fetch('http://baekend.onrender.com/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -250,7 +250,7 @@ export const loginUser = async (credentials: { email: string; password: string }
 
 // 사용자 정보 가져오는 API 함수
 export const fetchUserInfo = async (token: string): Promise<User> => {
-  const response = await fetch('http://localhost:8000/mypage', {
+  const response = await fetch('http://baekend.onrender.com/mypage', {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
