@@ -1,5 +1,5 @@
 // pages/CommunityList.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import { Logo } from '../Components/Logo/Logo';
@@ -29,7 +29,7 @@ const apiClient = axios.create({
   },
 });
 
-// 요청 인터셉터 - JWT 토큰 자동 추가 (지역별 조회 시 필요)$
+// 요청 인터셉터 - JWT 토큰 자동 추가 (지역별 조회 시 필요)
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
@@ -356,6 +356,7 @@ const PaginationContainer = styled.div`
   align-items: center;
   margin-top: 30px;
   gap: 8px;
+  flex-wrap: wrap;
 `;
 
 const PaginationButton = styled.button.withConfig({
@@ -372,7 +373,7 @@ const PaginationButton = styled.button.withConfig({
   font-weight: 500;
   transition: all 0.2s ease;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${props => props.active ? '#E6AB65' : '#f5f5f5'};
   }
   
@@ -384,19 +385,70 @@ const PaginationButton = styled.button.withConfig({
 
 const ArrowButton = styled(PaginationButton)`
   border-radius: 8px;
+  width: 40px;
 `;
+
+const PaginationInfo = styled.div`
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+`;
+
+// 페이지네이션 상수
+const POSTS_PER_PAGE = 10;
 
 export const CommunityList: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('전체보기');
-  const [posts, setPosts] = useState<PostData[]>([]);
+  const [allPosts, setAllPosts] = useState<PostData[]>([]); // 전체 게시글 데이터
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
+
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+  const endIndex = startIndex + POSTS_PER_PAGE;
+  
+  // 현재 페이지에 표시할 게시글
+  const currentPosts = useMemo(() => {
+    return allPosts.slice(startIndex, endIndex);
+  }, [allPosts, startIndex, endIndex]);
+
+  // 페이지 버튼 배열 생성
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 7;
+    
+    if (totalPages <= maxVisiblePages) {
+      // 전체 페이지가 7개 이하면 모두 표시
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // 현재 페이지를 중심으로 표시할 페이지 계산
+      let startPage = Math.max(1, currentPage - 3);
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      // 끝 페이지가 총 페이지보다 작으면 시작 페이지 조정
+      if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+    }
+    
+    return pageNumbers;
+  };
 
   // 게시글 데이터 로드
   const loadPosts = async (tabType: string) => {
     setLoading(true);
     setError(null);
+    setCurrentPage(1); // 탭 변경 시 첫 페이지로 이동
 
     try {
       let response: PostsResponse;
@@ -414,7 +466,7 @@ export const CommunityList: React.FC = () => {
         response = await getLocalPosts();
       }
       
-      setPosts(response.posts || []);
+      setAllPosts(response.posts || []);
     } catch (err: any) {
       console.error('게시글 로드 오류:', err);
       
@@ -450,6 +502,29 @@ export const CommunityList: React.FC = () => {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     loadPosts(tab);
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      setCurrentPage(page);
+      // 페이지 변경 시 맨 위로 스크롤
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // 이전 페이지로 이동
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  // 다음 페이지로 이동
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
+    }
   };
 
   // 날짜 포맷 함수
@@ -529,14 +604,14 @@ export const CommunityList: React.FC = () => {
                   </TableHeaderRow>
                 </TableHeader>
                 <TableBody>
-                  {posts.length === 0 ? (
+                  {currentPosts.length === 0 ? (
                     <tr>
                       <TableCell colSpan={5}>
                         <EmptyMessage>게시글이 없습니다.</EmptyMessage>
                       </TableCell>
                     </tr>
                   ) : (
-                    posts.map((post) => (
+                    currentPosts.map((post) => (
                       <TableRow key={post.id} onClick={() => handleRowClick(post.id)}>
                         <TableCell>{post.no}</TableCell>
                         <TableCell>{post.title}</TableCell>
@@ -550,18 +625,44 @@ export const CommunityList: React.FC = () => {
               </Table>
             </TableContainer>
             
-            {posts.length > 0 && (
-              <PaginationContainer>
-                <ArrowButton>←</ArrowButton>
-                <PaginationButton active>1</PaginationButton>
-                <PaginationButton>2</PaginationButton>
-                <PaginationButton>3</PaginationButton>
-                <PaginationButton>4</PaginationButton>
-                <PaginationButton>5</PaginationButton>
-                <PaginationButton>6</PaginationButton>
-                <PaginationButton>7</PaginationButton>
-                <ArrowButton>→</ArrowButton>
-              </PaginationContainer>
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <>
+                <PaginationContainer>
+                  <ArrowButton 
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    ←
+                  </ArrowButton>
+                  
+                  {getPageNumbers().map((pageNum) => (
+                    <PaginationButton
+                      key={pageNum}
+                      active={currentPage === pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                    >
+                      {pageNum}
+                    </PaginationButton>
+                  ))}
+                  
+                  <ArrowButton 
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    →
+                  </ArrowButton>
+                </PaginationContainer>
+                
+                <PaginationInfo>
+                  {allPosts.length > 0 && (
+                    <>
+                      {startIndex + 1}-{Math.min(endIndex, allPosts.length)} / 총 {allPosts.length}개 
+                      (페이지 {currentPage}/{totalPages})
+                    </>
+                  )}
+                </PaginationInfo>
+              </>
             )}
           </>
         )}
