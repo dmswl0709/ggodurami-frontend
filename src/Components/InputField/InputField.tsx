@@ -9,6 +9,7 @@ interface InputFieldProps {
   placeholder: string;
   required?: boolean;
   rows?: number;
+  disabled?: boolean; // 추가
 }
 
 const Container = styled.div`

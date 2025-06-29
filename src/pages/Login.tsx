@@ -291,7 +291,7 @@ const Login: React.FC = () => {
   });
   const [success, setSuccess] = useState<string | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [passwordStep, setPasswordStep] = useState<'login' | 'change'>(0);
+  const [passwordStep, setPasswordStep] = useState<'login' | 'change'>('login');
   const [passwordChangeData, setPasswordChangeData] = useState<PasswordChangeData>({
     email: '',
     password: '',

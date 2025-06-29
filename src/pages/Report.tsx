@@ -554,7 +554,7 @@ const Report: React.FC = () => {
           <ContentWrapper>
             <Logo />
             <Title>신고하기</Title>
-            <TapMenu activeTab={activeTab} onTabChange={handleTabChange} />
+            <TapMenu activeTab={activeTab} onTabChange={(tab) => handleTabChange(tab as 'disaster' | 'pest')} />
             
             {renderRadioButtons()}
 

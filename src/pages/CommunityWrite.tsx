@@ -493,7 +493,7 @@ export const CommunityWrite: React.FC = () => {
 
   // 사용자 정보 가져오기
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const fetchUserInfo = async () => {
       try {

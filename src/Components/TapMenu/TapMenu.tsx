@@ -3,7 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 interface TabProps {
-  activeTab: 'disaster' | 'pest';
+  activeTab: string;
   onTabChange: (tab: 'disaster' | 'pest') => void;
 }
 

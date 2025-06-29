@@ -6,6 +6,7 @@ interface CheckboxProps {
   label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
+  disabled?: boolean; // 추가
 }
 
 const CheckboxWrapper = styled.div`

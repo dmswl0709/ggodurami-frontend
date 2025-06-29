@@ -1041,7 +1041,8 @@ export const ReportDetail: React.FC = () => {
             try {
               const { result: aiResult, error: aiErrorMessage } = await fetchAIDiagnosis(reportId);
               setAiDiagnosis(aiResult);
-              setAiError(aiErrorMessage);
+              setAiError(aiErrorMessage || null);
+
               
               if (aiResult) {
                 console.log('🎉 AI 진단 성공:', aiResult);

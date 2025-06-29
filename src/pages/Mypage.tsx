@@ -676,7 +676,7 @@ export const Mypage: React.FC = () => {
           placeholder="이름을 입력하세요"
           value={userData.username}
           onChange={handleInputChange('username')}
-          disabled={true}
+         // disabled={true}
         />
         
         <Input
@@ -685,7 +685,7 @@ export const Mypage: React.FC = () => {
           placeholder="이메일을 입력하세요"
           value={userData.email}
           onChange={handleInputChange('email')}
-          disabled={true}
+         // disabled={true}
         />
         
         {/* 지역 편집 섹션 */}
