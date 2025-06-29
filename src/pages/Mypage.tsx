@@ -383,10 +383,10 @@ interface UpdateRequest {
 }
 
 // API 설정
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -466,7 +466,7 @@ export const Mypage: React.FC = () => {
         return;
       }
       
-      console.log('API 요청 URL:', `${API_BASE_URL}/mypage`);
+      console.log('API 요청 URL:', `${BASE_URL}/mypage`);
       console.log('사용할 토큰:', token);
       
       const response = await api.get<ApiResponse>('/mypage');

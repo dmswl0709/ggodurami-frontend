@@ -19,10 +19,10 @@ interface Project {
 }
 
 // 🔥 API 설정
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: BASE_URL,
   timeout: 8000,
   headers: {
     'Content-Type': 'application/json',

@@ -344,7 +344,7 @@ const InfoText = styled.div `
 // API 설정
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
 const api = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: BASE_URL,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
@@ -411,7 +411,7 @@ export const Mypage = () => {
                 setError('로그인이 필요합니다. 다시 로그인해주세요.');
                 return;
             }
-            console.log('API 요청 URL:', `${API_BASE_URL}/mypage`);
+            console.log('API 요청 URL:', `${BASE_URL}/mypage`);
             console.log('사용할 토큰:', token);
             const response = await api.get('/mypage');
             console.log('✅ API 응답 성공:', response.data);

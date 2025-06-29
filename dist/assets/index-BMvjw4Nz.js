@@ -137,7 +137,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 768px) {
     font-size: 16px;
   }
-`,$t=d.create({baseURL:"http://localhost:8000",timeout:8e3,headers:{"Content-Type":"application/json",Accept:"application/json"}}),Bt=()=>{const t=a(),n=e.useRef(null),[r,o]=e.useState([]),[i,l]=e.useState(!0),[s,c]=e.useState(null),d=async()=>{try{l(!0),c(null);const e=await(async()=>{try{console.log("🔄 NewsSection: 세미나/행사 정보 조회 시작...");const e=await $t.get("/rda/ongoing-projects");if(console.log("NewsSection API 응답 상태:",e.status),console.log("NewsSection API 응답 데이터:",e.data),200===e.status&&Array.isArray(e.data))return console.log("✅ NewsSection: 세미나/행사 정보 조회 성공:",e.data.length,"건"),e.data;throw console.warn("❌ NewsSection: 예상과 다른 응답 형식:",e.data),new Error("Invalid response format")}catch(s){throw console.error("❌ NewsSection: 세미나/행사 정보 조회 실패:",s),s}})(),t=e.slice(0,8).map((e,t)=>({id:t+1,category:"공지사항",title:e.title,description:`농촌진흥청에서 제공하는 ${e.title.includes("교육")?"교육":e.title.includes("지원")?"지원사업":e.title.includes("세미나")?"세미나":"프로그램"} 정보입니다.`,date:(new Date).toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"}).replace(/\./g,"-").replace(/ /g,""),author:"농촌진흥청",link:e.link}));o(t),console.log("✅ NewsSection: 뉴스 데이터 로드 완료:",t.length,"건")}catch(e){console.error("❌ NewsSection: 데이터 로드 실패:",e),c(e instanceof Error?e.message:"데이터를 불러올 수 없습니다."),o((console.log("📋 NewsSection: 목업 데이터 사용"),[{id:1,category:"공지사항",title:"스마트 농업 현장 문제점 찾아 지원금 지원 세미나",description:"농촌진흥청에서 주관하는 스마트 농업 현장의 다양한 문제 해결을 위한 데이터 수집 및 지원금 안내",date:"2025-06-29",author:"농촌진흥청"},{id:2,category:"교육",title:"디지털 농업 기술 교육 프로그램 안내",description:"최신 디지털 농업 기술 및 스마트팜 운영 노하우에 대한 실무 교육 프로그램",date:"2025-06-28",author:"농촌진흥청"},{id:3,category:"지원사업",title:"친환경 농업 지원 사업 설명회",description:"친환경 농업 실천을 위한 각종 지원 사업 및 혜택에 대한 상세 안내",date:"2025-06-27",author:"농촌진흥청"},{id:4,category:"창업지원",title:"농업인 창업 지원 프로그램",description:"신규 농업인 및 창업을 희망하는 농업인을 위한 맞춤형 지원 프로그램",date:"2025-06-26",author:"농촌진흥청"}]))}finally{l(!1)}};e.useEffect(()=>{d()},[]);return w.jsxs(Ut,{children:[w.jsxs(Wt,{children:[w.jsxs(Vt,{children:["지원금 및 세미나 정보",i&&w.jsx(Ht,{children:" (로딩 중...)"}),s&&w.jsx(qt,{children:" (연결 오류 - 목업 데이터 표시)"})]}),w.jsxs(Kt,{children:[w.jsx(Yt,{onClick:()=>{n.current&&n.current.scrollBy({left:-300,behavior:"smooth"})},disabled:i,children:"◀"}),w.jsx(Yt,{onClick:()=>{n.current&&n.current.scrollBy({left:300,behavior:"smooth"})},disabled:i,children:"▶"}),w.jsx(Yt,{onClick:()=>{t("/SupportList")},children:"≡"})]})]}),i?w.jsx(Qt,{children:"🔄 세미나 정보를 불러오는 중..."}):w.jsx(Xt,{ref:n,children:r.map(e=>w.jsxs(Gt,{onClick:()=>{var n;(n=e).link&&n.link.startsWith("http")?(window.open(n.link,"_blank","noopener,noreferrer"),console.log("🔗 NewsSection: 외부 링크 열기:",n.link)):(t("/SupportDetail",{state:{supportItem:n}}),console.log("📄 NewsSection: 내부 페이지 이동:",n.title))},children:[w.jsx(Jt,{children:e.category}),w.jsx(Zt,{title:e.title,children:e.title}),w.jsx(en,{children:e.description}),w.jsxs(tn,{children:[w.jsx(nn,{children:e.date}),w.jsx(rn,{children:e.author})]})]},e.id))})]})},Ut=n.section`
+`,$t=d.create({baseURL:API_BASE_URL,timeout:8e3,headers:{"Content-Type":"application/json",Accept:"application/json"}}),Bt=()=>{const t=a(),n=e.useRef(null),[r,o]=e.useState([]),[i,l]=e.useState(!0),[s,c]=e.useState(null),d=async()=>{try{l(!0),c(null);const e=await(async()=>{try{console.log("🔄 NewsSection: 세미나/행사 정보 조회 시작...");const e=await $t.get("/rda/ongoing-projects");if(console.log("NewsSection API 응답 상태:",e.status),console.log("NewsSection API 응답 데이터:",e.data),200===e.status&&Array.isArray(e.data))return console.log("✅ NewsSection: 세미나/행사 정보 조회 성공:",e.data.length,"건"),e.data;throw console.warn("❌ NewsSection: 예상과 다른 응답 형식:",e.data),new Error("Invalid response format")}catch(s){throw console.error("❌ NewsSection: 세미나/행사 정보 조회 실패:",s),s}})(),t=e.slice(0,8).map((e,t)=>({id:t+1,category:"공지사항",title:e.title,description:`농촌진흥청에서 제공하는 ${e.title.includes("교육")?"교육":e.title.includes("지원")?"지원사업":e.title.includes("세미나")?"세미나":"프로그램"} 정보입니다.`,date:(new Date).toLocaleDateString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit"}).replace(/\./g,"-").replace(/ /g,""),author:"농촌진흥청",link:e.link}));o(t),console.log("✅ NewsSection: 뉴스 데이터 로드 완료:",t.length,"건")}catch(e){console.error("❌ NewsSection: 데이터 로드 실패:",e),c(e instanceof Error?e.message:"데이터를 불러올 수 없습니다."),o((console.log("📋 NewsSection: 목업 데이터 사용"),[{id:1,category:"공지사항",title:"스마트 농업 현장 문제점 찾아 지원금 지원 세미나",description:"농촌진흥청에서 주관하는 스마트 농업 현장의 다양한 문제 해결을 위한 데이터 수집 및 지원금 안내",date:"2025-06-29",author:"농촌진흥청"},{id:2,category:"교육",title:"디지털 농업 기술 교육 프로그램 안내",description:"최신 디지털 농업 기술 및 스마트팜 운영 노하우에 대한 실무 교육 프로그램",date:"2025-06-28",author:"농촌진흥청"},{id:3,category:"지원사업",title:"친환경 농업 지원 사업 설명회",description:"친환경 농업 실천을 위한 각종 지원 사업 및 혜택에 대한 상세 안내",date:"2025-06-27",author:"농촌진흥청"},{id:4,category:"창업지원",title:"농업인 창업 지원 프로그램",description:"신규 농업인 및 창업을 희망하는 농업인을 위한 맞춤형 지원 프로그램",date:"2025-06-26",author:"농촌진흥청"}]))}finally{l(!1)}};e.useEffect(()=>{d()},[]);return w.jsxs(Ut,{children:[w.jsxs(Wt,{children:[w.jsxs(Vt,{children:["지원금 및 세미나 정보",i&&w.jsx(Ht,{children:" (로딩 중...)"}),s&&w.jsx(qt,{children:" (연결 오류 - 목업 데이터 표시)"})]}),w.jsxs(Kt,{children:[w.jsx(Yt,{onClick:()=>{n.current&&n.current.scrollBy({left:-300,behavior:"smooth"})},disabled:i,children:"◀"}),w.jsx(Yt,{onClick:()=>{n.current&&n.current.scrollBy({left:300,behavior:"smooth"})},disabled:i,children:"▶"}),w.jsx(Yt,{onClick:()=>{t("/SupportList")},children:"≡"})]})]}),i?w.jsx(Qt,{children:"🔄 세미나 정보를 불러오는 중..."}):w.jsx(Xt,{ref:n,children:r.map(e=>w.jsxs(Gt,{onClick:()=>{var n;(n=e).link&&n.link.startsWith("http")?(window.open(n.link,"_blank","noopener,noreferrer"),console.log("🔗 NewsSection: 외부 링크 열기:",n.link)):(t("/SupportDetail",{state:{supportItem:n}}),console.log("📄 NewsSection: 내부 페이지 이동:",n.title))},children:[w.jsx(Jt,{children:e.category}),w.jsx(Zt,{title:e.title,children:e.title}),w.jsx(en,{children:e.description}),w.jsxs(tn,{children:[w.jsx(nn,{children:e.date}),w.jsx(rn,{children:e.author})]})]},e.id))})]})},Ut=n.section`
   width: 100%;
   padding: 40px 20px;
   background-color: #FFEFD5;
@@ -430,7 +430,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (min-width: 768px) {
     padding: 0 2rem;
   }
-`,ln=()=>q(),sn=Y,cn=d.create({baseURL:"http://localhost:8000",headers:{"Content-Type":"application/json"}}),dn=n.div`
+`,ln=()=>q(),sn=Y,cn=d.create({baseURL:"https://baekend.onrender.com",headers:{"Content-Type":"application/json"}}),dn=n.div`
   background-color: #FFEFD5;
   padding: 4px 24px 0 24px;
   display: flex;
@@ -711,7 +711,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 10px;
   }
-`,Mn=()=>(console.log("📋 Home: 목업 데이터 사용"),{reports:[{title:"다저벌악",main_category:"병해충",sub_category:"병해",latitude:"35.7336908241694",longitude:"127.06573190851746",id:"mock_report_1"},{title:"제주도 태풍",main_category:"재난",sub_category:"태풍",latitude:"33.2375195759578",longitude:"126.515860406201",id:"mock_report_2"},{title:"전주 지진 발생",main_category:"재난",sub_category:"지진",latitude:"37.5665",longitude:"126.978",id:"mock_report_3"},{title:"대구 산불",main_category:"재난",sub_category:"산불",latitude:"35.8714",longitude:"128.6014",id:"mock_report_4"},{title:"부산 태풍",main_category:"재난",sub_category:"태풍",latitude:"35.1796",longitude:"129.0756",id:"mock_report_5"}]}),$n=()=>{const t=a(),[n,r]=e.useState([]),[o,i]=e.useState(!0),[l,s]=e.useState(null),[c,d]=e.useState(null);e.useEffect(()=>{(async()=>{try{i(!0),s(null);const e=await(async()=>{var e;try{console.log("🏠 Home: 최근 신고 데이터 조회 시작...");const t=await fetch("http://localhost:8000/reports/recent",{method:"GET",headers:{"Content-Type":"application/json",Accept:"application/json"},mode:"cors"});if(console.log("🏠 Home: API 응답 상태:",t.status),!t.ok)return console.warn(`🏠 Home: API 호출 실패 (${t.status}), 목업 데이터 사용`),Mn();const n=t.headers.get("content-type");if(!n||!n.includes("application/json"))return console.warn("🏠 Home: JSON 응답이 아님, 목업 데이터 사용"),Mn();const r=await t.json();return console.log("✅ Home: 실제 신고 데이터 로드 성공:",(null==(e=r.reports)?void 0:e.length)||0,"건"),r}catch(l){return console.error("❌ Home: API 호출 실패:",l),console.log("🔄 Home: 목업 데이터로 대체"),Mn()}})();r(e.reports),console.log("🏠 Home: 신고 데이터 로드 완료:",{"총신고수":e.reports.length,"유효한좌표":e.reports.filter(e=>e.latitude&&e.longitude).length})}catch(e){console.error("❌ Home: 신고 데이터 로드 실패:",e),s("신고 데이터를 불러올 수 없습니다.");const t=Mn();r(t.reports)}finally{i(!1)}})()},[]);return console.log("🏠 Home 렌더링:",{loading:o,error:l,reportsCount:n.length,selectedReport:null==c?void 0:c.title}),w.jsxs(w.Fragment,{children:[w.jsx(wn,{}),w.jsx(It,{}),w.jsx(on,{children:w.jsxs(Bn,{children:[w.jsx(Un,{children:w.jsx(Wn,{children:w.jsx(Sn,{reports:n,onMarkerClick:e=>{if(console.log("🏠 Home: 마커 클릭됨, 마커 위 신고내역 박스 표시:",e),""===e)return void d(null);const t=n.find(t=>t.id===e);t&&d(t)},selectedReport:c,onReportBoxClick:()=>{(null==c?void 0:c.id)&&(console.log("🏠 Home: 신고내역 박스 클릭됨, ReportDetail로 이동:",c.id),t("/ReportDetail",{state:{selectedReportId:c.id,fromHome:!0}}))}})})}),w.jsx(Lt,{}),w.jsx(Bt,{})]})})]})},Bn=n.main`
+`,Mn=()=>(console.log("📋 Home: 목업 데이터 사용"),{reports:[{title:"다저벌악",main_category:"병해충",sub_category:"병해",latitude:"35.7336908241694",longitude:"127.06573190851746",id:"mock_report_1"},{title:"제주도 태풍",main_category:"재난",sub_category:"태풍",latitude:"33.2375195759578",longitude:"126.515860406201",id:"mock_report_2"},{title:"전주 지진 발생",main_category:"재난",sub_category:"지진",latitude:"37.5665",longitude:"126.978",id:"mock_report_3"},{title:"대구 산불",main_category:"재난",sub_category:"산불",latitude:"35.8714",longitude:"128.6014",id:"mock_report_4"},{title:"부산 태풍",main_category:"재난",sub_category:"태풍",latitude:"35.1796",longitude:"129.0756",id:"mock_report_5"}]}),$n=()=>{const t=a(),[n,r]=e.useState([]),[o,i]=e.useState(!0),[l,s]=e.useState(null),[c,d]=e.useState(null);e.useEffect(()=>{(async()=>{try{i(!0),s(null);const e=await(async()=>{var e;try{console.log("🏠 Home: 최근 신고 데이터 조회 시작...");const t=await fetch("http://baekend.onrender.com/reports/recent",{method:"GET",headers:{"Content-Type":"application/json",Accept:"application/json"},mode:"cors"});if(console.log("🏠 Home: API 응답 상태:",t.status),!t.ok)return console.warn(`🏠 Home: API 호출 실패 (${t.status}), 목업 데이터 사용`),Mn();const n=t.headers.get("content-type");if(!n||!n.includes("application/json"))return console.warn("🏠 Home: JSON 응답이 아님, 목업 데이터 사용"),Mn();const r=await t.json();return console.log("✅ Home: 실제 신고 데이터 로드 성공:",(null==(e=r.reports)?void 0:e.length)||0,"건"),r}catch(l){return console.error("❌ Home: API 호출 실패:",l),console.log("🔄 Home: 목업 데이터로 대체"),Mn()}})();r(e.reports),console.log("🏠 Home: 신고 데이터 로드 완료:",{"총신고수":e.reports.length,"유효한좌표":e.reports.filter(e=>e.latitude&&e.longitude).length})}catch(e){console.error("❌ Home: 신고 데이터 로드 실패:",e),s("신고 데이터를 불러올 수 없습니다.");const t=Mn();r(t.reports)}finally{i(!1)}})()},[]);return console.log("🏠 Home 렌더링:",{loading:o,error:l,reportsCount:n.length,selectedReport:null==c?void 0:c.title}),w.jsxs(w.Fragment,{children:[w.jsx(wn,{}),w.jsx(It,{}),w.jsx(on,{children:w.jsxs(Bn,{children:[w.jsx(Un,{children:w.jsx(Wn,{children:w.jsx(Sn,{reports:n,onMarkerClick:e=>{if(console.log("🏠 Home: 마커 클릭됨, 마커 위 신고내역 박스 표시:",e),""===e)return void d(null);const t=n.find(t=>t.id===e);t&&d(t)},selectedReport:c,onReportBoxClick:()=>{(null==c?void 0:c.id)&&(console.log("🏠 Home: 신고내역 박스 클릭됨, ReportDetail로 이동:",c.id),t("/ReportDetail",{state:{selectedReportId:c.id,fromHome:!0}}))}})})}),w.jsx(Lt,{}),w.jsx(Bt,{})]})})]})},Bn=n.main`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -836,7 +836,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   margin: 0;
   letter-spacing: -0.5px;
   user-select: none;
-`;const Jn=()=>{const e=a();return w.jsx(Xn,{onClick:()=>{e("/")},children:w.jsx(Gn,{src:Et,alt:"꼬두라미 로고"})})},Zn=d.create({baseURL:"http://localhost:8000",headers:{"Content-Type":"application/json"}}),er=async e=>(await Zn.post("/login",e)).data,tr=n.div`
+`;const Jn=()=>{const e=a();return w.jsx(Xn,{onClick:()=>{e("/")},children:w.jsx(Gn,{src:Et,alt:"꼬두라미 로고"})})},Zn=d.create({baseURL:"https://baekend.onrender.com",headers:{"Content-Type":"application/json"}}),er=async e=>(await Zn.post("/login",e)).data,tr=n.div`
   min-height: 100vh;
   background-color: #FFEFD5;
   display: flex;
@@ -1000,7 +1000,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   color: #333;
   cursor: pointer;
   user-select: none;
-`,zr=({label:e,checked:t,onChange:n})=>w.jsxs(kr,{children:[w.jsx(Sr,{type:"checkbox",checked:t,onChange:e=>n(e.target.checked)}),w.jsx(jr,{children:e})]}),Cr={1:"서울",2:"부산광역시",3:"대구광역시",4:"인천광역시",5:"광주광역시",6:"대전광역시",7:"울산광역시",8:"세종특별자치시",9:"경기도",11:"충청북도",12:"충청남도",13:"전라북도",14:"전라남도",15:"경상북도",16:"경상남도",17:"제주특별자치도"},_r=d.create({baseURL:"http://localhost:8000",headers:{"Content-Type":"application/json"}}),Er=n.div`
+`,zr=({label:e,checked:t,onChange:n})=>w.jsxs(kr,{children:[w.jsx(Sr,{type:"checkbox",checked:t,onChange:e=>n(e.target.checked)}),w.jsx(jr,{children:e})]}),Cr={1:"서울",2:"부산광역시",3:"대구광역시",4:"인천광역시",5:"광주광역시",6:"대전광역시",7:"울산광역시",8:"세종특별자치시",9:"경기도",11:"충청북도",12:"충청남도",13:"전라북도",14:"전라남도",15:"경상북도",16:"경상남도",17:"제주특별자치도"},_r=d.create({baseURL:"https://baekend.onrender.com",headers:{"Content-Type":"application/json"}}),Er=n.div`
   min-height: 100vh;
   background-color: #FFEFD5;
   display: flex;
@@ -1974,7 +1974,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 8px 15px;
     font-size: 0.75rem;
   }
-`,ea=d.create({baseURL:"http://localhost:8000"});ea.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`,console.log("🔑 Authorization 헤더 추가")),e},e=>Promise.reject(e));const ta=()=>{const t=a(),[n,r]=e.useState("disaster"),[o,i]=e.useState([]),[l,s]=e.useState(""),[c,d]=e.useState(null),[u,p]=e.useState(null),[f,m]=e.useState(""),[h,x]=e.useState(""),[g,b]=e.useState(""),[y,v]=e.useState(""),[k,S]=e.useState(!1),[j,z]=e.useState(""),[C,_]=e.useState(""),[E,P]=e.useState(!1),[F,T]=e.useState(!1),[A,N]=e.useState(null),I=()=>{console.log("📍 ReportDetail 페이지로 이동"),t("/ReportDetail")};return w.jsxs(w.Fragment,{children:[w.jsx(on,{children:w.jsx(na,{children:w.jsxs(ra,{children:[w.jsx(Jn,{}),w.jsx(oa,{children:"신고하기"}),w.jsx(Qr,{activeTab:n,onTabChange:e=>{r(e),z(""),_(""),b(""),v(""),N(null)}}),"disaster"===n?w.jsx(aa,{children:w.jsxs(ia,{children:[w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"earthquake",name:"disasterType",value:"earthquake",checked:"earthquake"===j,onChange:e=>z(e.target.value)}),w.jsx(ca,{htmlFor:"earthquake",children:"지진,산불"})]}),w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"typhoon",name:"disasterType",value:"typhoon",checked:"typhoon"===j,onChange:e=>z(e.target.value)}),w.jsx(ca,{htmlFor:"typhoon",children:"태풍,호우"})]}),w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"snow",name:"disasterType",value:"snow",checked:"snow"===j,onChange:e=>z(e.target.value)}),w.jsx(ca,{htmlFor:"snow",children:"폭설"})]})]})}):"pest"===n?w.jsx(aa,{children:w.jsxs(ia,{children:[w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"disease",name:"pestType",value:"disease",checked:"disease"===C,onChange:e=>_(e.target.value)}),w.jsx(ca,{htmlFor:"disease",children:"질병"})]}),w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"insect",name:"pestType",value:"insect",checked:"insect"===C,onChange:e=>_(e.target.value)}),w.jsx(ca,{htmlFor:"insect",children:"해충"})]})]})}):null,w.jsxs(da,{children:[w.jsx(ua,{children:"신고 제목"}),w.jsx(fa,{type:"text",placeholder:"신고 제목을 입력하세요",value:f,onChange:e=>m(e.target.value)})]}),w.jsx(ho,{files:o,onFilesChange:i}),w.jsxs(da,{children:[w.jsx(ua,{children:"신고 발생지역"}),w.jsxs(pa,{children:[w.jsx(fa,{type:"text",placeholder:"지역찾기 버튼을 눌러 지도에서 위치를 선택하세요",value:l,onChange:e=>s(e.target.value)}),w.jsx(ma,{onClick:()=>{P(!0)},children:"🗺️ 지역찾기"})]}),c&&u&&w.jsxs(ha,{children:["📍 선택된 좌표: 위도 ",c.toFixed(6),", 경도 ",u.toFixed(6)]}),w.jsxs(xa,{children:["💡 지역찾기 버튼을 누르면 지도가 열리고, 원하는 위치를 클릭하여 선택할 수 있습니다.",w.jsx("br",{}),"🔄 지도가 보이지 않거나 로딩이 길어지면 페이지 새로고침을 해주세요."]})]}),w.jsxs(da,{children:[w.jsx(ua,{children:"신고 내용"}),w.jsx(Gr,{type:"textarea",value:h,onChange:x,placeholder:"상세 내용을 입력하세요"})]}),"pest"===n&&w.jsx(ga,{children:w.jsxs(ba,{children:[w.jsx(wa,{children:"🤖"}),w.jsxs(ya,{children:[w.jsx(va,{children:"AI 자동 분석 서비스"}),w.jsx(ka,{children:"병해충 신고 시 업로드된 이미지를 YOLO AI가 자동으로 분석하여 병해충 종류를 식별해드립니다. 분석에는 약 5초가 소요됩니다."})]})]})}),w.jsxs(Ta,{children:[g&&w.jsx(Aa,{children:g}),y&&w.jsxs(Na,{children:[w.jsx(Ia,{children:y}),w.jsx(La,{children:"📍 잠시 후 신고 상세 페이지로 자동 이동됩니다..."})]}),A||F?w.jsx(Sa,{children:F?w.jsxs(ja,{children:[w.jsx(Ca,{children:"🤖"}),w.jsxs(_a,{children:["AI가 업로드된 이미지를 분석하고 있습니다...",w.jsx("br",{}),w.jsx("small",{style:{color:"#666"},children:"잠시만 기다려주세요. (약 5초 소요)"})]})]}):A?w.jsxs(za,{children:[w.jsx(Ca,{children:"🎉"}),w.jsxs(Ea,{children:[w.jsx(Pa,{children:"AI 분석 완료!"}),w.jsxs(Fa,{children:[w.jsx("strong",{children:"탐지된 병해충:"})," ",(null==(L=A.primary_detection)?void 0:L.class_name)||"감지되지 않음",w.jsx("br",{}),w.jsx("strong",{children:"신뢰도:"})," ",A.primary_detection?Math.round(100*A.primary_detection.confidence):0,"%",w.jsx("br",{}),w.jsx("strong",{children:"총 탐지 수:"})," ",A.total_detections,"개",w.jsx("br",{}),w.jsx("strong",{children:"카테고리:"})," ",A.category]})]})]}):null}):null,w.jsx(bo,{onClick:async()=>{var e,t,r,a,w,y,k,E,P,F;b(""),v(""),N(null);if(localStorage.getItem("accessToken")){if(("disaster"===n?j:C)?f.trim()?l.trim()?null===c||null===u||"number"!=typeof c||"number"!=typeof u||isNaN(c)||isNaN(u)?(b("지도에서 정확한 위치를 선택해주세요."),0):h.trim()?0!==o.length||(b("최소 1개의 파일을 업로드해주세요."),0):(b("신고 내용을 입력해주세요."),0):(b("신고 발생지역을 입력해주세요."),0):(b("제목을 입력해주세요."),0):(b("신고 유형을 선택해주세요."),0)){S(!0);try{console.log("=== 신고 제출 시작 ===");const e=new FormData,t=(()=>{if("disaster"===n)return{earthquake:{main:"재난",sub:"지진"},typhoon:{main:"재난",sub:"태풍"},snow:{main:"재난",sub:"폭설"}}[j]||null;return{disease:{main:"병해충",sub:"병해"},insect:{main:"병해충",sub:"해충"}}[C]||null})();if(!t)return b("올바른 카테고리를 선택해주세요."),void S(!1);e.append("main_category",t.main),e.append("sub_category",t.sub),e.append("title",f.trim()),e.append("content",h.trim()),e.append("local",l.trim());const r=c,a=u;if(null===r||null===a||"number"!=typeof r||"number"!=typeof a||isNaN(r)||isNaN(a))return b("위치 정보가 올바르지 않습니다. 다시 지역을 선택해주세요."),void S(!1);e.append("latitude",r.toString()),e.append("longitude",a.toString()),console.log("✅ 위도/경도 FormData에 추가됨:",r.toString(),a.toString()),o.forEach((t,n)=>{e.append("files",t),console.log(`📎 파일 ${n+1} 추가:`,t.name,t.type,t.size+" bytes")});const w=await(async e=>{var t,n;try{console.log("=== 신고 등록 API 호출 시작 ==="),console.log("전송할 FormData:");for(const[n,r]of e.entries())r instanceof File?console.log(`${n}: [File] ${r.name} (${r.size} bytes, ${r.type})`):console.log(`${n}: ${r}`);const t=await ea.post("/damage-report",e,{headers:{}});return console.log("✅ 신고 등록 성공:",t.data),t.data}catch(g){throw console.error("❌ 신고 등록 실패:",g),console.error("응답 데이터:",null==(t=g.response)?void 0:t.data),console.error("응답 상태:",null==(n=g.response)?void 0:n.status),g}})(e);let y=w.message||"✅ 신고가 성공적으로 접수되었습니다.";console.log("🎉 신고 제출 성공:",{report_id:w.report_id,uploaded_files:w.uploaded_files}),"병해충"===t.main&&w.report_id?(console.log("🤖 병해충 신고 감지 - AI 분석 시작"),T(!0),setTimeout(async()=>{try{console.log("🔍 AI 분석 실행 중...");const e=await(async e=>{var t,n;try{console.log("=== AI 분석 API 호출 시작 ==="),console.log("분석할 신고 ID:",e);const t=await ea.get(`/damage-report/detect-damage/${e}`);return console.log("✅ AI 분석 API 응답:",t.data),t.data.error?(console.error("❌ AI 분석 에러:",t.data.error),null):t.data.primary_detection?t.data:(console.warn("⚠️ AI 분석 결과에 primary_detection이 없음"),null)}catch(g){return console.error("❌ AI 분석 실패:",g),console.error("AI 분석 응답 데이터:",null==(t=g.response)?void 0:t.data),console.error("AI 분석 응답 상태:",null==(n=g.response)?void 0:n.status),null}})(w.report_id);if(e&&e.primary_detection){N(e);const t=Math.round(100*e.primary_detection.confidence),n=e.primary_detection.class_name;y+=`\n\n🤖 AI 분석도 완료되었습니다!\n주요 진단: ${n} (신뢰도: ${t}%)`,console.log("🎉 AI 분석 완료:",e)}else y+="\n\n⚠️ AI 분석에서 병해충을 감지하지 못했거나 분석에 실패했습니다.",console.log("⚠️ AI 분석 결과 없음");v(y),T(!1),setTimeout(()=>{console.log("🔄 AI 분석 완료 - ReportDetail 페이지로 이동"),I()},2e3)}catch(e){console.error("AI 분석 중 오류:",e),y+="\n\n⚠️ AI 분석 중 오류가 발생했지만 신고는 정상적으로 접수되었습니다.",v(y),T(!1),setTimeout(()=>{console.log("🔄 AI 분석 실패했지만 ReportDetail 페이지로 이동"),I()},2e3)}},5e3)):(v(y),setTimeout(()=>{console.log("🔄 재난 신고 완료 - ReportDetail 페이지로 이동"),I()},2e3)),i([]),s(""),d(null),p(null),m(""),x(""),z(""),_("")}catch(A){console.error("❌ 신고 제출 오류:",A);let n="신고 제출 중 오류가 발생했습니다.";if(401===(null==(e=A.response)?void 0:e.status))n="로그인이 만료되었습니다. 다시 로그인해주세요.";else if(404===(null==(t=A.response)?void 0:t.status))n="API 엔드포인트를 찾을 수 없습니다. 서버 설정을 확인해주세요.";else if(413===(null==(r=A.response)?void 0:r.status))n="파일 크기가 너무 큽니다. 더 작은 파일을 업로드해주세요.";else if(415===(null==(a=A.response)?void 0:a.status))n="지원하지 않는 파일 형식입니다.";else if(422===(null==(w=A.response)?void 0:w.status))if(console.error("422 에러 상세:",A.response.data),null==(k=null==(y=A.response)?void 0:y.data)?void 0:k.detail)if(Array.isArray(A.response.data.detail)){n=`입력 데이터 오류:\n${A.response.data.detail.map(e=>{var t;return`${(null==(t=e.loc)?void 0:t[1])||"알 수 없는 필드"}: ${e.msg||"유효하지 않은 값"}`}).join("\n")}`}else n=`입력 데이터 오류: ${A.response.data.detail}`;else n="입력 데이터 형식이 올바르지 않습니다. 모든 필드를 확인해주세요.";else 500===(null==(E=A.response)?void 0:E.status)?n="서버 내부 오류가 발생했습니다.":(null==(F=null==(P=A.response)?void 0:P.data)?void 0:F.message)?n=A.response.data.message:"ERR_NETWORK"===A.code&&(n="서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.");b(n)}finally{S(!1)}}}else b("로그인이 필요합니다.")},disabled:k||F}),(k||F)&&w.jsx(Da,{children:k&&!F?"신고 제출 중...":F?"AI 분석 중...":"처리 중..."})]})]})})}),w.jsx(yo,{isOpen:E,onClose:()=>P(!1),onLocationSelect:e=>{console.log("🗺️ 받은 위치 데이터:",e),e?"number"==typeof e.latitude&&"number"==typeof e.longitude?(s(e.address||""),d(e.latitude),p(e.longitude),P(!1),console.log("✅ 위치 설정 완료:",{address:e.address,latitude:e.latitude,longitude:e.longitude})):console.error("위도/경도가 숫자 형태가 아닙니다:",e):console.error("선택된 위치 데이터가 없습니다.")}})]});var L},na=n.main`
+`,ea=d.create({baseURL:"https://baekend.onrender.com"});ea.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`,console.log("🔑 Authorization 헤더 추가")),e},e=>Promise.reject(e));const ta=()=>{const t=a(),[n,r]=e.useState("disaster"),[o,i]=e.useState([]),[l,s]=e.useState(""),[c,d]=e.useState(null),[u,p]=e.useState(null),[f,m]=e.useState(""),[h,x]=e.useState(""),[g,b]=e.useState(""),[y,v]=e.useState(""),[k,S]=e.useState(!1),[j,z]=e.useState(""),[C,_]=e.useState(""),[E,P]=e.useState(!1),[F,T]=e.useState(!1),[A,N]=e.useState(null),I=()=>{console.log("📍 ReportDetail 페이지로 이동"),t("/ReportDetail")};return w.jsxs(w.Fragment,{children:[w.jsx(on,{children:w.jsx(na,{children:w.jsxs(ra,{children:[w.jsx(Jn,{}),w.jsx(oa,{children:"신고하기"}),w.jsx(Qr,{activeTab:n,onTabChange:e=>{r(e),z(""),_(""),b(""),v(""),N(null)}}),"disaster"===n?w.jsx(aa,{children:w.jsxs(ia,{children:[w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"earthquake",name:"disasterType",value:"earthquake",checked:"earthquake"===j,onChange:e=>z(e.target.value)}),w.jsx(ca,{htmlFor:"earthquake",children:"지진,산불"})]}),w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"typhoon",name:"disasterType",value:"typhoon",checked:"typhoon"===j,onChange:e=>z(e.target.value)}),w.jsx(ca,{htmlFor:"typhoon",children:"태풍,호우"})]}),w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"snow",name:"disasterType",value:"snow",checked:"snow"===j,onChange:e=>z(e.target.value)}),w.jsx(ca,{htmlFor:"snow",children:"폭설"})]})]})}):"pest"===n?w.jsx(aa,{children:w.jsxs(ia,{children:[w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"disease",name:"pestType",value:"disease",checked:"disease"===C,onChange:e=>_(e.target.value)}),w.jsx(ca,{htmlFor:"disease",children:"질병"})]}),w.jsxs(la,{children:[w.jsx(sa,{type:"radio",id:"insect",name:"pestType",value:"insect",checked:"insect"===C,onChange:e=>_(e.target.value)}),w.jsx(ca,{htmlFor:"insect",children:"해충"})]})]})}):null,w.jsxs(da,{children:[w.jsx(ua,{children:"신고 제목"}),w.jsx(fa,{type:"text",placeholder:"신고 제목을 입력하세요",value:f,onChange:e=>m(e.target.value)})]}),w.jsx(ho,{files:o,onFilesChange:i}),w.jsxs(da,{children:[w.jsx(ua,{children:"신고 발생지역"}),w.jsxs(pa,{children:[w.jsx(fa,{type:"text",placeholder:"지역찾기 버튼을 눌러 지도에서 위치를 선택하세요",value:l,onChange:e=>s(e.target.value)}),w.jsx(ma,{onClick:()=>{P(!0)},children:"🗺️ 지역찾기"})]}),c&&u&&w.jsxs(ha,{children:["📍 선택된 좌표: 위도 ",c.toFixed(6),", 경도 ",u.toFixed(6)]}),w.jsxs(xa,{children:["💡 지역찾기 버튼을 누르면 지도가 열리고, 원하는 위치를 클릭하여 선택할 수 있습니다.",w.jsx("br",{}),"🔄 지도가 보이지 않거나 로딩이 길어지면 페이지 새로고침을 해주세요."]})]}),w.jsxs(da,{children:[w.jsx(ua,{children:"신고 내용"}),w.jsx(Gr,{type:"textarea",value:h,onChange:x,placeholder:"상세 내용을 입력하세요"})]}),"pest"===n&&w.jsx(ga,{children:w.jsxs(ba,{children:[w.jsx(wa,{children:"🤖"}),w.jsxs(ya,{children:[w.jsx(va,{children:"AI 자동 분석 서비스"}),w.jsx(ka,{children:"병해충 신고 시 업로드된 이미지를 YOLO AI가 자동으로 분석하여 병해충 종류를 식별해드립니다. 분석에는 약 5초가 소요됩니다."})]})]})}),w.jsxs(Ta,{children:[g&&w.jsx(Aa,{children:g}),y&&w.jsxs(Na,{children:[w.jsx(Ia,{children:y}),w.jsx(La,{children:"📍 잠시 후 신고 상세 페이지로 자동 이동됩니다..."})]}),A||F?w.jsx(Sa,{children:F?w.jsxs(ja,{children:[w.jsx(Ca,{children:"🤖"}),w.jsxs(_a,{children:["AI가 업로드된 이미지를 분석하고 있습니다...",w.jsx("br",{}),w.jsx("small",{style:{color:"#666"},children:"잠시만 기다려주세요. (약 5초 소요)"})]})]}):A?w.jsxs(za,{children:[w.jsx(Ca,{children:"🎉"}),w.jsxs(Ea,{children:[w.jsx(Pa,{children:"AI 분석 완료!"}),w.jsxs(Fa,{children:[w.jsx("strong",{children:"탐지된 병해충:"})," ",(null==(L=A.primary_detection)?void 0:L.class_name)||"감지되지 않음",w.jsx("br",{}),w.jsx("strong",{children:"신뢰도:"})," ",A.primary_detection?Math.round(100*A.primary_detection.confidence):0,"%",w.jsx("br",{}),w.jsx("strong",{children:"총 탐지 수:"})," ",A.total_detections,"개",w.jsx("br",{}),w.jsx("strong",{children:"카테고리:"})," ",A.category]})]})]}):null}):null,w.jsx(bo,{onClick:async()=>{var e,t,r,a,w,y,k,E,P,F;b(""),v(""),N(null);if(localStorage.getItem("accessToken")){if(("disaster"===n?j:C)?f.trim()?l.trim()?null===c||null===u||"number"!=typeof c||"number"!=typeof u||isNaN(c)||isNaN(u)?(b("지도에서 정확한 위치를 선택해주세요."),0):h.trim()?0!==o.length||(b("최소 1개의 파일을 업로드해주세요."),0):(b("신고 내용을 입력해주세요."),0):(b("신고 발생지역을 입력해주세요."),0):(b("제목을 입력해주세요."),0):(b("신고 유형을 선택해주세요."),0)){S(!0);try{console.log("=== 신고 제출 시작 ===");const e=new FormData,t=(()=>{if("disaster"===n)return{earthquake:{main:"재난",sub:"지진"},typhoon:{main:"재난",sub:"태풍"},snow:{main:"재난",sub:"폭설"}}[j]||null;return{disease:{main:"병해충",sub:"병해"},insect:{main:"병해충",sub:"해충"}}[C]||null})();if(!t)return b("올바른 카테고리를 선택해주세요."),void S(!1);e.append("main_category",t.main),e.append("sub_category",t.sub),e.append("title",f.trim()),e.append("content",h.trim()),e.append("local",l.trim());const r=c,a=u;if(null===r||null===a||"number"!=typeof r||"number"!=typeof a||isNaN(r)||isNaN(a))return b("위치 정보가 올바르지 않습니다. 다시 지역을 선택해주세요."),void S(!1);e.append("latitude",r.toString()),e.append("longitude",a.toString()),console.log("✅ 위도/경도 FormData에 추가됨:",r.toString(),a.toString()),o.forEach((t,n)=>{e.append("files",t),console.log(`📎 파일 ${n+1} 추가:`,t.name,t.type,t.size+" bytes")});const w=await(async e=>{var t,n;try{console.log("=== 신고 등록 API 호출 시작 ==="),console.log("전송할 FormData:");for(const[n,r]of e.entries())r instanceof File?console.log(`${n}: [File] ${r.name} (${r.size} bytes, ${r.type})`):console.log(`${n}: ${r}`);const t=await ea.post("/damage-report",e,{headers:{}});return console.log("✅ 신고 등록 성공:",t.data),t.data}catch(g){throw console.error("❌ 신고 등록 실패:",g),console.error("응답 데이터:",null==(t=g.response)?void 0:t.data),console.error("응답 상태:",null==(n=g.response)?void 0:n.status),g}})(e);let y=w.message||"✅ 신고가 성공적으로 접수되었습니다.";console.log("🎉 신고 제출 성공:",{report_id:w.report_id,uploaded_files:w.uploaded_files}),"병해충"===t.main&&w.report_id?(console.log("🤖 병해충 신고 감지 - AI 분석 시작"),T(!0),setTimeout(async()=>{try{console.log("🔍 AI 분석 실행 중...");const e=await(async e=>{var t,n;try{console.log("=== AI 분석 API 호출 시작 ==="),console.log("분석할 신고 ID:",e);const t=await ea.get(`/damage-report/detect-damage/${e}`);return console.log("✅ AI 분석 API 응답:",t.data),t.data.error?(console.error("❌ AI 분석 에러:",t.data.error),null):t.data.primary_detection?t.data:(console.warn("⚠️ AI 분석 결과에 primary_detection이 없음"),null)}catch(g){return console.error("❌ AI 분석 실패:",g),console.error("AI 분석 응답 데이터:",null==(t=g.response)?void 0:t.data),console.error("AI 분석 응답 상태:",null==(n=g.response)?void 0:n.status),null}})(w.report_id);if(e&&e.primary_detection){N(e);const t=Math.round(100*e.primary_detection.confidence),n=e.primary_detection.class_name;y+=`\n\n🤖 AI 분석도 완료되었습니다!\n주요 진단: ${n} (신뢰도: ${t}%)`,console.log("🎉 AI 분석 완료:",e)}else y+="\n\n⚠️ AI 분석에서 병해충을 감지하지 못했거나 분석에 실패했습니다.",console.log("⚠️ AI 분석 결과 없음");v(y),T(!1),setTimeout(()=>{console.log("🔄 AI 분석 완료 - ReportDetail 페이지로 이동"),I()},2e3)}catch(e){console.error("AI 분석 중 오류:",e),y+="\n\n⚠️ AI 분석 중 오류가 발생했지만 신고는 정상적으로 접수되었습니다.",v(y),T(!1),setTimeout(()=>{console.log("🔄 AI 분석 실패했지만 ReportDetail 페이지로 이동"),I()},2e3)}},5e3)):(v(y),setTimeout(()=>{console.log("🔄 재난 신고 완료 - ReportDetail 페이지로 이동"),I()},2e3)),i([]),s(""),d(null),p(null),m(""),x(""),z(""),_("")}catch(A){console.error("❌ 신고 제출 오류:",A);let n="신고 제출 중 오류가 발생했습니다.";if(401===(null==(e=A.response)?void 0:e.status))n="로그인이 만료되었습니다. 다시 로그인해주세요.";else if(404===(null==(t=A.response)?void 0:t.status))n="API 엔드포인트를 찾을 수 없습니다. 서버 설정을 확인해주세요.";else if(413===(null==(r=A.response)?void 0:r.status))n="파일 크기가 너무 큽니다. 더 작은 파일을 업로드해주세요.";else if(415===(null==(a=A.response)?void 0:a.status))n="지원하지 않는 파일 형식입니다.";else if(422===(null==(w=A.response)?void 0:w.status))if(console.error("422 에러 상세:",A.response.data),null==(k=null==(y=A.response)?void 0:y.data)?void 0:k.detail)if(Array.isArray(A.response.data.detail)){n=`입력 데이터 오류:\n${A.response.data.detail.map(e=>{var t;return`${(null==(t=e.loc)?void 0:t[1])||"알 수 없는 필드"}: ${e.msg||"유효하지 않은 값"}`}).join("\n")}`}else n=`입력 데이터 오류: ${A.response.data.detail}`;else n="입력 데이터 형식이 올바르지 않습니다. 모든 필드를 확인해주세요.";else 500===(null==(E=A.response)?void 0:E.status)?n="서버 내부 오류가 발생했습니다.":(null==(F=null==(P=A.response)?void 0:P.data)?void 0:F.message)?n=A.response.data.message:"ERR_NETWORK"===A.code&&(n="서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.");b(n)}finally{S(!1)}}}else b("로그인이 필요합니다.")},disabled:k||F}),(k||F)&&w.jsx(Da,{children:k&&!F?"신고 제출 중...":F?"AI 분석 중...":"처리 중..."})]})]})})}),w.jsx(yo,{isOpen:E,onClose:()=>P(!1),onLocationSelect:e=>{console.log("🗺️ 받은 위치 데이터:",e),e?"number"==typeof e.latitude&&"number"==typeof e.longitude?(s(e.address||""),d(e.latitude),p(e.longitude),P(!1),console.log("✅ 위치 설정 완료:",{address:e.address,latitude:e.latitude,longitude:e.longitude})):console.error("위도/경도가 숫자 형태가 아닙니다:",e):console.error("선택된 위치 데이터가 없습니다.")}})]});var L},na=n.main`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2738,11 +2738,11 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   font-size: 12px;
   color: #666;
   margin-top: 5px;
-`,ii="http://localhost:8000",li=d.create({baseURL:ii,timeout:1e4,headers:{"Content-Type":"application/json"}});li.interceptors.request.use(e=>{const t=localStorage.getItem("token")||localStorage.getItem("accessToken")||localStorage.getItem("authToken");return console.log("🔑 사용할 토큰:",t),t?(e.headers.Authorization=`Bearer ${t}`,console.log("📤 Authorization 헤더:",e.headers.Authorization)):console.warn("⚠️ 토큰이 없습니다!"),e},e=>Promise.reject(e));const si=()=>{const[t,n]=e.useState({username:"",email:"",region_name:"",crop_name:"",local_id:0,profile_image:""}),[r,o]=e.useState({username:"",email:"",region_name:"",crop_name:"",local_id:0,profile_image:""}),[a,i]=e.useState(!1),[l,s]=e.useState(!1),[c,u]=e.useState(!0),[p,f]=e.useState(!1),[m,h]=e.useState(""),[x,g]=e.useState(""),b=e=>Oa[e]||"";e.useEffect(()=>{(async()=>{var e,t,r,a,i,l;try{u(!0),h("");const e=localStorage.getItem("token")||localStorage.getItem("accessToken")||localStorage.getItem("authToken");if(console.log("🔍 현재 저장된 토큰들:"),console.log("token:",localStorage.getItem("token")),console.log("accessToken:",localStorage.getItem("accessToken")),console.log("authToken:",localStorage.getItem("authToken")),!e)return void h("로그인이 필요합니다. 다시 로그인해주세요.");console.log("API 요청 URL:",`${ii}/mypage`),console.log("사용할 토큰:",e);const t=await li.get("/mypage");console.log("✅ API 응답 성공:",t.data),console.log("📊 mypage 데이터 상세:",JSON.stringify(t.data.mypage,null,2));const r=t.data.mypage;console.log("🔍 각 필드 확인:"),console.log("username:",r.username),console.log("email:",r.email),console.log("region_name:",r.region_name),console.log("crop_name:",r.crop_name),console.log("local_id:",r.local_id),console.log("profile_image:",r.profile_image),n(r),o(r)}catch(s){console.error("❌ 사용자 정보 조회 실패:",s),d.isAxiosError(s)?(console.error("응답 상태:",null==(e=s.response)?void 0:e.status),console.error("응답 데이터:",null==(t=s.response)?void 0:t.data),console.error("요청 헤더:",null==(r=s.config)?void 0:r.headers),401===(null==(a=s.response)?void 0:a.status)?(h("인증이 만료되었습니다. 다시 로그인해주세요."),localStorage.removeItem("token"),localStorage.removeItem("accessToken"),localStorage.removeItem("authToken")):500===(null==(i=s.response)?void 0:i.status)?h("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."):h(`사용자 정보를 불러오는데 실패했습니다. (${null==(l=s.response)?void 0:l.status})`)):h("네트워크 오류가 발생했습니다.")}finally{u(!1)}})()},[]);const y=e=>t=>{n(n=>({...n,[e]:t.target.value}))};return c?w.jsxs(Ra,{children:[w.jsx(Ma,{children:w.jsx($a,{children:w.jsx(Jn,{})})}),w.jsx(ni,{children:"사용자 정보를 불러오는 중..."})]}):w.jsxs(Ra,{children:[w.jsx(Ma,{children:w.jsx($a,{children:w.jsx(Jn,{})})}),w.jsxs(Ba,{children:[w.jsx(Ua,{children:t.profile_image?w.jsx(Wa,{src:t.profile_image,alt:"프로필 사진",onError:e=>{e.currentTarget.style.display="none";const t=e.currentTarget.parentElement;if(t){const e=document.createElement("div");e.innerHTML='<div style="width: 40px; height: 40px; border: 2px solid #333; border-radius: 50% 50% 0 0; position: relative;"></div>',t.appendChild(e)}}}):w.jsx(Va,{})}),w.jsx(Ha,{children:t.username||"USER"}),m&&w.jsx(ri,{children:m}),x&&w.jsx(oi,{children:x}),w.jsx(Qn,{label:"이름",type:"text",placeholder:"이름을 입력하세요",value:t.username,onChange:y("username"),disabled:!0}),w.jsx(Qn,{label:"이메일",type:"email",placeholder:"이메일을 입력하세요",value:t.email,onChange:y("email"),disabled:!0}),w.jsxs(qa,{children:[w.jsx(Qa,{children:"지역"}),w.jsxs(Ka,{children:[w.jsxs(Ya,{children:[a?w.jsxs(Ga,{value:t.local_id,onChange:e=>{const t=parseInt(e.target.value),r=b(t);n(e=>({...e,local_id:t,region_name:r}))},children:[w.jsx("option",{value:0,children:"지역을 선택하세요"}),Object.entries(Oa).map(([e,t])=>w.jsxs("option",{value:parseInt(e),children:[t," (지역번호: ",e,")"]},e))]}):w.jsx(Xa,{type:"text",value:`${t.region_name} (지역번호: ${t.local_id})`,disabled:!0}),w.jsx(Ja,{onClick:()=>{i(!a),a&&n(e=>({...e,local_id:r.local_id,region_name:r.region_name}))},disabled:p,children:a?"취소":"지역변경"})]}),a&&w.jsx(ai,{children:"💡 지역을 선택하면 지역번호가 자동으로 설정됩니다."})]})]}),w.jsxs(qa,{children:[w.jsx(Qa,{children:"재배 작물"}),w.jsxs(Ka,{children:[w.jsxs(Ya,{children:[w.jsx(Xa,{type:"text",placeholder:"재배하는 작물을 입력하세요",value:t.crop_name,onChange:y("crop_name"),disabled:!l}),w.jsx(Ja,{onClick:()=>{s(!l),l&&n(e=>({...e,crop_name:r.crop_name}))},disabled:p,children:l?"취소":"작물변경"})]}),l&&w.jsx(ai,{children:"💡 현재 재배하고 있는 주요 작물을 입력해주세요."})]})]}),(a||l)&&(t.crop_name!==r.crop_name||t.local_id!==r.local_id)&&w.jsxs(Za,{children:[w.jsx(ti,{onClick:()=>{n(r),i(!1),s(!1),h(""),g("")},disabled:p,children:"취소"}),w.jsx(ei,{onClick:async()=>{await(async()=>{var e,n;try{f(!0),h(""),g("");const e={crop_name:t.crop_name,local_id:t.local_id};console.log("📤 업데이트 요청 데이터:",e);const n=await li.patch("/mypage",e);console.log("✅ 업데이트 응답:",n.data),o({...r,crop_name:t.crop_name,local_id:t.local_id,region_name:b(t.local_id)}),g("정보가 성공적으로 업데이트되었습니다."),i(!1),s(!1),setTimeout(()=>g(""),3e3)}catch(a){console.error("❌ 사용자 정보 업데이트 실패:",a),d.isAxiosError(a)?401===(null==(e=a.response)?void 0:e.status)?h("인증이 만료되었습니다. 다시 로그인해주세요."):400===(null==(n=a.response)?void 0:n.status)?h("입력한 정보가 올바르지 않습니다."):h("정보 업데이트에 실패했습니다."):h("네트워크 오류가 발생했습니다.")}finally{f(!1)}})()},disabled:p,children:p?"저장 중...":"저장"})]})]})]})},ci=n.div`
+`,ii=d.create({baseURL:API_BASE_URL,timeout:1e4,headers:{"Content-Type":"application/json"}});ii.interceptors.request.use(e=>{const t=localStorage.getItem("token")||localStorage.getItem("accessToken")||localStorage.getItem("authToken");return console.log("🔑 사용할 토큰:",t),t?(e.headers.Authorization=`Bearer ${t}`,console.log("📤 Authorization 헤더:",e.headers.Authorization)):console.warn("⚠️ 토큰이 없습니다!"),e},e=>Promise.reject(e));const li=()=>{const[t,n]=e.useState({username:"",email:"",region_name:"",crop_name:"",local_id:0,profile_image:""}),[r,o]=e.useState({username:"",email:"",region_name:"",crop_name:"",local_id:0,profile_image:""}),[a,i]=e.useState(!1),[l,s]=e.useState(!1),[c,u]=e.useState(!0),[p,f]=e.useState(!1),[m,h]=e.useState(""),[x,g]=e.useState(""),b=e=>Oa[e]||"";e.useEffect(()=>{(async()=>{var e,t,r,a,i,l;try{u(!0),h("");const e=localStorage.getItem("token")||localStorage.getItem("accessToken")||localStorage.getItem("authToken");if(console.log("🔍 현재 저장된 토큰들:"),console.log("token:",localStorage.getItem("token")),console.log("accessToken:",localStorage.getItem("accessToken")),console.log("authToken:",localStorage.getItem("authToken")),!e)return void h("로그인이 필요합니다. 다시 로그인해주세요.");console.log("API 요청 URL:",`${API_BASE_URL}/mypage`),console.log("사용할 토큰:",e);const t=await ii.get("/mypage");console.log("✅ API 응답 성공:",t.data),console.log("📊 mypage 데이터 상세:",JSON.stringify(t.data.mypage,null,2));const r=t.data.mypage;console.log("🔍 각 필드 확인:"),console.log("username:",r.username),console.log("email:",r.email),console.log("region_name:",r.region_name),console.log("crop_name:",r.crop_name),console.log("local_id:",r.local_id),console.log("profile_image:",r.profile_image),n(r),o(r)}catch(s){console.error("❌ 사용자 정보 조회 실패:",s),d.isAxiosError(s)?(console.error("응답 상태:",null==(e=s.response)?void 0:e.status),console.error("응답 데이터:",null==(t=s.response)?void 0:t.data),console.error("요청 헤더:",null==(r=s.config)?void 0:r.headers),401===(null==(a=s.response)?void 0:a.status)?(h("인증이 만료되었습니다. 다시 로그인해주세요."),localStorage.removeItem("token"),localStorage.removeItem("accessToken"),localStorage.removeItem("authToken")):500===(null==(i=s.response)?void 0:i.status)?h("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."):h(`사용자 정보를 불러오는데 실패했습니다. (${null==(l=s.response)?void 0:l.status})`)):h("네트워크 오류가 발생했습니다.")}finally{u(!1)}})()},[]);const y=e=>t=>{n(n=>({...n,[e]:t.target.value}))};return c?w.jsxs(Ra,{children:[w.jsx(Ma,{children:w.jsx($a,{children:w.jsx(Jn,{})})}),w.jsx(ni,{children:"사용자 정보를 불러오는 중..."})]}):w.jsxs(Ra,{children:[w.jsx(Ma,{children:w.jsx($a,{children:w.jsx(Jn,{})})}),w.jsxs(Ba,{children:[w.jsx(Ua,{children:t.profile_image?w.jsx(Wa,{src:t.profile_image,alt:"프로필 사진",onError:e=>{e.currentTarget.style.display="none";const t=e.currentTarget.parentElement;if(t){const e=document.createElement("div");e.innerHTML='<div style="width: 40px; height: 40px; border: 2px solid #333; border-radius: 50% 50% 0 0; position: relative;"></div>',t.appendChild(e)}}}):w.jsx(Va,{})}),w.jsx(Ha,{children:t.username||"USER"}),m&&w.jsx(ri,{children:m}),x&&w.jsx(oi,{children:x}),w.jsx(Qn,{label:"이름",type:"text",placeholder:"이름을 입력하세요",value:t.username,onChange:y("username"),disabled:!0}),w.jsx(Qn,{label:"이메일",type:"email",placeholder:"이메일을 입력하세요",value:t.email,onChange:y("email"),disabled:!0}),w.jsxs(qa,{children:[w.jsx(Qa,{children:"지역"}),w.jsxs(Ka,{children:[w.jsxs(Ya,{children:[a?w.jsxs(Ga,{value:t.local_id,onChange:e=>{const t=parseInt(e.target.value),r=b(t);n(e=>({...e,local_id:t,region_name:r}))},children:[w.jsx("option",{value:0,children:"지역을 선택하세요"}),Object.entries(Oa).map(([e,t])=>w.jsxs("option",{value:parseInt(e),children:[t," (지역번호: ",e,")"]},e))]}):w.jsx(Xa,{type:"text",value:`${t.region_name} (지역번호: ${t.local_id})`,disabled:!0}),w.jsx(Ja,{onClick:()=>{i(!a),a&&n(e=>({...e,local_id:r.local_id,region_name:r.region_name}))},disabled:p,children:a?"취소":"지역변경"})]}),a&&w.jsx(ai,{children:"💡 지역을 선택하면 지역번호가 자동으로 설정됩니다."})]})]}),w.jsxs(qa,{children:[w.jsx(Qa,{children:"재배 작물"}),w.jsxs(Ka,{children:[w.jsxs(Ya,{children:[w.jsx(Xa,{type:"text",placeholder:"재배하는 작물을 입력하세요",value:t.crop_name,onChange:y("crop_name"),disabled:!l}),w.jsx(Ja,{onClick:()=>{s(!l),l&&n(e=>({...e,crop_name:r.crop_name}))},disabled:p,children:l?"취소":"작물변경"})]}),l&&w.jsx(ai,{children:"💡 현재 재배하고 있는 주요 작물을 입력해주세요."})]})]}),(a||l)&&(t.crop_name!==r.crop_name||t.local_id!==r.local_id)&&w.jsxs(Za,{children:[w.jsx(ti,{onClick:()=>{n(r),i(!1),s(!1),h(""),g("")},disabled:p,children:"취소"}),w.jsx(ei,{onClick:async()=>{await(async()=>{var e,n;try{f(!0),h(""),g("");const e={crop_name:t.crop_name,local_id:t.local_id};console.log("📤 업데이트 요청 데이터:",e);const n=await ii.patch("/mypage",e);console.log("✅ 업데이트 응답:",n.data),o({...r,crop_name:t.crop_name,local_id:t.local_id,region_name:b(t.local_id)}),g("정보가 성공적으로 업데이트되었습니다."),i(!1),s(!1),setTimeout(()=>g(""),3e3)}catch(a){console.error("❌ 사용자 정보 업데이트 실패:",a),d.isAxiosError(a)?401===(null==(e=a.response)?void 0:e.status)?h("인증이 만료되었습니다. 다시 로그인해주세요."):400===(null==(n=a.response)?void 0:n.status)?h("입력한 정보가 올바르지 않습니다."):h("정보 업데이트에 실패했습니다."):h("네트워크 오류가 발생했습니다.")}finally{f(!1)}})()},disabled:p,children:p?"저장 중...":"저장"})]})]})]})},si=n.div`
   min-height: 100vh;
   background-color: #FFEFD5;
   padding: 5px 0;
-`,di=n.div`
+`,ci=n.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -2767,7 +2767,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     margin-bottom: 1px;
     padding: 0 5px;
   }
-`,ui=n.div`
+`,di=n.div`
   margin-top: 2px;
   margin-bottom: -50px;
   
@@ -2778,7 +2778,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-top: 1px;
   }
-`,pi=n.h1`
+`,ui=n.h1`
   font-size: 25px;
   font-weight: 700;
   color: #333;
@@ -2799,7 +2799,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 22px;
     margin: 8px 0 0 50px;
   }
-`,fi=n.div`
+`,pi=n.div`
   width: 100%;
   height: 450px;
   margin-bottom: 30px;
@@ -2834,7 +2834,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 0 5px;
     margin: 0 auto 15px auto;
   }
-`,mi=n.div`
+`,fi=n.div`
   background-color: white;
   border-radius: 16px;
   padding: 50px;
@@ -2853,7 +2853,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 25px 15px;
     margin: 0 auto;
   }
-`,hi=n.div`
+`,mi=n.div`
   margin-bottom: 35px;
   
   @media (max-width: 1024px) {
@@ -2867,7 +2867,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-bottom: 20px;
   }
-`,xi=n.div`
+`,hi=n.div`
   display: flex;
   align-items: flex-start;
   margin-bottom: 18px;
@@ -2880,7 +2880,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     flex-direction: column;
     margin-bottom: 12px;
   }
-`,gi=n.span`
+`,xi=n.span`
   font-size: 18px;
   font-weight: 600;
   color: #333;
@@ -2905,7 +2905,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     min-width: auto;
     margin-right: 0;
   }
-`,bi=n.span`
+`,gi=n.span`
   font-size: 18px;
   color: #555;
   line-height: 1.5;
@@ -2921,7 +2921,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 15px;
   }
-`,wi=n.div`
+`,bi=n.div`
   margin-bottom: 35px;
   
   @media (max-width: 1024px) {
@@ -2935,7 +2935,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-bottom: 20px;
   }
-`,yi=n.div`
+`,wi=n.div`
   display: flex;
   align-items: flex-start;
   margin-bottom: 18px;
@@ -2948,7 +2948,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     flex-direction: column;
     margin-bottom: 12px;
   }
-`,vi=n.div`
+`,yi=n.div`
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
@@ -2965,13 +2965,13 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     max-width: 100%;
   }
-`,ki=n.img`
+`,vi=n.img`
   width: 100%;
   height: auto;
   border-radius: 12px;
   border: 2px solid #ddd;
   margin-bottom: 12px;
-`,Si=n.p`
+`,ki=n.p`
   font-size: 16px;
   color: #666;
   margin: 0;
@@ -2987,7 +2987,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 13px;
   }
-`,ji=n.div`
+`,Si=n.div`
   margin-top: 25px;
   
   @media (max-width: 768px) {
@@ -2997,7 +2997,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-top: 15px;
   }
-`,zi=n.p`
+`,ji=n.p`
   font-size: 18px;
   color: #555;
   line-height: 1.6;
@@ -3014,14 +3014,14 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 15px;
   }
-`,Ci=n.div`
+`,zi=n.div`
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 50vh;
   font-size: 18px;
   color: #666;
-`,_i=n.div`
+`,Ci=n.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -3030,7 +3030,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   font-size: 18px;
   color: #e74c3c;
   text-align: center;
-`,Ei=n.div`
+`,_i=n.div`
   margin-bottom: 35px;
   
   @media (max-width: 1024px) {
@@ -3044,7 +3044,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-bottom: 20px;
   }
-`,Pi=n.div`
+`,Ei=n.div`
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border: 2px solid #007bff;
   border-radius: 12px;
@@ -3059,7 +3059,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     padding: 14px;
   }
-`,Fi=n.div`
+`,Pi=n.div`
   position: absolute;
   top: -10px;
   left: 20px;
@@ -3070,7 +3070,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   font-size: 12px;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
-`,Ti=n.div`
+`,Fi=n.div`
   display: flex;
   align-items: flex-start;
   margin-bottom: 12px;
@@ -3083,7 +3083,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     flex-direction: column;
     margin-bottom: 10px;
   }
-`,Ai=n.span`
+`,Ti=n.span`
   font-size: 16px;
   font-weight: 600;
   color: #495057;
@@ -3106,7 +3106,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     min-width: auto;
     margin-right: 0;
   }
-`,Ni=n.span`
+`,Ai=n.span`
   font-size: 16px;
   color: #212529;
   font-weight: 500;
@@ -3122,7 +3122,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 14px;
   }
-`,Ii=n.div`
+`,Ni=n.div`
   width: 100%;
   height: 8px;
   background-color: #e9ecef;
@@ -3141,7 +3141,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     border-radius: 4px;
     transition: width 0.3s ease;
   }
-`,Li=n.div`
+`,Ii=n.div`
   text-align: center;
   color: #6c757d;
   font-style: italic;
@@ -3149,11 +3149,11 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   background-color: #f8f9fa;
   border-radius: 8px;
   border: 1px dashed #dee2e6;
-`,Di=e=>e?e.startsWith("http://")||e.startsWith("https://")?e:e.startsWith("/static")?`http://localhost:8000${e}`:`http://localhost:8000/static/uploads/reports/${e}`:"",Oi=({aiResult:e,loading:t,error:n})=>{if(t)return w.jsxs(Pi,{children:[w.jsx(Fi,{children:"AI 분석"}),w.jsx("div",{style:{textAlign:"center",color:"#666",padding:"20px 0"},children:"🤖 AI가 이미지를 분석하는 중..."})]});if(n)return w.jsxs(Li,{children:[w.jsx("div",{style:{marginBottom:"10px"},children:"⚠️ AI 진단 중 오류 발생"}),w.jsx("div",{style:{fontSize:"12px",color:"#999"},children:n})]});if(!e)return w.jsx(Li,{children:"🤖 AI 진단 결과가 없습니다"});if(!e.primary_detection)return w.jsx(Li,{children:"🤖 AI가 병해충을 탐지하지 못했습니다"});try{const t=Math.round(100*e.primary_detection.confidence);return w.jsxs(Pi,{children:[w.jsx(Fi,{children:"AI 분석"}),w.jsxs(Ti,{children:[w.jsx(Ai,{children:"탐지 카테고리:"}),w.jsx(Ni,{children:e.category||"알 수 없음"})]}),w.jsxs(Ti,{children:[w.jsx(Ai,{children:"주요 진단:"}),w.jsx(Ni,{children:e.primary_detection.class_name||"알 수 없음"})]}),w.jsxs(Ti,{children:[w.jsx(Ai,{children:"신뢰도:"}),w.jsxs("div",{style:{flex:1},children:[w.jsxs(Ni,{children:[t,"%"]}),w.jsx(Ii,{confidence:t})]})]}),w.jsxs(Ti,{children:[w.jsx(Ai,{children:"총 탐지 수:"}),w.jsxs(Ni,{children:[e.total_detections||0,"개"]})]}),e.detections&&e.detections.length>1&&w.jsxs(Ti,{style:{flexDirection:"column",alignItems:"flex-start"},children:[w.jsx(Ai,{style:{marginBottom:"8px"},children:"추가 탐지 결과:"}),w.jsx("div",{style:{width:"100%"},children:e.detections.slice(1).map((e,t)=>w.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:"14px",color:"#6c757d"},children:[w.jsx("span",{children:e.class_name||"알 수 없음"}),w.jsxs("span",{children:[Math.round(100*(e.confidence||0)),"%"]})]},t))})]})]})}catch(r){return console.error("AI 결과 렌더링 오류:",r),w.jsxs(Li,{children:[w.jsx("div",{style:{marginBottom:"10px"},children:"⚠️ AI 결과 표시 중 오류 발생"}),w.jsx("div",{style:{fontSize:"12px",color:"#999"},children:"결과 데이터 형식이 올바르지 않습니다"})]})}},Ri=({files:e})=>e&&0!==e.length?w.jsx("div",{children:e.map((e,t)=>{const n=Di(e);return console.log(`🖼️ 이미지 ${t+1} URL:`,n),w.jsxs("div",{style:{marginBottom:"15px"},children:[w.jsx(ki,{src:n,alt:`신고 첨부 파일 ${t+1}`,onLoad:()=>{console.log(`✅ 이미지 ${t+1} 로드 성공:`,n)},onError:r=>{var o;console.error(`❌ 이미지 ${t+1} 로드 실패:`,n);const a=r.target;a.style.display="none";const i=document.createElement("div");i.style.cssText="\n                  padding: 40px 20px;\n                  background-color: #f8f9fa;\n                  border: 2px dashed #dee2e6;\n                  border-radius: 12px;\n                  text-align: center;\n                  color: #6c757d;\n                  font-size: 14px;\n                ",i.innerHTML=`\n                  <div style="margin-bottom: 10px;">📷</div>\n                  <div>이미지를 불러올 수 없습니다</div>\n                  <div style="font-size: 12px; margin-top: 5px; color: #999;">\n                    URL: ${n}\n                  </div>\n                  <div style="font-size: 11px; margin-top: 5px; color: #999;">\n                    원본 경로: ${e}\n                  </div>\n                `,null==(o=a.parentNode)||o.insertBefore(i,a.nextSibling)}}),w.jsxs(Si,{children:["첨부 파일 ",t+1]})]},t)})}):w.jsxs("div",{style:{padding:"40px 20px",backgroundColor:"#f8f9fa",border:"2px dashed #dee2e6",borderRadius:"12px",textAlign:"center",color:"#6c757d",fontSize:"14px"},children:[w.jsx("div",{style:{marginBottom:"10px"},children:"📷"}),w.jsx("div",{children:"첨부된 파일이 없습니다"})]}),Mi=()=>(console.log("📋 목업 데이터 사용"),{reports:[{title:"다저벌악",main_category:"병해충",sub_category:"병해",latitude:"35.7336908241694",longitude:"127.06573190851746",id:"mock_report_1"},{title:"제주도 태풍",main_category:"재난",sub_category:"태풍",latitude:"33.2375195759578",longitude:"126.515860406201",id:"mock_report_2"},{title:"전주 지진 발생",main_category:"재난",sub_category:"지진",latitude:"37.5665",longitude:"126.978",id:"mock_report_3"}]}),$i=()=>{const[t,n]=e.useState([]),[r,o]=e.useState(null),[a,i]=e.useState(!0),[l,s]=e.useState(null),[c,d]=e.useState(!1),[u,p]=e.useState(null),[f,m]=e.useState(!1),[h,x]=e.useState(null);e.useEffect(()=>{(async()=>{try{i(!0);const e=await(async()=>{try{console.log("🔄 신고 목록 조회 시작...");const e=await fetch("http://localhost:8000/reports/recent",{method:"GET",headers:{"Content-Type":"application/json",Accept:"application/json"},mode:"cors"});if(console.log("API 응답 상태:",e.status),!e.ok)return console.warn(`API 호출 실패: ${e.status}. 목업 데이터 사용.`),Mi();const t=e.headers.get("content-type");if(!t||!t.includes("application/json"))return console.warn("JSON 응답이 아님. 목업 데이터 사용."),Mi();const n=await e.json();return console.log("✅ 신고 목록 조회 성공:",n),n}catch(l){return console.error("❌ API 호출 실패:",l),console.log("🔄 목업 데이터로 대체"),Mi()}})();n(e.reports||[]),s(null),console.log("신고 목록 로드 완료:",e.reports)}catch(e){s("데이터를 불러올 수 없습니다."),console.error("신고 목록 로드 중 치명적 오류:",e)}finally{i(!1)}})()},[]);return e.useEffect(()=>{var e;r&&(console.log("=== 선택된 신고 상세 정보 ==="),console.log("제목:",r.title),console.log("파일 정보:",r.files),console.log("파일 개수:",(null==(e=r.files)?void 0:e.length)||0),r.files&&r.files.length>0&&r.files.forEach((e,t)=>{console.log(`파일 ${t+1}:`,e),console.log(`파일 ${t+1} URL:`,Di(e))}))},[r]),a?w.jsx(ci,{children:w.jsx(Ci,{children:"신고 정보를 불러오는 중..."})}):l?w.jsx(ci,{children:w.jsx(_i,{children:w.jsx("div",{children:l})})}):w.jsxs(ci,{children:[w.jsxs(di,{children:[w.jsx(ui,{children:w.jsx(Jn,{})}),w.jsx(pi,{children:"신고상황 세부 페이지"})]}),w.jsx(fi,{children:w.jsx(Sn,{reports:t,onMarkerClick:async e=>{if(console.log("🗺️ 마커 클릭:",e),e){d(!0),m(!1),p(null),x(null),o(null);try{if(e.startsWith("temp_")||e.startsWith("mock_")){console.log("🎭 목업 데이터 사용:",e);const t={user_id:"mock_user_id",username:"테스트 사용자",main_category:"병해충",sub_category:"해충",title:e.includes("다저벌악")?"다저벌악":e.includes("태풍")?"제주도 태풍":e.includes("지진")?"전주 지진 발생":"테스트 신고",content:`이것은 ${e} 신고에 대한 상세 내용입니다.`,local:"테스트 지역",latitude:"37.5665",longitude:"126.978",files:[],created_at:(new Date).toISOString(),id:e};o(t),"병해충"===t.main_category&&(m(!0),setTimeout(()=>{p({category:"해충",total_detections:1,detections:[{class_id:2,class_name:"담배가루이",confidence:.9696160554885864,bbox:{x1:90.16170501708984,y1:64.73558044433594,x2:161.4823760986328,y2:155.4713897705078}}],primary_detection:{class_id:2,class_name:"담배가루이",confidence:.9696160554885864,bbox:{x1:90.16170501708984,y1:64.73558044433594,x2:161.4823760986328,y2:155.4713897705078}}}),m(!1)},2e3))}else{console.log("🌐 실제 API 호출 시작");const n=await(async e=>{try{console.log(`🔍 신고 상세 정보 조회: ${e}`);const n=[`http://localhost:8000/damage-report/${e}`,`http://localhost:8000/reports/${e}`,`http://localhost:8000/report/${e}`,`http://localhost:8000/damage-reports/${e}`];for(const e of n)try{console.log(`🔄 시도 중인 엔드포인트: ${e}`);const t=await fetch(e,{method:"GET",headers:{"Content-Type":"application/json",Accept:"application/json"},mode:"cors"});if(console.log(`📡 ${e} 응답 상태: ${t.status}`),t.ok){const e=await t.json();return console.log("✅ 신고 상세 정보 조회 성공:",e),e}if(404===t.status){console.log(`❌ ${e}에서 404 - 다음 엔드포인트 시도`);continue}console.warn(`⚠️ ${e}에서 ${t.status} 오류`);continue}catch(t){console.error(`❌ ${e} 호출 실패:`,t);continue}return console.warn("❌ 모든 엔드포인트에서 신고 상세 조회 실패"),null}catch(l){return console.error("❌ 신고 상세 조회 실패:",l),null}})(e);if(n){if(o(n),console.log("✅ 신고 상세 정보 로드 완료:",n),"병해충"===n.main_category){console.log("🤖 병해충 신고 감지 - AI 진단 시작"),m(!0);try{const{result:t,error:n}=await(async e=>{try{console.log(`🤖 AI 진단 요청: ${e}`);const t=await fetch(`http://localhost:8000/damage-report/detect-damage/${e}`,{method:"GET",headers:{"Content-Type":"application/json",Accept:"application/json"},mode:"cors"});if(console.log("AI 진단 응답 상태:",t.status),!t.ok){const e=await t.text();console.warn(`❌ AI diagnosis API failed with status: ${t.status}, body: ${e}`);let n="AI 진단 서비스에 연결할 수 없습니다";return 404===t.status?n="해당 신고를 찾을 수 없습니다":500===t.status?n="AI 분석 중 서버 오류가 발생했습니다":t.status>=400&&t.status<500&&(n="잘못된 요청입니다"),{result:null,error:n}}const n=await t.json();return console.log("AI 진단 응답 데이터:",n),n.error?(console.warn(`❌ AI 진단 에러: ${n.error}`),{result:null,error:n.error}):n&&"object"==typeof n?n.primary_detection?(console.log("✅ AI 진단 성공:",n),{result:n,error:null}):(console.log("ℹ️ AI 진단 완료 - 탐지 결과 없음"),{result:{...n,primary_detection:null},error:null}):(console.warn("❌ AI 진단 결과 형식 오류"),{result:null,error:"응답 데이터 형식이 올바르지 않습니다"})}catch(l){console.error("❌ AI 진단 요청 실패:",l);let t="AI 진단 중 오류가 발생했습니다";return l instanceof TypeError&&l.message.includes("fetch")?t="네트워크 연결을 확인해주세요":l instanceof Error&&(t=l.message),{result:null,error:t}}})(e);p(t),x(n),t?console.log("🎉 AI 진단 성공:",t):n?console.log("⚠️ AI 진단 에러:",n):console.log("ℹ️ AI 진단 완료 - 탐지 결과 없음")}catch(t){console.error("AI 진단 중 예외 발생:",t),p(null),x("AI 진단 중 예상치 못한 오류가 발생했습니다")}finally{m(!1)}}}else{console.error("❌ 신고 상세 정보 로드 실패 - 목업 데이터 사용");const t={user_id:"fallback_user",username:"신고자",main_category:"병해충",sub_category:"해충",title:`신고 ID: ${e}`,content:`API 연결에 실패하여 임시 데이터를 표시합니다. 신고 ID: ${e}`,local:"위치 정보 불명",latitude:"37.5665",longitude:"126.978",files:[],created_at:(new Date).toISOString(),id:e};o(t),"병해충"===t.main_category&&(m(!0),setTimeout(()=>{p({category:"해충",total_detections:1,detections:[{class_id:0,class_name:"알 수 없는 병해충",confidence:.5,bbox:{x1:0,y1:0,x2:100,y2:100}}],primary_detection:{class_id:0,class_name:"알 수 없는 병해충",confidence:.5,bbox:{x1:0,y1:0,x2:100,y2:100}}}),m(!1)},1e3))}}}catch(n){console.error("❌ 마커 클릭 처리 중 전체 오류:",n)}finally{d(!1)}}else console.warn("❌ Report ID가 없습니다")}})}),w.jsxs(mi,{children:[r?w.jsxs(hi,{children:[w.jsx(xi,{children:w.jsx(gi,{style:{color:"#d32f2f",fontWeight:700,fontSize:"20px"},children:"📋 선택된 신고 상세 정보"})}),c?w.jsx(zi,{children:"상세 정보를 불러오는 중..."}):w.jsxs(w.Fragment,{children:[w.jsxs(xi,{children:[w.jsx(gi,{children:"신고 제목:"}),w.jsx(bi,{children:r.title})]}),w.jsxs(xi,{children:[w.jsx(gi,{children:"신고자:"}),w.jsx(bi,{children:r.username})]}),w.jsxs(xi,{children:[w.jsx(gi,{children:"카테고리:"}),w.jsxs(bi,{children:[r.main_category,r.sub_category&&` > ${r.sub_category}`]})]}),w.jsxs(xi,{children:[w.jsx(gi,{children:"발생 지역:"}),w.jsx(bi,{children:r.local})]}),w.jsxs(xi,{children:[w.jsx(gi,{children:"좌표:"}),w.jsxs(bi,{children:["위도: ",r.latitude,", 경도: ",r.longitude]})]}),w.jsxs(xi,{children:[w.jsx(gi,{children:"신고 일시:"}),w.jsx(bi,{children:new Date(r.created_at).toLocaleString("ko-KR")})]}),w.jsxs(ji,{children:[w.jsx(xi,{children:w.jsx(gi,{children:"신고 내용:"})}),w.jsx(zi,{style:{backgroundColor:"#f9f9f9",padding:"15px",borderRadius:"8px",marginTop:"10px"},children:r.content})]}),"병해충"===r.main_category&&w.jsxs(Ei,{children:[w.jsx(xi,{children:w.jsx(gi,{children:"🤖 AI 진단 결과:"})}),w.jsx(Oi,{aiResult:u,loading:f,error:h})]}),w.jsxs(wi,{children:[w.jsx(yi,{children:w.jsx(gi,{children:"첨부 파일:"})}),w.jsx(vi,{children:w.jsx(Ri,{files:r.files||[]})})]})]})]}):w.jsxs(hi,{children:[w.jsx(xi,{children:w.jsx(gi,{style:{color:"#666",fontWeight:600,fontSize:"18px"},children:"🗺️ 실시간 신고 현황"})}),w.jsxs(zi,{style:{textAlign:"center",padding:"40px 20px",color:"#666"},children:["지도의 마커를 클릭하면 해당 신고의 상세 정보를 확인할 수 있습니다.",w.jsx("br",{}),w.jsx("br",{}),w.jsxs("span",{style:{fontSize:"14px",color:"#999"},children:["💡 빨간색 마커: 재난/재해 신고 | 파란색 마커: 병해충 신고",w.jsx("br",{}),"🤖 병해충 신고의 경우 AI 진단 결과도 함께 확인할 수 있습니다."]})]})]}),t.length>0&&w.jsxs(ji,{children:[w.jsx(xi,{children:w.jsx(gi,{children:"최근 신고 현황:"})}),w.jsxs(zi,{children:["총 ",t.length,"건의 신고가 접수되어 지도에 표시되고 있습니다.",t.some(e=>e.latitude&&e.longitude)&&` (위치 정보가 있는 신고: ${t.filter(e=>e.latitude&&e.longitude).length}건)`,w.jsx("br",{}),w.jsxs("span",{style:{fontSize:"14px",color:"#666",marginTop:"8px",display:"inline-block"},children:["🤖 병해충 관련 신고: ",t.filter(e=>"병해충"===e.main_category).length,"건 (AI 진단 가능)"]})]})]})]})]})},Bi=n.div`
+`,Li=e=>e?e.startsWith("http://")||e.startsWith("https://")?e:e.startsWith("/static")?`http://baekend.onrender.com${e}`:`http://baekend.onrender.com/static/uploads/reports/${e}`:"",Di=({aiResult:e,loading:t,error:n})=>{if(t)return w.jsxs(Ei,{children:[w.jsx(Pi,{children:"AI 분석"}),w.jsx("div",{style:{textAlign:"center",color:"#666",padding:"20px 0"},children:"🤖 AI가 이미지를 분석하는 중..."})]});if(n)return w.jsxs(Ii,{children:[w.jsx("div",{style:{marginBottom:"10px"},children:"⚠️ AI 진단 중 오류 발생"}),w.jsx("div",{style:{fontSize:"12px",color:"#999"},children:n})]});if(!e)return w.jsx(Ii,{children:"🤖 AI 진단 결과가 없습니다"});if(!e.primary_detection)return w.jsx(Ii,{children:"🤖 AI가 병해충을 탐지하지 못했습니다"});try{const t=Math.round(100*e.primary_detection.confidence);return w.jsxs(Ei,{children:[w.jsx(Pi,{children:"AI 분석"}),w.jsxs(Fi,{children:[w.jsx(Ti,{children:"탐지 카테고리:"}),w.jsx(Ai,{children:e.category||"알 수 없음"})]}),w.jsxs(Fi,{children:[w.jsx(Ti,{children:"주요 진단:"}),w.jsx(Ai,{children:e.primary_detection.class_name||"알 수 없음"})]}),w.jsxs(Fi,{children:[w.jsx(Ti,{children:"신뢰도:"}),w.jsxs("div",{style:{flex:1},children:[w.jsxs(Ai,{children:[t,"%"]}),w.jsx(Ni,{confidence:t})]})]}),w.jsxs(Fi,{children:[w.jsx(Ti,{children:"총 탐지 수:"}),w.jsxs(Ai,{children:[e.total_detections||0,"개"]})]}),e.detections&&e.detections.length>1&&w.jsxs(Fi,{style:{flexDirection:"column",alignItems:"flex-start"},children:[w.jsx(Ti,{style:{marginBottom:"8px"},children:"추가 탐지 결과:"}),w.jsx("div",{style:{width:"100%"},children:e.detections.slice(1).map((e,t)=>w.jsxs("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:"14px",color:"#6c757d"},children:[w.jsx("span",{children:e.class_name||"알 수 없음"}),w.jsxs("span",{children:[Math.round(100*(e.confidence||0)),"%"]})]},t))})]})]})}catch(r){return console.error("AI 결과 렌더링 오류:",r),w.jsxs(Ii,{children:[w.jsx("div",{style:{marginBottom:"10px"},children:"⚠️ AI 결과 표시 중 오류 발생"}),w.jsx("div",{style:{fontSize:"12px",color:"#999"},children:"결과 데이터 형식이 올바르지 않습니다"})]})}},Oi=({files:e})=>e&&0!==e.length?w.jsx("div",{children:e.map((e,t)=>{const n=Li(e);return console.log(`🖼️ 이미지 ${t+1} URL:`,n),w.jsxs("div",{style:{marginBottom:"15px"},children:[w.jsx(vi,{src:n,alt:`신고 첨부 파일 ${t+1}`,onLoad:()=>{console.log(`✅ 이미지 ${t+1} 로드 성공:`,n)},onError:r=>{var o;console.error(`❌ 이미지 ${t+1} 로드 실패:`,n);const a=r.target;a.style.display="none";const i=document.createElement("div");i.style.cssText="\n                  padding: 40px 20px;\n                  background-color: #f8f9fa;\n                  border: 2px dashed #dee2e6;\n                  border-radius: 12px;\n                  text-align: center;\n                  color: #6c757d;\n                  font-size: 14px;\n                ",i.innerHTML=`\n                  <div style="margin-bottom: 10px;">📷</div>\n                  <div>이미지를 불러올 수 없습니다</div>\n                  <div style="font-size: 12px; margin-top: 5px; color: #999;">\n                    URL: ${n}\n                  </div>\n                  <div style="font-size: 11px; margin-top: 5px; color: #999;">\n                    원본 경로: ${e}\n                  </div>\n                `,null==(o=a.parentNode)||o.insertBefore(i,a.nextSibling)}}),w.jsxs(ki,{children:["첨부 파일 ",t+1]})]},t)})}):w.jsxs("div",{style:{padding:"40px 20px",backgroundColor:"#f8f9fa",border:"2px dashed #dee2e6",borderRadius:"12px",textAlign:"center",color:"#6c757d",fontSize:"14px"},children:[w.jsx("div",{style:{marginBottom:"10px"},children:"📷"}),w.jsx("div",{children:"첨부된 파일이 없습니다"})]}),Ri=()=>(console.log("📋 목업 데이터 사용"),{reports:[{title:"다저벌악",main_category:"병해충",sub_category:"병해",latitude:"35.7336908241694",longitude:"127.06573190851746",id:"mock_report_1"},{title:"제주도 태풍",main_category:"재난",sub_category:"태풍",latitude:"33.2375195759578",longitude:"126.515860406201",id:"mock_report_2"},{title:"전주 지진 발생",main_category:"재난",sub_category:"지진",latitude:"37.5665",longitude:"126.978",id:"mock_report_3"}]}),Mi=()=>{const[t,n]=e.useState([]),[r,o]=e.useState(null),[a,i]=e.useState(!0),[l,s]=e.useState(null),[c,d]=e.useState(!1),[u,p]=e.useState(null),[f,m]=e.useState(!1),[h,x]=e.useState(null);e.useEffect(()=>{(async()=>{try{i(!0);const e=await(async()=>{try{console.log("🔄 신고 목록 조회 시작...");const e=await fetch("http://baekend.onrender.com/reports/recent",{method:"GET",headers:{"Content-Type":"application/json",Accept:"application/json"},mode:"cors"});if(console.log("API 응답 상태:",e.status),!e.ok)return console.warn(`API 호출 실패: ${e.status}. 목업 데이터 사용.`),Ri();const t=e.headers.get("content-type");if(!t||!t.includes("application/json"))return console.warn("JSON 응답이 아님. 목업 데이터 사용."),Ri();const n=await e.json();return console.log("✅ 신고 목록 조회 성공:",n),n}catch(l){return console.error("❌ API 호출 실패:",l),console.log("🔄 목업 데이터로 대체"),Ri()}})();n(e.reports||[]),s(null),console.log("신고 목록 로드 완료:",e.reports)}catch(e){s("데이터를 불러올 수 없습니다."),console.error("신고 목록 로드 중 치명적 오류:",e)}finally{i(!1)}})()},[]);return e.useEffect(()=>{var e;r&&(console.log("=== 선택된 신고 상세 정보 ==="),console.log("제목:",r.title),console.log("파일 정보:",r.files),console.log("파일 개수:",(null==(e=r.files)?void 0:e.length)||0),r.files&&r.files.length>0&&r.files.forEach((e,t)=>{console.log(`파일 ${t+1}:`,e),console.log(`파일 ${t+1} URL:`,Li(e))}))},[r]),a?w.jsx(si,{children:w.jsx(zi,{children:"신고 정보를 불러오는 중..."})}):l?w.jsx(si,{children:w.jsx(Ci,{children:w.jsx("div",{children:l})})}):w.jsxs(si,{children:[w.jsxs(ci,{children:[w.jsx(di,{children:w.jsx(Jn,{})}),w.jsx(ui,{children:"신고상황 세부 페이지"})]}),w.jsx(pi,{children:w.jsx(Sn,{reports:t,onMarkerClick:async e=>{if(console.log("🗺️ 마커 클릭:",e),e){d(!0),m(!1),p(null),x(null),o(null);try{if(e.startsWith("temp_")||e.startsWith("mock_")){console.log("🎭 목업 데이터 사용:",e);const t={user_id:"mock_user_id",username:"테스트 사용자",main_category:"병해충",sub_category:"해충",title:e.includes("다저벌악")?"다저벌악":e.includes("태풍")?"제주도 태풍":e.includes("지진")?"전주 지진 발생":"테스트 신고",content:`이것은 ${e} 신고에 대한 상세 내용입니다.`,local:"테스트 지역",latitude:"37.5665",longitude:"126.978",files:[],created_at:(new Date).toISOString(),id:e};o(t),"병해충"===t.main_category&&(m(!0),setTimeout(()=>{p({category:"해충",total_detections:1,detections:[{class_id:2,class_name:"담배가루이",confidence:.9696160554885864,bbox:{x1:90.16170501708984,y1:64.73558044433594,x2:161.4823760986328,y2:155.4713897705078}}],primary_detection:{class_id:2,class_name:"담배가루이",confidence:.9696160554885864,bbox:{x1:90.16170501708984,y1:64.73558044433594,x2:161.4823760986328,y2:155.4713897705078}}}),m(!1)},2e3))}else{console.log("🌐 실제 API 호출 시작");const n=await(async e=>{try{console.log(`🔍 신고 상세 정보 조회: ${e}`);const n=[`http://baekend.onrender.com/damage-report/${e}`,`http://baekend.onrender.com/reports/${e}`,`http://baekend.onrender.com/report/${e}`,`http://baekend.onrender.com/damage-reports/${e}`];for(const e of n)try{console.log(`🔄 시도 중인 엔드포인트: ${e}`);const t=await fetch(e,{method:"GET",headers:{"Content-Type":"application/json",Accept:"application/json"},mode:"cors"});if(console.log(`📡 ${e} 응답 상태: ${t.status}`),t.ok){const e=await t.json();return console.log("✅ 신고 상세 정보 조회 성공:",e),e}if(404===t.status){console.log(`❌ ${e}에서 404 - 다음 엔드포인트 시도`);continue}console.warn(`⚠️ ${e}에서 ${t.status} 오류`);continue}catch(t){console.error(`❌ ${e} 호출 실패:`,t);continue}return console.warn("❌ 모든 엔드포인트에서 신고 상세 조회 실패"),null}catch(l){return console.error("❌ 신고 상세 조회 실패:",l),null}})(e);if(n){if(o(n),console.log("✅ 신고 상세 정보 로드 완료:",n),"병해충"===n.main_category){console.log("🤖 병해충 신고 감지 - AI 진단 시작"),m(!0);try{const{result:t,error:n}=await(async e=>{try{console.log(`🤖 AI 진단 요청: ${e}`);const t=await fetch(`http://baekend.onrender.com/damage-report/detect-damage/${e}`,{method:"GET",headers:{"Content-Type":"application/json",Accept:"application/json"},mode:"cors"});if(console.log("AI 진단 응답 상태:",t.status),!t.ok){const e=await t.text();console.warn(`❌ AI diagnosis API failed with status: ${t.status}, body: ${e}`);let n="AI 진단 서비스에 연결할 수 없습니다";return 404===t.status?n="해당 신고를 찾을 수 없습니다":500===t.status?n="AI 분석 중 서버 오류가 발생했습니다":t.status>=400&&t.status<500&&(n="잘못된 요청입니다"),{result:null,error:n}}const n=await t.json();return console.log("AI 진단 응답 데이터:",n),n.error?(console.warn(`❌ AI 진단 에러: ${n.error}`),{result:null,error:n.error}):n&&"object"==typeof n?n.primary_detection?(console.log("✅ AI 진단 성공:",n),{result:n,error:null}):(console.log("ℹ️ AI 진단 완료 - 탐지 결과 없음"),{result:{...n,primary_detection:null},error:null}):(console.warn("❌ AI 진단 결과 형식 오류"),{result:null,error:"응답 데이터 형식이 올바르지 않습니다"})}catch(l){console.error("❌ AI 진단 요청 실패:",l);let t="AI 진단 중 오류가 발생했습니다";return l instanceof TypeError&&l.message.includes("fetch")?t="네트워크 연결을 확인해주세요":l instanceof Error&&(t=l.message),{result:null,error:t}}})(e);p(t),x(n),t?console.log("🎉 AI 진단 성공:",t):n?console.log("⚠️ AI 진단 에러:",n):console.log("ℹ️ AI 진단 완료 - 탐지 결과 없음")}catch(t){console.error("AI 진단 중 예외 발생:",t),p(null),x("AI 진단 중 예상치 못한 오류가 발생했습니다")}finally{m(!1)}}}else{console.error("❌ 신고 상세 정보 로드 실패 - 목업 데이터 사용");const t={user_id:"fallback_user",username:"신고자",main_category:"병해충",sub_category:"해충",title:`신고 ID: ${e}`,content:`API 연결에 실패하여 임시 데이터를 표시합니다. 신고 ID: ${e}`,local:"위치 정보 불명",latitude:"37.5665",longitude:"126.978",files:[],created_at:(new Date).toISOString(),id:e};o(t),"병해충"===t.main_category&&(m(!0),setTimeout(()=>{p({category:"해충",total_detections:1,detections:[{class_id:0,class_name:"알 수 없는 병해충",confidence:.5,bbox:{x1:0,y1:0,x2:100,y2:100}}],primary_detection:{class_id:0,class_name:"알 수 없는 병해충",confidence:.5,bbox:{x1:0,y1:0,x2:100,y2:100}}}),m(!1)},1e3))}}}catch(n){console.error("❌ 마커 클릭 처리 중 전체 오류:",n)}finally{d(!1)}}else console.warn("❌ Report ID가 없습니다")}})}),w.jsxs(fi,{children:[r?w.jsxs(mi,{children:[w.jsx(hi,{children:w.jsx(xi,{style:{color:"#d32f2f",fontWeight:700,fontSize:"20px"},children:"📋 선택된 신고 상세 정보"})}),c?w.jsx(ji,{children:"상세 정보를 불러오는 중..."}):w.jsxs(w.Fragment,{children:[w.jsxs(hi,{children:[w.jsx(xi,{children:"신고 제목:"}),w.jsx(gi,{children:r.title})]}),w.jsxs(hi,{children:[w.jsx(xi,{children:"신고자:"}),w.jsx(gi,{children:r.username})]}),w.jsxs(hi,{children:[w.jsx(xi,{children:"카테고리:"}),w.jsxs(gi,{children:[r.main_category,r.sub_category&&` > ${r.sub_category}`]})]}),w.jsxs(hi,{children:[w.jsx(xi,{children:"발생 지역:"}),w.jsx(gi,{children:r.local})]}),w.jsxs(hi,{children:[w.jsx(xi,{children:"좌표:"}),w.jsxs(gi,{children:["위도: ",r.latitude,", 경도: ",r.longitude]})]}),w.jsxs(hi,{children:[w.jsx(xi,{children:"신고 일시:"}),w.jsx(gi,{children:new Date(r.created_at).toLocaleString("ko-KR")})]}),w.jsxs(Si,{children:[w.jsx(hi,{children:w.jsx(xi,{children:"신고 내용:"})}),w.jsx(ji,{style:{backgroundColor:"#f9f9f9",padding:"15px",borderRadius:"8px",marginTop:"10px"},children:r.content})]}),"병해충"===r.main_category&&w.jsxs(_i,{children:[w.jsx(hi,{children:w.jsx(xi,{children:"🤖 AI 진단 결과:"})}),w.jsx(Di,{aiResult:u,loading:f,error:h})]}),w.jsxs(bi,{children:[w.jsx(wi,{children:w.jsx(xi,{children:"첨부 파일:"})}),w.jsx(yi,{children:w.jsx(Oi,{files:r.files||[]})})]})]})]}):w.jsxs(mi,{children:[w.jsx(hi,{children:w.jsx(xi,{style:{color:"#666",fontWeight:600,fontSize:"18px"},children:"🗺️ 실시간 신고 현황"})}),w.jsxs(ji,{style:{textAlign:"center",padding:"40px 20px",color:"#666"},children:["지도의 마커를 클릭하면 해당 신고의 상세 정보를 확인할 수 있습니다.",w.jsx("br",{}),w.jsx("br",{}),w.jsxs("span",{style:{fontSize:"14px",color:"#999"},children:["💡 빨간색 마커: 재난/재해 신고 | 파란색 마커: 병해충 신고",w.jsx("br",{}),"🤖 병해충 신고의 경우 AI 진단 결과도 함께 확인할 수 있습니다."]})]})]}),t.length>0&&w.jsxs(Si,{children:[w.jsx(hi,{children:w.jsx(xi,{children:"최근 신고 현황:"})}),w.jsxs(ji,{children:["총 ",t.length,"건의 신고가 접수되어 지도에 표시되고 있습니다.",t.some(e=>e.latitude&&e.longitude)&&` (위치 정보가 있는 신고: ${t.filter(e=>e.latitude&&e.longitude).length}건)`,w.jsx("br",{}),w.jsxs("span",{style:{fontSize:"14px",color:"#666",marginTop:"8px",display:"inline-block"},children:["🤖 병해충 관련 신고: ",t.filter(e=>"병해충"===e.main_category).length,"건 (AI 진단 가능)"]})]})]})]})]})},$i=n.div`
   min-height: 100vh;
   background-color: #FFEFD5;
   padding: 5px 0;
-`,Ui=n.div`
+`,Bi=n.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -3178,7 +3178,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     margin-bottom: 1px;
     padding: 0 5px;
   }
-`,Wi=n.div`
+`,Ui=n.div`
   margin-top: 2px;
   margin-bottom: -50px;
   
@@ -3189,7 +3189,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-top: 1px;
   }
-`,Vi=n.h1`
+`,Wi=n.h1`
   font-size: 25px;
   font-weight: 700;
   color: #333;
@@ -3210,7 +3210,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 22px;
     margin: 8px 0 0 50px;
   }
-`,Hi=n.div`
+`,Vi=n.div`
   background-color: #FFEFD5;
   border-radius: 16px;
   padding: 60px;
@@ -3232,14 +3232,14 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 25px 15px;
     margin: 0 5px;
   }
-`,qi=n.div`
+`,Hi=n.div`
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 300px;
   font-size: 18px;
   color: #666;
-`,Qi=n.div`
+`,qi=n.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -3263,13 +3263,13 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
       background-color: #E6AB65;
     }
   }
-`,Ki=n.div`
+`,Qi=n.div`
   width: 100%;
   overflow-x: auto;
   border-radius: 12px;
   overflow: hidden;
   border: 2px solid #ddd;
-`,Yi=n.table`
+`,Ki=n.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 16px;
@@ -3281,9 +3281,9 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 12px;
   }
-`,Xi=n.thead`
+`,Yi=n.thead`
   background-color: #FBBF77;
-`,Gi=n.tr``,Ji=n.th`
+`,Xi=n.tr``,Gi=n.th`
   padding: 15px 10px;
   text-align: center;
   font-weight: 600;
@@ -3301,7 +3301,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     padding: 10px 6px;
   }
-`,Zi=n.tbody``,el=n.tr`
+`,Ji=n.tbody``,Zi=n.tr`
   background-color: white;
   border-bottom: 1px solid #eee;
   cursor: pointer;
@@ -3314,7 +3314,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   &:last-child {
     border-bottom: none;
   }
-`,tl=n.td`
+`,el=n.td`
   padding: 15px 10px;
   text-align: center;
   color: #555;
@@ -3350,21 +3350,21 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
       max-width: 150px;
     }
   }
-`;n(tl)`
+`;n(el)`
   color: #007bff;
   text-decoration: underline;
   
   &:hover {
     color: #0056b3;
   }
-`;const nl=n.div`
+`;const tl=n.div`
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 30px;
   gap: 8px;
   flex-wrap: wrap;
-`,rl=n.button.withConfig({shouldForwardProp:e=>"active"!==e})`
+`,nl=n.button.withConfig({shouldForwardProp:e=>"active"!==e})`
   width: 35px;
   height: 35px;
   border: 1px solid #ddd;
@@ -3384,10 +3384,10 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     cursor: not-allowed;
     opacity: 0.5;
   }
-`,ol=n(rl)`
+`,rl=n(nl)`
   border-radius: 8px;
   width: 40px;
-`,al=n.button`
+`,ol=n.button`
   margin-bottom: 20px;
   padding: 8px 16px;
   background-color: #FBBF77;
@@ -3406,7 +3406,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     background-color: #ccc;
     cursor: not-allowed;
   }
-`,il=n.div`
+`,al=n.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -3422,16 +3422,16 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     gap: 5px;
     text-align: center;
   }
-`,ll=n.div`
+`,il=n.div`
   margin-top: 10px;
   text-align: center;
   font-size: 14px;
   color: #666;
-`,sl=d.create({baseURL:"http://localhost:8000",timeout:1e4,headers:{"Content-Type":"application/json",Accept:"application/json"}}),cl=()=>{const t=a(),[n,r]=e.useState([]),[o,i]=e.useState(!0),[l,s]=e.useState(null),[c,u]=e.useState(null),[p,f]=e.useState(1),m=Math.ceil(n.length/10),h=10*(p-1),x=h+10,g=e.useMemo(()=>n.slice(h,x),[n,h,x]),b=async()=>{try{i(!0),s(null),f(1);const e=await(async()=>{try{console.log("🔄 세미나/행사 정보 조회 시작...");const e=await sl.get("/rda/ongoing-projects");if(console.log("API 응답 상태:",e.status),console.log("API 응답 데이터:",e.data),200===e.status&&Array.isArray(e.data))return console.log("✅ 세미나/행사 정보 조회 성공:",e.data.length,"건"),e.data;throw console.warn("❌ 예상과 다른 응답 형식:",e.data),new Error("Invalid response format")}catch(l){if(console.error("❌ 세미나/행사 정보 조회 실패:",l),d.isAxiosError(l)){if("ECONNABORTED"===l.code)throw new Error("요청 시간이 초과되었습니다.");if(l.response)throw new Error(`서버 오류: ${l.response.status}`);if(l.request)throw new Error("서버에 연결할 수 없습니다.")}throw new Error("알 수 없는 오류가 발생했습니다.")}})(),t=e.map((e,t)=>({id:t+1,title:e.title,link:e.link,date:(new Date).toLocaleDateString("ko-KR",{year:"2-digit",month:"2-digit",day:"2-digit"}).replace(/\./g,".").replace(/ /g,""),source:"농촌진흥청"}));r(t),u(new Date),console.log("✅ 지원 데이터 로드 완료:",t.length,"건")}catch(e){console.error("❌ 데이터 로드 실패:",e),s(e instanceof Error?e.message:"데이터를 불러올 수 없습니다."),r((console.log("📋 목업 데이터 사용"),[{id:1,title:"스마트 농업 현장 문제점 찾아 지원금 지원 세미나",link:"https://www.rda.go.kr/example1",date:"25.06.02",source:"농촌진흥청"},{id:2,title:"디지털 농업 기술 교육 프로그램 안내",link:"https://www.rda.go.kr/example2",date:"25.06.01",source:"농촌진흥청"},{id:3,title:"친환경 농업 지원 사업 설명회",link:"https://www.rda.go.kr/example3",date:"25.05.30",source:"농촌진흥청"},{id:4,title:"농업인 창업 지원 프로그램",link:"https://www.rda.go.kr/example4",date:"25.05.29",source:"농촌진흥청"},{id:5,title:"농작물 병해충 방제 기술 세미나",link:"https://www.rda.go.kr/example5",date:"25.05.28",source:"농촌진흥청"},{id:6,title:"첨단농업 기술 도입 지원사업 안내",link:"https://www.rda.go.kr/example6",date:"25.05.27",source:"농촌진흥청"},{id:7,title:"농업 6차 산업화 지원 프로그램",link:"https://www.rda.go.kr/example7",date:"25.05.26",source:"농촌진흥청"},{id:8,title:"스마트팜 구축 지원사업 설명회",link:"https://www.rda.go.kr/example8",date:"25.05.25",source:"농촌진흥청"},{id:9,title:"농업인 교육프로그램 운영 안내",link:"https://www.rda.go.kr/example9",date:"25.05.24",source:"농촌진흥청"},{id:10,title:"농촌융복합산업 활성화 세미나",link:"https://www.rda.go.kr/example10",date:"25.05.23",source:"농촌진흥청"},{id:11,title:"농업 신기술 보급사업 안내",link:"https://www.rda.go.kr/example11",date:"25.05.22",source:"농촌진흥청"},{id:12,title:"청년농업인 정착 지원 프로그램",link:"https://www.rda.go.kr/example12",date:"25.05.21",source:"농촌진흥청"},{id:13,title:"농업 빅데이터 활용 교육과정",link:"https://www.rda.go.kr/example13",date:"25.05.20",source:"농촌진흥청"},{id:14,title:"농업분야 인공지능 기술 세미나",link:"https://www.rda.go.kr/example14",date:"25.05.19",source:"농촌진흥청"},{id:15,title:"농산물 가공기술 교육 프로그램",link:"https://www.rda.go.kr/example15",date:"25.05.18",source:"농촌진흥청"}])),u(new Date)}finally{i(!1)}};e.useEffect(()=>{b()},[]);const y=e=>{e>=1&&e<=m&&e!==p&&(f(e),window.scrollTo({top:0,behavior:"smooth"}),console.log("📄 페이지 변경:",e))},v=()=>{console.log("🔄 데이터 새로고침"),b()};return w.jsxs(Bi,{children:[w.jsxs(Ui,{children:[w.jsx(Wi,{children:w.jsx(Jn,{})}),w.jsx(Vi,{children:"지원금 및 세미나"})]}),w.jsxs(Hi,{children:[w.jsxs(il,{children:[w.jsxs("div",{children:["총 ",n.length,"건의 세미나/행사 정보",c&&w.jsxs("span",{style:{marginLeft:"10px",fontSize:"12px"},children:["(마지막 업데이트: ",c.toLocaleTimeString("ko-KR"),")"]})]}),w.jsx(al,{onClick:v,disabled:o,children:o?"새로고침 중...":"🔄 새로고침"})]}),l&&w.jsxs(Qi,{children:[w.jsxs("div",{children:["⚠️ ",l]}),w.jsx("div",{style:{fontSize:"14px",marginTop:"5px"},children:"목업 데이터로 표시됩니다."}),w.jsx("button",{onClick:v,children:"다시 시도"})]}),o?w.jsx(qi,{children:"🔄 세미나/행사 정보를 불러오는 중..."}):w.jsxs(w.Fragment,{children:[w.jsx(Ki,{children:w.jsxs(Yi,{children:[w.jsx(Xi,{children:w.jsxs(Gi,{children:[w.jsx(Ji,{children:"번호"}),w.jsx(Ji,{children:"제목"}),w.jsx(Ji,{children:"출처"}),w.jsx(Ji,{children:"등록일"})]})}),w.jsx(Zi,{children:g.length>0?g.map((e,n)=>w.jsxs(el,{onClick:()=>(e=>{e.link&&e.link.startsWith("http")?(window.open(e.link,"_blank","noopener,noreferrer"),console.log("🔗 외부 링크 열기:",e.link)):(t("/SupportDetail",{state:{supportItem:e}}),console.log("📄 내부 페이지 이동:",e.title))})(e),children:[w.jsx(tl,{children:h+n+1}),w.jsx(tl,{title:e.title,children:e.title}),w.jsx(tl,{children:e.source}),w.jsx(tl,{children:e.date})]},e.id)):w.jsx(el,{children:w.jsx(tl,{colSpan:4,style:{textAlign:"center",padding:"40px"},children:"표시할 데이터가 없습니다."})})})]})}),m>1&&w.jsxs(w.Fragment,{children:[w.jsxs(nl,{children:[w.jsx(ol,{onClick:()=>{p>1&&y(p-1)},disabled:1===p,children:"←"}),(()=>{const e=[];if(m<=7)for(let t=1;t<=m;t++)e.push(t);else{let t=Math.max(1,p-3),n=Math.min(m,t+7-1);n-t<6&&(t=Math.max(1,n-7+1));for(let r=t;r<=n;r++)e.push(r)}return e})().map(e=>w.jsx(rl,{active:p===e,onClick:()=>y(e),children:e},e)),w.jsx(ol,{onClick:()=>{p<m&&y(p+1)},disabled:p===m,children:"→"})]}),w.jsx(ll,{children:n.length>0&&w.jsxs(w.Fragment,{children:[h+1,"-",Math.min(x,n.length)," / 총 ",n.length,"개 (페이지 ",p,"/",m,")"]})})]})]})]})]})},dl=n.div`
+`,ll=d.create({baseURL:API_BASE_URL,timeout:1e4,headers:{"Content-Type":"application/json",Accept:"application/json"}}),sl=()=>{const t=a(),[n,r]=e.useState([]),[o,i]=e.useState(!0),[l,s]=e.useState(null),[c,u]=e.useState(null),[p,f]=e.useState(1),m=Math.ceil(n.length/10),h=10*(p-1),x=h+10,g=e.useMemo(()=>n.slice(h,x),[n,h,x]),b=async()=>{try{i(!0),s(null),f(1);const e=await(async()=>{try{console.log("🔄 세미나/행사 정보 조회 시작...");const e=await ll.get("/rda/ongoing-projects");if(console.log("API 응답 상태:",e.status),console.log("API 응답 데이터:",e.data),200===e.status&&Array.isArray(e.data))return console.log("✅ 세미나/행사 정보 조회 성공:",e.data.length,"건"),e.data;throw console.warn("❌ 예상과 다른 응답 형식:",e.data),new Error("Invalid response format")}catch(l){if(console.error("❌ 세미나/행사 정보 조회 실패:",l),d.isAxiosError(l)){if("ECONNABORTED"===l.code)throw new Error("요청 시간이 초과되었습니다.");if(l.response)throw new Error(`서버 오류: ${l.response.status}`);if(l.request)throw new Error("서버에 연결할 수 없습니다.")}throw new Error("알 수 없는 오류가 발생했습니다.")}})(),t=e.map((e,t)=>({id:t+1,title:e.title,link:e.link,date:(new Date).toLocaleDateString("ko-KR",{year:"2-digit",month:"2-digit",day:"2-digit"}).replace(/\./g,".").replace(/ /g,""),source:"농촌진흥청"}));r(t),u(new Date),console.log("✅ 지원 데이터 로드 완료:",t.length,"건")}catch(e){console.error("❌ 데이터 로드 실패:",e),s(e instanceof Error?e.message:"데이터를 불러올 수 없습니다."),r((console.log("📋 목업 데이터 사용"),[{id:1,title:"스마트 농업 현장 문제점 찾아 지원금 지원 세미나",link:"https://www.rda.go.kr/example1",date:"25.06.02",source:"농촌진흥청"},{id:2,title:"디지털 농업 기술 교육 프로그램 안내",link:"https://www.rda.go.kr/example2",date:"25.06.01",source:"농촌진흥청"},{id:3,title:"친환경 농업 지원 사업 설명회",link:"https://www.rda.go.kr/example3",date:"25.05.30",source:"농촌진흥청"},{id:4,title:"농업인 창업 지원 프로그램",link:"https://www.rda.go.kr/example4",date:"25.05.29",source:"농촌진흥청"},{id:5,title:"농작물 병해충 방제 기술 세미나",link:"https://www.rda.go.kr/example5",date:"25.05.28",source:"농촌진흥청"},{id:6,title:"첨단농업 기술 도입 지원사업 안내",link:"https://www.rda.go.kr/example6",date:"25.05.27",source:"농촌진흥청"},{id:7,title:"농업 6차 산업화 지원 프로그램",link:"https://www.rda.go.kr/example7",date:"25.05.26",source:"농촌진흥청"},{id:8,title:"스마트팜 구축 지원사업 설명회",link:"https://www.rda.go.kr/example8",date:"25.05.25",source:"농촌진흥청"},{id:9,title:"농업인 교육프로그램 운영 안내",link:"https://www.rda.go.kr/example9",date:"25.05.24",source:"농촌진흥청"},{id:10,title:"농촌융복합산업 활성화 세미나",link:"https://www.rda.go.kr/example10",date:"25.05.23",source:"농촌진흥청"},{id:11,title:"농업 신기술 보급사업 안내",link:"https://www.rda.go.kr/example11",date:"25.05.22",source:"농촌진흥청"},{id:12,title:"청년농업인 정착 지원 프로그램",link:"https://www.rda.go.kr/example12",date:"25.05.21",source:"농촌진흥청"},{id:13,title:"농업 빅데이터 활용 교육과정",link:"https://www.rda.go.kr/example13",date:"25.05.20",source:"농촌진흥청"},{id:14,title:"농업분야 인공지능 기술 세미나",link:"https://www.rda.go.kr/example14",date:"25.05.19",source:"농촌진흥청"},{id:15,title:"농산물 가공기술 교육 프로그램",link:"https://www.rda.go.kr/example15",date:"25.05.18",source:"농촌진흥청"}])),u(new Date)}finally{i(!1)}};e.useEffect(()=>{b()},[]);const y=e=>{e>=1&&e<=m&&e!==p&&(f(e),window.scrollTo({top:0,behavior:"smooth"}),console.log("📄 페이지 변경:",e))},v=()=>{console.log("🔄 데이터 새로고침"),b()};return w.jsxs($i,{children:[w.jsxs(Bi,{children:[w.jsx(Ui,{children:w.jsx(Jn,{})}),w.jsx(Wi,{children:"지원금 및 세미나"})]}),w.jsxs(Vi,{children:[w.jsxs(al,{children:[w.jsxs("div",{children:["총 ",n.length,"건의 세미나/행사 정보",c&&w.jsxs("span",{style:{marginLeft:"10px",fontSize:"12px"},children:["(마지막 업데이트: ",c.toLocaleTimeString("ko-KR"),")"]})]}),w.jsx(ol,{onClick:v,disabled:o,children:o?"새로고침 중...":"🔄 새로고침"})]}),l&&w.jsxs(qi,{children:[w.jsxs("div",{children:["⚠️ ",l]}),w.jsx("div",{style:{fontSize:"14px",marginTop:"5px"},children:"목업 데이터로 표시됩니다."}),w.jsx("button",{onClick:v,children:"다시 시도"})]}),o?w.jsx(Hi,{children:"🔄 세미나/행사 정보를 불러오는 중..."}):w.jsxs(w.Fragment,{children:[w.jsx(Qi,{children:w.jsxs(Ki,{children:[w.jsx(Yi,{children:w.jsxs(Xi,{children:[w.jsx(Gi,{children:"번호"}),w.jsx(Gi,{children:"제목"}),w.jsx(Gi,{children:"출처"}),w.jsx(Gi,{children:"등록일"})]})}),w.jsx(Ji,{children:g.length>0?g.map((e,n)=>w.jsxs(Zi,{onClick:()=>(e=>{e.link&&e.link.startsWith("http")?(window.open(e.link,"_blank","noopener,noreferrer"),console.log("🔗 외부 링크 열기:",e.link)):(t("/SupportDetail",{state:{supportItem:e}}),console.log("📄 내부 페이지 이동:",e.title))})(e),children:[w.jsx(el,{children:h+n+1}),w.jsx(el,{title:e.title,children:e.title}),w.jsx(el,{children:e.source}),w.jsx(el,{children:e.date})]},e.id)):w.jsx(Zi,{children:w.jsx(el,{colSpan:4,style:{textAlign:"center",padding:"40px"},children:"표시할 데이터가 없습니다."})})})]})}),m>1&&w.jsxs(w.Fragment,{children:[w.jsxs(tl,{children:[w.jsx(rl,{onClick:()=>{p>1&&y(p-1)},disabled:1===p,children:"←"}),(()=>{const e=[];if(m<=7)for(let t=1;t<=m;t++)e.push(t);else{let t=Math.max(1,p-3),n=Math.min(m,t+7-1);n-t<6&&(t=Math.max(1,n-7+1));for(let r=t;r<=n;r++)e.push(r)}return e})().map(e=>w.jsx(nl,{active:p===e,onClick:()=>y(e),children:e},e)),w.jsx(rl,{onClick:()=>{p<m&&y(p+1)},disabled:p===m,children:"→"})]}),w.jsx(il,{children:n.length>0&&w.jsxs(w.Fragment,{children:[h+1,"-",Math.min(x,n.length)," / 총 ",n.length,"개 (페이지 ",p,"/",m,")"]})})]})]})]})]})},cl=n.div`
   min-height: 100vh;
   background-color: #FFEFD5;
   padding: 5px 0;
-`,ul=n.div`
+`,dl=n.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -3456,7 +3456,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     margin-bottom: 1px;
     padding: 0 5px;
   }
-`,pl=n.div`
+`,ul=n.div`
   margin-top: 2px;
   margin-bottom: -50px;
   
@@ -3467,7 +3467,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-top: 1px;
   }
-`,fl=n.h1`
+`,pl=n.h1`
   font-size: 25px;
   font-weight: 700;
   color: #333;
@@ -3488,7 +3488,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 22px;
     margin: 8px 0 0 50px;
   }
-`,ml=n.div`
+`,fl=n.div`
   background-color: #FFEFD5;
   border-radius: 16px;
   padding: 50px;
@@ -3510,7 +3510,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 25px 15px;
     margin: 0 5px;
   }
-`,hl=n.div`
+`,ml=n.div`
   margin-bottom: 35px;
   padding-bottom: 25px;
   border-bottom: 1px solid white;
@@ -3529,7 +3529,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     margin-bottom: 20px;
     padding-bottom: 12px;
   }
-`,xl=n.h2`
+`,hl=n.h2`
   font-size: 22px;
   font-weight: 700;
   color: #333;
@@ -3550,7 +3550,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 16px;
     margin-bottom: 8px;
   }
-`,gl=n.p`
+`,xl=n.p`
   font-size: 16px;
   color: #666;
   margin: 0;
@@ -3566,7 +3566,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 13px;
   }
-`,bl=n.div`
+`,gl=n.div`
   margin-bottom: 35px;
   
   @media (max-width: 1024px) {
@@ -3580,17 +3580,17 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-bottom: 20px;
   }
-`,wl=n.table`
+`,bl=n.table`
   width: 100%;
   border-collapse: collapse;
   border: 2px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
-`,yl=n.tr`
+`,wl=n.tr`
   &:nth-child(even) {
     background-color: #f9f9f9;
   }
-`,vl=n.td`
+`,yl=n.td`
   background-color: #FBBF77;
   padding: 15px 20px;
   font-weight: 600;
@@ -3608,7 +3608,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     width: 100px;
     font-size: 14px;
   }
-`,kl=n.td`
+`,vl=n.td`
   padding: 15px 20px;
   color: #555;
   font-size: 16px;
@@ -3622,7 +3622,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 10px 12px;
     font-size: 14px;
   }
-`,Sl=n.div`
+`,kl=n.div`
   margin-bottom: 35px;
   
   @media (max-width: 1024px) {
@@ -3656,7 +3656,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 15px;
     margin-bottom: 12px;
   }
-`;const jl=n.p`
+`;const Sl=n.p`
   font-size: 16px;
   color: #555;
   line-height: 1.6;
@@ -3676,7 +3676,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 13px;
     margin-bottom: 8px;
   }
-`,zl=n.div`
+`,jl=n.div`
   margin-top: 35px;
   padding-top: 25px;
   border-top: 1px solid white;
@@ -3695,7 +3695,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     margin-top: 20px;
     padding-top: 12px;
   }
-`,Cl=n.div`
+`,zl=n.div`
   background-color: #FBBF77;
   border-radius: 8px;
   padding: 15px 20px;
@@ -3714,7 +3714,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 10px 12px;
     gap: 8px;
   }
-`,_l=n.div`
+`,Cl=n.div`
   display: flex;
   align-items: center;
   gap: 10px;
@@ -3722,14 +3722,14 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 768px) {
     width: 100%;
   }
-`,El=n.span`
+`,_l=n.span`
   font-size: 20px;
   color: #333;
   
   @media (max-width: 480px) {
     font-size: 18px;
   }
-`,Pl=n.span`
+`,El=n.span`
   color: #333;
   font-weight: 500;
   font-size: 16px;
@@ -3737,7 +3737,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 14px;
   }
-`,Fl=n.div`
+`,Pl=n.div`
   display: flex;
   gap: 10px;
   
@@ -3749,7 +3749,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     gap: 8px;
   }
-`,Tl=n.button`
+`,Fl=n.button`
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -3768,11 +3768,11 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 6px 12px;
     font-size: 12px;
   }
-`,Al=()=>{const e={subtitle:"스마트 농업 현장 문제점 찾아 지원금 지급 공고",manager:"농업지원과",contact:"063-222-2222",period:"2025-06-02~2025-06-30",announcementNumber:"김제시 공고 제2025-626호",content:"'25년 소규모 사업장 방지시설 설치 지원사업 시행(추가) 공고\n\n- 사물인터넷(IoT) 측정기기 부착 지원 -\n\n「대기환경보전법」 제81조의 규정에 따라 추진하는 2025년도 소규모 대기오염 방지시설 설치지원 사업시설지원터넷 (IoT) 측정기기 부착지원」을 아래와 같이 추가로 공고오니 사업 참여 희망 사업장은 공고내용에 따라 신청서를 제출하 여 주시기 바랍니다.\n\n2025년 6월 2일\n\n김 제 시 장",attachmentName:"지원금제안서양식표.hwpx",attachmentSize:"58 kb"};return w.jsxs(dl,{children:[w.jsxs(ul,{children:[w.jsx(pl,{children:w.jsx(Jn,{})}),w.jsx(fl,{children:"지원금 및 세미나"})]}),w.jsx(on,{children:w.jsxs(ml,{children:[w.jsxs(hl,{children:[w.jsx(xl,{children:e.subtitle}),w.jsx(gl,{children:"농업지원과 2025.06.03"})]}),w.jsx(bl,{children:w.jsx(wl,{children:w.jsxs("tbody",{children:[w.jsxs(yl,{children:[w.jsx(vl,{children:"담당부서"}),w.jsx(kl,{children:e.manager})]}),w.jsxs(yl,{children:[w.jsx(vl,{children:"연락처"}),w.jsx(kl,{children:e.contact})]}),w.jsxs(yl,{children:[w.jsx(vl,{children:"공시/공고 기간"}),w.jsx(kl,{children:e.period})]})]})})}),w.jsxs(Sl,{children:[w.jsx(jl,{children:e.announcementNumber}),w.jsx(jl,{style:{whiteSpace:"pre-line"},children:e.content})]}),w.jsx(zl,{children:w.jsxs(Cl,{children:[w.jsxs(_l,{children:[w.jsx(El,{children:"📄"}),w.jsxs(Pl,{children:[e.attachmentName," [",e.attachmentSize,"]"]})]}),w.jsxs(Fl,{children:[w.jsx(Tl,{children:"다운로드"}),w.jsx(Tl,{children:"미리보기"})]})]})})]})})]})},Nl=d.create({baseURL:"http://localhost:8000",headers:{"Content-Type":"application/json"}});Nl.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`),e},e=>Promise.reject(e));const Il=n.div`
+`,Tl=()=>{const e={subtitle:"스마트 농업 현장 문제점 찾아 지원금 지급 공고",manager:"농업지원과",contact:"063-222-2222",period:"2025-06-02~2025-06-30",announcementNumber:"김제시 공고 제2025-626호",content:"'25년 소규모 사업장 방지시설 설치 지원사업 시행(추가) 공고\n\n- 사물인터넷(IoT) 측정기기 부착 지원 -\n\n「대기환경보전법」 제81조의 규정에 따라 추진하는 2025년도 소규모 대기오염 방지시설 설치지원 사업시설지원터넷 (IoT) 측정기기 부착지원」을 아래와 같이 추가로 공고오니 사업 참여 희망 사업장은 공고내용에 따라 신청서를 제출하 여 주시기 바랍니다.\n\n2025년 6월 2일\n\n김 제 시 장",attachmentName:"지원금제안서양식표.hwpx",attachmentSize:"58 kb"};return w.jsxs(cl,{children:[w.jsxs(dl,{children:[w.jsx(ul,{children:w.jsx(Jn,{})}),w.jsx(pl,{children:"지원금 및 세미나"})]}),w.jsx(on,{children:w.jsxs(fl,{children:[w.jsxs(ml,{children:[w.jsx(hl,{children:e.subtitle}),w.jsx(xl,{children:"농업지원과 2025.06.03"})]}),w.jsx(gl,{children:w.jsx(bl,{children:w.jsxs("tbody",{children:[w.jsxs(wl,{children:[w.jsx(yl,{children:"담당부서"}),w.jsx(vl,{children:e.manager})]}),w.jsxs(wl,{children:[w.jsx(yl,{children:"연락처"}),w.jsx(vl,{children:e.contact})]}),w.jsxs(wl,{children:[w.jsx(yl,{children:"공시/공고 기간"}),w.jsx(vl,{children:e.period})]})]})})}),w.jsxs(kl,{children:[w.jsx(Sl,{children:e.announcementNumber}),w.jsx(Sl,{style:{whiteSpace:"pre-line"},children:e.content})]}),w.jsx(jl,{children:w.jsxs(zl,{children:[w.jsxs(Cl,{children:[w.jsx(_l,{children:"📄"}),w.jsxs(El,{children:[e.attachmentName," [",e.attachmentSize,"]"]})]}),w.jsxs(Pl,{children:[w.jsx(Fl,{children:"다운로드"}),w.jsx(Fl,{children:"미리보기"})]})]})})]})})]})},Al=d.create({baseURL:"https://baekend.onrender.com",headers:{"Content-Type":"application/json"}});Al.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`),e},e=>Promise.reject(e));const Nl=n.div`
   min-height: 100vh;
   background-color: #FFEFD5;
   padding: 5px 0;
-`,Ll=n.div`
+`,Il=n.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -3797,7 +3797,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     margin-bottom: 1px;
     padding: 0 5px;
   }
-`,Dl=n.div`
+`,Ll=n.div`
   margin-top: 2px;
   margin-bottom: -50px;
   
@@ -3808,7 +3808,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-top: 1px;
   }
-`,Ol=n.h1`
+`,Dl=n.h1`
   font-size: 25px;
   font-weight: 700;
   color: #333;
@@ -3829,7 +3829,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 22px;
     margin: 8px 0 0 50px;
   }
-`,Rl=n.div`
+`,Ol=n.div`
   background-color: #FFEFD5;
   border-radius: 16px;
   padding: 30px 60px 60px 60px;
@@ -3851,7 +3851,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 10px 15px 25px 15px;
     margin: 0 5px;
   }
-`,Ml=n.div`
+`,Rl=n.div`
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -3860,11 +3860,11 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 768px) {
     justify-content: center;
   }
-`,$l=n.div`
+`,Ml=n.div`
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
-`,Bl=n.button.withConfig({shouldForwardProp:e=>"$active"!==e})`
+`,$l=n.button.withConfig({shouldForwardProp:e=>"$active"!==e})`
   padding: 12px 24px;
   border: none;
   font-size: 16px;
@@ -3903,7 +3903,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 10px 20px;
     font-size: 14px;
   }
-`,Ul=n.button`
+`,Bl=n.button`
   padding: 10px 20px;
   background-color: #FBBF77;
   color: white;
@@ -3922,13 +3922,13 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 8px 16px;
     font-size: 12px;
   }
-`,Wl=n.div`
+`,Ul=n.div`
   width: 100%;
   overflow-x: auto;
   border-radius: 12px;
   overflow: hidden;
   border: 2px solid #ddd;
-`,Vl=n.table`
+`,Wl=n.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 16px;
@@ -3940,9 +3940,9 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 12px;
   }
-`,Hl=n.thead`
+`,Vl=n.thead`
   background-color: #FBBF77;
-`,ql=n.tr``,Ql=n.th`
+`,Hl=n.tr``,ql=n.th`
   padding: 15px 10px;
   text-align: center;
   font-weight: 600;
@@ -3960,7 +3960,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     padding: 10px 6px;
   }
-`,Kl=n.tbody``,Yl=n.tr`
+`,Ql=n.tbody``,Kl=n.tr`
   background-color: white;
   border-bottom: 1px solid #eee;
   cursor: pointer;
@@ -3973,7 +3973,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   &:last-child {
     border-bottom: none;
   }
-`,Xl=n.td`
+`,Yl=n.td`
   padding: 15px 10px;
   text-align: center;
   color: #555;
@@ -4003,12 +4003,12 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
       padding-left: 10px;
     }
   }
-`,Gl=n.div`
+`,Xl=n.div`
   text-align: center;
   padding: 40px;
   font-size: 16px;
   color: #666;
-`,Jl=n.div`
+`,Gl=n.div`
   text-align: center;
   padding: 40px;
   font-size: 16px;
@@ -4017,19 +4017,19 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   border: 1px solid #f5c6cb;
   border-radius: 8px;
   margin: 20px 0;
-`,Zl=n.div`
+`,Jl=n.div`
   text-align: center;
   padding: 40px;
   font-size: 16px;
   color: #666;
-`,es=n.div`
+`,Zl=n.div`
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 30px;
   gap: 8px;
   flex-wrap: wrap;
-`,ts=n.button.withConfig({shouldForwardProp:e=>"active"!==e})`
+`,es=n.button.withConfig({shouldForwardProp:e=>"active"!==e})`
   width: 35px;
   height: 35px;
   border: 1px solid #ddd;
@@ -4049,22 +4049,22 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     cursor: not-allowed;
     opacity: 0.5;
   }
-`,ns=n(ts)`
+`,ts=n(es)`
   border-radius: 8px;
   width: 40px;
-`,rs=n.div`
+`,ns=n.div`
   margin-top: 10px;
   text-align: center;
   font-size: 14px;
   color: #666;
-`,os=()=>{const t=a(),[n,r]=e.useState("전체보기"),[o,i]=e.useState([]),[l,s]=e.useState(!0),[c,d]=e.useState(null),[u,p]=e.useState(1),f=Math.ceil(o.length/10),m=10*(u-1),h=m+10,x=e.useMemo(()=>o.slice(m,h),[o,m,h]),g=async e=>{var r,o,a,l,c,u;s(!0),d(null),p(1);try{let t;if("전체보기"===e)t=await(async()=>(await Nl.get("/posts")).data)();else{if(!localStorage.getItem("accessToken"))return d("지역별 게시글을 보려면 로그인이 필요합니다."),void s(!1);t=await(async()=>(await Nl.get("/post/local")).data)()}i(t.posts||[])}catch(f){console.error("게시글 로드 오류:",f);let e="게시글을 불러오는 중 오류가 발생했습니다.";401===(null==(r=f.response)?void 0:r.status)?(e="로그인이 필요합니다.","지역별"===n&&setTimeout(()=>{t("/login")},2e3)):500===(null==(o=f.response)?void 0:o.status)?e="서버 내부 오류가 발생했습니다.":(null==(l=null==(a=f.response)?void 0:a.data)?void 0:l.message)?e=f.response.data.message:(null==(u=null==(c=f.response)?void 0:c.data)?void 0:u.detail)&&(e=f.response.data.detail),d(e)}finally{s(!1)}};e.useEffect(()=>{g("전체보기")},[]);const b=e=>{e>=1&&e<=f&&e!==u&&(p(e),window.scrollTo({top:0,behavior:"smooth"}))},y=e=>{try{const t=new Date(e),n=t.getFullYear().toString().slice(-2),r=(t.getMonth()+1).toString().padStart(2,"0");return`${n}.${r}.${t.getDate().toString().padStart(2,"0")}`}catch{return e}};return w.jsxs(Il,{children:[w.jsxs(Ll,{children:[w.jsx(Dl,{children:w.jsx(Jn,{})}),w.jsx(Ol,{children:"커뮤니티"})]}),w.jsxs(Rl,{children:[w.jsx(Ml,{children:w.jsx(Ul,{onClick:()=>{if(!localStorage.getItem("accessToken"))return alert("글쓰기를 하려면 로그인이 필요합니다."),void t("/login");t("/CommunityWrite")},children:"글쓰기"})}),w.jsx($l,{children:["전체보기","지역별"].map(e=>w.jsx(Bl,{$active:n===e,onClick:()=>(e=>{r(e),g(e)})(e),disabled:l,children:e},e))}),l&&w.jsx(Gl,{children:"게시글을 불러오는 중..."}),c&&w.jsx(Jl,{children:c}),!l&&!c&&w.jsxs(w.Fragment,{children:[w.jsx(Wl,{children:w.jsxs(Vl,{children:[w.jsx(Hl,{children:w.jsxs(ql,{children:[w.jsx(Ql,{children:"번호"}),w.jsx(Ql,{children:"제목"}),w.jsx(Ql,{children:"작성자"}),w.jsx(Ql,{children:"작성일"}),w.jsx(Ql,{children:"좋아요 수"})]})}),w.jsx(Kl,{children:0===x.length?w.jsx("tr",{children:w.jsx(Xl,{colSpan:5,children:w.jsx(Zl,{children:"게시글이 없습니다."})})}):x.map(e=>w.jsxs(Yl,{onClick:()=>{return n=e.id,void t(`/CommunityDetail/${n}`);var n},children:[w.jsx(Xl,{children:e.no}),w.jsx(Xl,{children:e.title}),w.jsx(Xl,{children:e.username}),w.jsx(Xl,{children:y(e.created_at)}),w.jsx(Xl,{children:e.likes})]},e.id))})]})}),f>1&&w.jsxs(w.Fragment,{children:[w.jsxs(es,{children:[w.jsx(ns,{onClick:()=>{u>1&&b(u-1)},disabled:1===u,children:"←"}),(()=>{const e=[];if(f<=7)for(let t=1;t<=f;t++)e.push(t);else{let t=Math.max(1,u-3),n=Math.min(f,t+7-1);n-t<6&&(t=Math.max(1,n-7+1));for(let r=t;r<=n;r++)e.push(r)}return e})().map(e=>w.jsx(ts,{active:u===e,onClick:()=>b(e),children:e},e)),w.jsx(ns,{onClick:()=>{u<f&&b(u+1)},disabled:u===f,children:"→"})]}),w.jsx(rs,{children:o.length>0&&w.jsxs(w.Fragment,{children:[m+1,"-",Math.min(h,o.length)," / 총 ",o.length,"개 (페이지 ",u,"/",f,")"]})})]})]})]})]})},as=n.div`
+`,rs=()=>{const t=a(),[n,r]=e.useState("전체보기"),[o,i]=e.useState([]),[l,s]=e.useState(!0),[c,d]=e.useState(null),[u,p]=e.useState(1),f=Math.ceil(o.length/10),m=10*(u-1),h=m+10,x=e.useMemo(()=>o.slice(m,h),[o,m,h]),g=async e=>{var r,o,a,l,c,u;s(!0),d(null),p(1);try{let t;if("전체보기"===e)t=await(async()=>(await Al.get("/posts")).data)();else{if(!localStorage.getItem("accessToken"))return d("지역별 게시글을 보려면 로그인이 필요합니다."),void s(!1);t=await(async()=>(await Al.get("/post/local")).data)()}i(t.posts||[])}catch(f){console.error("게시글 로드 오류:",f);let e="게시글을 불러오는 중 오류가 발생했습니다.";401===(null==(r=f.response)?void 0:r.status)?(e="로그인이 필요합니다.","지역별"===n&&setTimeout(()=>{t("/login")},2e3)):500===(null==(o=f.response)?void 0:o.status)?e="서버 내부 오류가 발생했습니다.":(null==(l=null==(a=f.response)?void 0:a.data)?void 0:l.message)?e=f.response.data.message:(null==(u=null==(c=f.response)?void 0:c.data)?void 0:u.detail)&&(e=f.response.data.detail),d(e)}finally{s(!1)}};e.useEffect(()=>{g("전체보기")},[]);const b=e=>{e>=1&&e<=f&&e!==u&&(p(e),window.scrollTo({top:0,behavior:"smooth"}))},y=e=>{try{const t=new Date(e),n=t.getFullYear().toString().slice(-2),r=(t.getMonth()+1).toString().padStart(2,"0");return`${n}.${r}.${t.getDate().toString().padStart(2,"0")}`}catch{return e}};return w.jsxs(Nl,{children:[w.jsxs(Il,{children:[w.jsx(Ll,{children:w.jsx(Jn,{})}),w.jsx(Dl,{children:"커뮤니티"})]}),w.jsxs(Ol,{children:[w.jsx(Rl,{children:w.jsx(Bl,{onClick:()=>{if(!localStorage.getItem("accessToken"))return alert("글쓰기를 하려면 로그인이 필요합니다."),void t("/login");t("/CommunityWrite")},children:"글쓰기"})}),w.jsx(Ml,{children:["전체보기","지역별"].map(e=>w.jsx($l,{$active:n===e,onClick:()=>(e=>{r(e),g(e)})(e),disabled:l,children:e},e))}),l&&w.jsx(Xl,{children:"게시글을 불러오는 중..."}),c&&w.jsx(Gl,{children:c}),!l&&!c&&w.jsxs(w.Fragment,{children:[w.jsx(Ul,{children:w.jsxs(Wl,{children:[w.jsx(Vl,{children:w.jsxs(Hl,{children:[w.jsx(ql,{children:"번호"}),w.jsx(ql,{children:"제목"}),w.jsx(ql,{children:"작성자"}),w.jsx(ql,{children:"작성일"}),w.jsx(ql,{children:"좋아요 수"})]})}),w.jsx(Ql,{children:0===x.length?w.jsx("tr",{children:w.jsx(Yl,{colSpan:5,children:w.jsx(Jl,{children:"게시글이 없습니다."})})}):x.map(e=>w.jsxs(Kl,{onClick:()=>{return n=e.id,void t(`/CommunityDetail/${n}`);var n},children:[w.jsx(Yl,{children:e.no}),w.jsx(Yl,{children:e.title}),w.jsx(Yl,{children:e.username}),w.jsx(Yl,{children:y(e.created_at)}),w.jsx(Yl,{children:e.likes})]},e.id))})]})}),f>1&&w.jsxs(w.Fragment,{children:[w.jsxs(Zl,{children:[w.jsx(ts,{onClick:()=>{u>1&&b(u-1)},disabled:1===u,children:"←"}),(()=>{const e=[];if(f<=7)for(let t=1;t<=f;t++)e.push(t);else{let t=Math.max(1,u-3),n=Math.min(f,t+7-1);n-t<6&&(t=Math.max(1,n-7+1));for(let r=t;r<=n;r++)e.push(r)}return e})().map(e=>w.jsx(es,{active:u===e,onClick:()=>b(e),children:e},e)),w.jsx(ts,{onClick:()=>{u<f&&b(u+1)},disabled:u===f,children:"→"})]}),w.jsx(ns,{children:o.length>0&&w.jsxs(w.Fragment,{children:[m+1,"-",Math.min(h,o.length)," / 총 ",o.length,"개 (페이지 ",u,"/",f,")"]})})]})]})]})]})},os=n.div`
   text-align: center;
   margin: 40px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-`,is=n.span`
+`,as=n.span`
   font-size: 14px;
   color: #555;
   
@@ -4075,7 +4075,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 12px;
   }
-`,ls=n.button`
+`,is=n.button`
   background: none;
   border: none;
   cursor: pointer;
@@ -4107,18 +4107,18 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
       height: 30px;
     }
   }
-`,ss=n.span`
+`,ls=n.span`
   font-size: 12px;
   color: #999;
   
   @media (max-width: 480px) {
     font-size: 11px;
   }
-`,cs=({isLiked:e,likeCount:t,onLike:n,showText:r=!0,showCount:o=!0})=>w.jsxs(as,{children:[r&&w.jsx(is,{children:"글 내용이 마음에 드셨다면"}),w.jsx(ls,{onClick:n,children:w.jsx("img",{src:e?"/images/ffavv.png":"/images/fav.png",alt:e?"좋아요 취소":"좋아요"})}),o&&w.jsxs(ss,{children:["좋아요 ",t,"개"]})]}),ds="http://localhost:8000",us=d.create({baseURL:ds,headers:{"Content-Type":"application/json"}});us.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`,console.log("🔑 Authorization 헤더 추가:",`Bearer ${t.substring(0,20)}...`)),e},e=>Promise.reject(e)),us.interceptors.response.use(e=>e,e=>{var t;return 401===(null==(t=e.response)?void 0:t.status)&&(console.log("❌ 401 오류 - 토큰 제거"),localStorage.removeItem("accessToken"),localStorage.removeItem("refreshToken"),localStorage.removeItem("userInfo"),localStorage.removeItem("likedPosts")),Promise.reject(e)});const ps=async e=>{try{return(await d.get(`${ds}/posts/${e}`)).data}catch(t){throw console.error("공개 게시글 조회 오류:",t),t}},fs=async e=>{try{return(await d.get(`${ds}/posts/${e}/comments`)).data}catch(t){throw console.error("공개 댓글 조회 오류:",t),t}},ms=()=>{const e=localStorage.getItem("accessToken");if(!e)return null;try{const t=JSON.parse(atob(e.split(".")[1]));return t.user_id||t.sub||null}catch{return null}},hs=e=>{try{const t=JSON.parse(atob(e.split(".")[1])),n=Date.now()/1e3;return t.exp>n}catch{return!1}},xs=n.div`
+`,ss=({isLiked:e,likeCount:t,onLike:n,showText:r=!0,showCount:o=!0})=>w.jsxs(os,{children:[r&&w.jsx(as,{children:"글 내용이 마음에 드셨다면"}),w.jsx(is,{onClick:n,children:w.jsx("img",{src:e?"/images/ffavv.png":"/images/fav.png",alt:e?"좋아요 취소":"좋아요"})}),o&&w.jsxs(ls,{children:["좋아요 ",t,"개"]})]}),cs="https://baekend.onrender.com",ds=d.create({baseURL:cs,headers:{"Content-Type":"application/json"}});ds.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`,console.log("🔑 Authorization 헤더 추가:",`Bearer ${t.substring(0,20)}...`)),e},e=>Promise.reject(e)),ds.interceptors.response.use(e=>e,e=>{var t;return 401===(null==(t=e.response)?void 0:t.status)&&(console.log("❌ 401 오류 - 토큰 제거"),localStorage.removeItem("accessToken"),localStorage.removeItem("refreshToken"),localStorage.removeItem("userInfo"),localStorage.removeItem("likedPosts")),Promise.reject(e)});const us=async e=>{try{return(await d.get(`${cs}/posts/${e}`)).data}catch(t){throw console.error("공개 게시글 조회 오류:",t),t}},ps=async e=>{try{return(await d.get(`${cs}/posts/${e}/comments`)).data}catch(t){throw console.error("공개 댓글 조회 오류:",t),t}},fs=()=>{const e=localStorage.getItem("accessToken");if(!e)return null;try{const t=JSON.parse(atob(e.split(".")[1]));return t.user_id||t.sub||null}catch{return null}},ms=e=>{try{const t=JSON.parse(atob(e.split(".")[1])),n=Date.now()/1e3;return t.exp>n}catch{return!1}},hs=n.div`
   min-height: 100vh;
   background-color: #FFEFD5;
   padding: 5px 0;
-`,gs=n.div`
+`,xs=n.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -4143,7 +4143,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     margin-bottom: 1px;
     padding: 0 5px;
   }
-`,bs=n.div`
+`,gs=n.div`
   margin-top: 2px;
   margin-bottom: -50px;
   
@@ -4154,7 +4154,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-top: 1px;
   }
-`,ws=n.h1`
+`,bs=n.h1`
   font-size: 25px;
   font-weight: 700;
   color: #333;
@@ -4175,7 +4175,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 22px;
     margin: 8px 0 0 50px;
   }
-`,ys=n.div`
+`,ws=n.div`
   background-color: #FFEFD5;
   border-radius: 16px;
   padding: 60px;
@@ -4197,12 +4197,12 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 25px 15px;
     margin: 0 5px;
   }
-`,vs=n.div`
+`,ys=n.div`
   text-align: center;
   padding: 40px;
   font-size: 16px;
   color: #666;
-`,ks=n.div`
+`,vs=n.div`
   text-align: center;
   padding: 40px;
   font-size: 16px;
@@ -4211,7 +4211,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   border: 1px solid #f5c6cb;
   border-radius: 8px;
   margin: 20px 0;
-`,Ss=n.div`
+`,ks=n.div`
   background-color: white;
   border-radius: 12px;
   padding: 30px;
@@ -4225,7 +4225,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     padding: 15px;
   }
-`,js=n.div`
+`,Ss=n.div`
   background-color: #FBBF77;
   border-radius: 8px;
   padding: 20px;
@@ -4238,12 +4238,12 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     padding: 12px;
   }
-`,zs=n.div`
+`,js=n.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 10px;
-`,Cs=n.h2`
+`,zs=n.h2`
   font-size: 18px;
   font-weight: 600;
   color: #333;
@@ -4257,7 +4257,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 14px;
   }
-`,_s=n.button`
+`,Cs=n.button`
   background-color: #dc3545;
   color: white;
   border: none;
@@ -4281,7 +4281,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 4px 8px;
     font-size: 11px;
   }
-`,Es=n.div`
+`,_s=n.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -4298,9 +4298,9 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     align-items: flex-start;
     gap: 5px;
   }
-`,Ps=n.div`
+`,Es=n.div`
   margin-bottom: 30px;
-`,Fs=n.div`
+`,Ps=n.div`
   font-size: 14px;
   line-height: 1.6;
   color: #555;
@@ -4314,21 +4314,21 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 12px;
   }
-`,Ts=n.div`
+`,Fs=n.div`
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin: 15px 0;
-`,As=n.span`
+`,Ts=n.span`
   background-color: #FFEFD5;
   color: #8B4513;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
   border: 1px solid #ddd;
-`,Ns=n.div`
+`,As=n.div`
   margin-top: 40px;
-`,Is=n.div`
+`,Ns=n.div`
   font-size: 16px;
   font-weight: 600;
   color: #333;
@@ -4337,18 +4337,18 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 768px) {
     font-size: 14px;
   }
-`,Ls=n.div`
+`,Is=n.div`
   border-bottom: 1px solid #eee;
   padding: 15px 0;
   
   &:last-child {
     border-bottom: none;
   }
-`,Ds=n.div`
+`,Ls=n.div`
   font-size: 12px;
   color: #666;
   margin-bottom: 8px;
-`,Os=n.div`
+`,Ds=n.div`
   font-size: 14px;
   color: #555;
   line-height: 1.5;
@@ -4356,11 +4356,11 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 768px) {
     font-size: 13px;
   }
-`,Rs=n.div`
+`,Os=n.div`
   display: flex;
   gap: 8px;
   margin-top: 8px;
-`,Ms=n.button`
+`,Rs=n.button`
   background: none;
   border: none;
   color: #666;
@@ -4379,7 +4379,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     color: #ccc;
     cursor: not-allowed;
   }
-`,$s=n.textarea`
+`,Ms=n.textarea`
   width: 100%;
   min-height: 60px;
   padding: 8px;
@@ -4395,18 +4395,18 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     outline: none;
     border-color: #FBBF77;
   }
-`,Bs=n.div`
+`,$s=n.div`
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-`,Us=n.button`
+`,Bs=n.button`
   padding: 6px 12px;
   border: none;
   border-radius: 4px;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-`,Ws=n(Us)`
+`,Us=n(Bs)`
   background-color: #FBBF77;
   color: white;
   
@@ -4418,14 +4418,14 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     background-color: #ccc;
     cursor: not-allowed;
   }
-`,Vs=n(Us)`
+`,Ws=n(Bs)`
   background-color: #6c757d;
   color: white;
   
   &:hover {
     background-color: #5a6268;
   }
-`,Hs=n.div`
+`,Vs=n.div`
   background-color: #f8f8f8;
   border-radius: 8px;
   padding: 20px;
@@ -4434,7 +4434,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 768px) {
     padding: 15px;
   }
-`,qs=n.textarea`
+`,Hs=n.textarea`
   width: 100%;
   min-height: 80px;
   padding: 12px;
@@ -4460,7 +4460,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 13px;
     padding: 10px;
   }
-`,Qs=n.div`
+`,qs=n.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -4471,10 +4471,10 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     gap: 10px;
     align-items: stretch;
   }
-`,Ks=n.span`
+`,Qs=n.span`
   font-size: 12px;
   color: #999;
-`,Ys=n.button`
+`,Ks=n.button`
   padding: 8px 16px;
   background-color: #FBBF77;
   color: white;
@@ -4496,7 +4496,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     padding: 10px;
   }
-`,Xs=n.div`
+`,Ys=n.div`
   display: flex;
   justify-content: space-between;
   margin-top: 40px;
@@ -4505,7 +4505,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     flex-direction: column;
   }
-`,Gs=n.button`
+`,Xs=n.button`
   flex: 1;
   padding: 12px 20px;
   border: none;
@@ -4518,21 +4518,21 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     padding: 10px;
   }
-`,Js=n(Gs)`
+`,Gs=n(Xs)`
   background-color: #FBBF77;
   color: white;
   
   &:hover {
     background-color: #E6AB65;
   }
-`,Zs=n(Gs)`
+`,Js=n(Xs)`
   background-color: #FBBF77;
   color: white;
   
   &:hover {
     background-color: #E6AB65;
   }
-`,ec=n.div`
+`,Zs=n.div`
   background-color: #fff3cd;
   border: 1px solid #ffeaa7;
   border-radius: 8px;
@@ -4558,7 +4558,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
       background-color: #E6AB65;
     }
   }
-`,tc=n.div`
+`,ec=n.div`
   position: fixed;
   top: 0;
   left: 0;
@@ -4569,7 +4569,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   justify-content: center;
   align-items: center;
   z-index: 10000;
-`,nc=n.div`
+`,tc=n.div`
   background-color: white;
   border-radius: 12px;
   padding: 30px;
@@ -4580,37 +4580,37 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     padding: 20px;
   }
-`,rc=n.h3`
+`,nc=n.h3`
   font-size: 18px;
   font-weight: 600;
   color: #333;
   margin-bottom: 15px;
   text-align: center;
-`,oc=n.p`
+`,rc=n.p`
   font-size: 14px;
   color: #666;
   margin-bottom: 25px;
   text-align: center;
   line-height: 1.5;
-`,ac=n.div`
+`,oc=n.div`
   display: flex;
   gap: 10px;
   justify-content: center;
-`,ic=n.button`
+`,ac=n.button`
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-`,lc=n(ic)`
+`,ic=n(ac)`
   background-color: #6c757d;
   color: white;
   
   &:hover {
     background-color: #5a6268;
   }
-`,sc=n(ic)`
+`,lc=n(ac)`
   background-color: #dc3545;
   color: white;
   
@@ -4622,11 +4622,11 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     background-color: #ccc;
     cursor: not-allowed;
   }
-`,cc=()=>{const{id:t}=i(),n=a(),r=q(),{isAuthenticated:o,user:l,likedPosts:s}=Y(e=>e.auth),[c,u]=e.useState(null),[p,f]=e.useState([]),[m,h]=e.useState(""),[x,g]=e.useState(0),[b,y]=e.useState(!0),[v,k]=e.useState(null),[S,j]=e.useState(!1),[z,C]=e.useState(!1),[_,E]=e.useState(!1),[P,F]=e.useState(null),[T,A]=e.useState(""),[N,I]=e.useState(!1),[L,D]=e.useState(!1),[O,R]=e.useState(null),M=t&&s[t]||!1,$=e=>{if(console.log("=== 댓글 권한 체크 ==="),console.log("isAuthenticated:",o),console.log("user:",l),console.log("comment.user_id:",e.user_id),console.log("comment.username:",e.username),!o)return console.log("❌ 인증되지 않음"),!1;if(l&&l.user_id&&"loading..."!==l.username){const t=String(l.user_id),n=String(e.user_id),r=t===n&&""!==t;return console.log("Redux 사용자 ID로 비교:",t,"===",n,"=",r),r}const t=ms();if(t){const n=String(e.user_id),r=t===n;return console.log("토큰 사용자 ID로 비교:",t,"===",n,"=",r),r}return console.log("❌ 사용자 ID를 확인할 수 없음"),!1},B=()=>{if(console.log("=== 게시글 권한 체크 ==="),console.log("isAuthenticated:",o),console.log("post:",c),console.log("user:",l),!o||!c)return console.log("❌ 인증되지 않음 또는 게시글 없음"),!1;if(l&&l.user_id&&"loading..."!==l.username){const e=String(l.user_id),t=String(c.user_id),n=e===t&&""!==e;return console.log("Redux 사용자 ID로 비교:",e,"===",t,"=",n),n}const e=ms();if(e){const t=String(c.user_id),n=e===t;return console.log("토큰 사용자 ID로 비교:",e,"===",t,"=",n),n}return console.log("❌ 사용자 ID를 확인할 수 없음"),!1},U=async e=>{console.log("🔄 서버와 좋아요 상태 동기화 시작");const t=localStorage.getItem("accessToken");if(t&&hs(t))try{const t=await(async e=>{var t,n,r,o;try{if(console.log("🎯 개별 좋아요 상태 조회 시도:",e),!localStorage.getItem("accessToken"))throw new Error("토큰이 없습니다");const t=await us.get(`/posts/${e}/like-status/me`);return console.log("✅ 개별 좋아요 상태 응답:",t.data),t.data}catch(v){throw console.error("❌ 내 좋아요 상태 조회 오류:",v),console.error("오류 상세:",{status:null==(t=v.response)?void 0:t.status,message:(null==(r=null==(n=v.response)?void 0:n.data)?void 0:r.detail)||v.message,headers:null==(o=v.config)?void 0:o.headers}),v}})(e);console.log("📡 서버에서 받은 좋아요 데이터:",t),r(kt({postId:e,liked:t.liked}));const n=JSON.parse(localStorage.getItem("likedPosts")||"{}");n[e]=t.liked,localStorage.setItem("likedPosts",JSON.stringify(n)),g(t.total_likes),console.log("✅ 서버 동기화 완료:",{postId:e,liked:t.liked,totalLikes:t.total_likes})}catch(n){console.error("❌ 서버 동기화 실패:",n)}else console.log("❌ 유효하지 않은 토큰")};e.useEffect(()=>{console.log("=== 컴포넌트 마운트 - 인증 상태 복원 ==="),r(yt());const e=localStorage.getItem("accessToken"),t=localStorage.getItem("userInfo");if(console.log("토큰 존재:",!!e),console.log("사용자 정보 존재:",!!t),e&&t&&hs(e))try{const e=JSON.parse(t);console.log("✅ 인증 상태 복원 완료:",e.username)}catch(n){console.error("❌ 사용자 정보 파싱 오류:",n),r(gt()),localStorage.clear()}else console.log("❌ 유효하지 않은 인증 정보 - 로그아웃 처리"),r(gt()),localStorage.removeItem("accessToken"),localStorage.removeItem("refreshToken"),localStorage.removeItem("userInfo")},[r]),e.useEffect(()=>{(async()=>{if(o&&(!l||!l.user_id||"loading..."===l.username)){console.log("🔄 사용자 정보 로드 시도");try{const e=await(async()=>{if(!localStorage.getItem("accessToken"))return null;try{return(await us.get("/mypage")).data.mypage}catch(v){return console.error("사용자 정보 가져오기 실패:",v),null}})();if(e){const t={user_id:ms()||"unknown",username:e.username,email:e.email};r(wt(t)),console.log("✅ 사용자 정보 로드 완료:",t)}}catch(e){console.error("❌ 사용자 정보 로드 실패:",e)}}})()},[o,l,r]);const W=async e=>{console.log("=== 좋아요 상태 로드 시작 ==="),console.log("postId:",e),console.log("isAuthenticated:",o);try{if(o){const t=localStorage.getItem("accessToken");if(t&&hs(t))return console.log("✅ 로그인된 사용자 - 개별 좋아요 상태 조회"),void(await U(e));console.log("❌ 토큰 무효 - 로그아웃 처리"),r(gt()),localStorage.clear()}console.log("👤 비로그인 사용자 - 공개 좋아요 수 조회");const t=await(async e=>{try{return(await d.get(`${ds}/posts/${e}/like-status`)).data}catch(v){throw console.error("공개 좋아요 상태 조회 오류:",v),v}})(e);g(t.total_likes||0)}catch(t){console.error("❌ 좋아요 상태 로드 실패:",t),g(0)}},V=async e=>{var t;try{let a;if(o)try{a=await(async e=>{try{return(await us.get(`/posts/${e}/comments`)).data}catch(v){throw console.error("댓글 조회 오류:",v),v}})(e)}catch(n){if(401!==(null==(t=n.response)?void 0:t.status))throw n;r(gt()),localStorage.clear(),a=await fs(e)}else a=await fs(e);f(a.comments||[])}catch(a){console.error("댓글 로드 실패:",a),f([])}},H=async()=>{var e,n,a,i,l,s,c;if(!t)return k("게시글 ID가 없습니다."),void y(!1);try{let n;if(y(!0),k(null),o)try{n=await(async e=>{try{return(await us.get(`/posts/${e}`)).data}catch(v){throw console.error("게시글 조회 오류:",v),v}})(t)}catch(d){if(401!==(null==(e=d.response)?void 0:e.status))throw d;r(gt()),localStorage.clear(),n=await ps(t)}else n=await ps(t);u(n),await Promise.all([W(t),V(t)])}catch(p){console.error("게시글 로드 오류:",p);let e="게시글을 불러오는 중 오류가 발생했습니다.";404===(null==(n=p.response)?void 0:n.status)?e="존재하지 않는 게시글입니다.":500===(null==(a=p.response)?void 0:a.status)?e="서버 내부 오류가 발생했습니다.":"ERR_NETWORK"===p.code?e="서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.":(null==(l=null==(i=p.response)?void 0:i.data)?void 0:l.message)?e=p.response.data.message:(null==(c=null==(s=p.response)?void 0:s.data)?void 0:c.detail)&&(e=p.response.data.detail),k(e)}finally{y(!1)}};e.useEffect(()=>{(async()=>{r(yt()),await new Promise(e=>setTimeout(e,100)),await H()})()},[t,r]),e.useEffect(()=>{(async()=>{o&&t&&(console.log("🔄 인증 상태 변경 감지 - 서버와 동기화"),await U(t))})()},[o,t]);const Q=()=>{F(null),A("")},K=async e=>{var t,o;if(confirm("정말로 이 댓글을 삭제하시겠습니까?"))try{D(!0),R(e),await(async e=>{try{return(await us.delete(`/comments/${e}`)).data}catch(v){throw console.error("댓글 삭제 오류:",v),v}})(e),f(t=>t.filter(t=>t.id!==e)),alert("댓글이 삭제되었습니다.")}catch(a){console.error("댓글 삭제 오류:",a),401===(null==(t=a.response)?void 0:t.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):403===(null==(o=a.response)?void 0:o.status)?alert("댓글 삭제 권한이 없습니다."):alert("댓글 삭제 중 오류가 발생했습니다.")}finally{D(!1),R(null)}},X=e=>{try{const t=new Date(e),n=t.getFullYear(),r=(t.getMonth()+1).toString().padStart(2,"0"),o=t.getDate().toString().padStart(2,"0"),a=t.getHours().toString().padStart(2,"0");return`${n}.${r}.${o} ${a}:${t.getMinutes().toString().padStart(2,"0")}`}catch{return e}},G=()=>{n("/CommunityList")},J=()=>{H()};return e.useEffect(()=>{const e=e=>{"Escape"===e.key&&P&&Q()};return document.addEventListener("keydown",e),()=>document.removeEventListener("keydown",e)},[P]),e.useEffect(()=>{console.log("=== Redux 상태 변경 감지 ==="),console.log("isAuthenticated:",o),console.log("user:",l),console.log("likedPosts:",s),console.log("현재 게시글 좋아요 상태 (isLiked):",M),console.log("localStorage likedPosts:",localStorage.getItem("likedPosts")),console.log("토큰에서 추출한 user_id:",ms()),console.log("현재 게시글:",c),console.log("댓글 수:",p.length),p.length>0&&(console.log("첫 번째 댓글:",p[0]),console.log("첫 번째 댓글 소유자 여부:",$(p[0]))),c&&console.log("게시글 소유자 여부:",B())},[o,l,s,M,c,p]),b?w.jsxs(xs,{children:[w.jsxs(gs,{children:[w.jsx(bs,{children:w.jsx(Jn,{})}),w.jsx(ws,{children:"커뮤니티"})]}),w.jsx(ys,{children:w.jsx(vs,{children:"게시글을 불러오는 중..."})})]}):v?w.jsxs(xs,{children:[w.jsxs(gs,{children:[w.jsx(bs,{children:w.jsx(Jn,{})}),w.jsx(ws,{children:"커뮤니티"})]}),w.jsxs(ys,{children:[w.jsx(ks,{children:v}),w.jsxs(Xs,{children:[w.jsx(Js,{onClick:G,children:"목록으로 돌아가기"}),w.jsx(Zs,{onClick:J,children:"다시 시도"})]})]})]}):c?w.jsxs(xs,{children:[w.jsxs(gs,{children:[w.jsx(bs,{children:w.jsx(Jn,{})}),w.jsx(ws,{children:"커뮤니티"})]}),w.jsxs(ys,{children:[w.jsxs(Ss,{children:[w.jsxs(js,{children:[w.jsxs(zs,{children:[w.jsx(Cs,{children:c.title}),B()&&w.jsx(_s,{onClick:()=>{C(!0)},disabled:_,children:_?"삭제 중...":"삭제"})]}),w.jsx(Es,{children:w.jsxs("span",{children:[X(c.created_at),"     작성자: ",c.username,"     좋아요: ",x]})})]}),w.jsxs(Ps,{children:[w.jsx(Fs,{children:c.content}),c.tags&&c.tags.length>0&&w.jsx(Ts,{children:c.tags.map((e,t)=>w.jsxs(As,{children:["#",e]},t))})]})]}),w.jsxs(Ns,{children:[w.jsxs(Is,{children:["💬 댓글 ",p.length]}),p.map(e=>w.jsxs(Ls,{children:[w.jsxs(Ds,{children:[e.username," · ",X(e.created_at)]}),P===e.id?w.jsxs("div",{children:[w.jsx($s,{value:T,onChange:e=>A(e.target.value),maxLength:3e3,disabled:N,placeholder:"댓글을 수정해주세요."}),w.jsxs("div",{style:{fontSize:"12px",color:"#999",marginBottom:"8px"},children:[T.length,"/3000"]}),w.jsxs(Bs,{children:[w.jsx(Vs,{onClick:Q,disabled:N,children:"취소"}),w.jsx(Ws,{onClick:()=>(async e=>{var t,o,a,i,l;if(T.trim())try{I(!0),console.log("댓글 수정 시도:",{commentId:e,content:T.trim()});const t={content:T.trim()},n=await us.patch(`/comments/${e}`,t);console.log("댓글 수정 성공:",n.data),f(t=>t.map(t=>t.id===e?{...t,content:T.trim()}:t)),F(null),A(""),alert("댓글이 수정되었습니다.")}catch(s){console.error("댓글 수정 오류:",s),console.error("오류 상세:",{status:null==(t=s.response)?void 0:t.status,data:null==(o=s.response)?void 0:o.data,message:s.message}),401===(null==(a=s.response)?void 0:a.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):403===(null==(i=s.response)?void 0:i.status)?alert("댓글 수정 권한이 없습니다."):422===(null==(l=s.response)?void 0:l.status)?alert("요청 데이터 형식이 올바르지 않습니다."):alert("댓글 수정 중 오류가 발생했습니다.")}finally{I(!1)}else alert("댓글 내용을 입력해주세요.")})(e.id),disabled:N||!T.trim(),children:N?"저장 중...":"저장"})]})]}):w.jsxs("div",{children:[w.jsx(Os,{children:e.content}),o&&$(e)&&w.jsxs(Rs,{children:[w.jsx(Ms,{onClick:()=>(e=>{F(e.id),A(e.content)})(e),disabled:null!==P||L,children:"수정"}),w.jsx(Ms,{onClick:()=>K(e.id),disabled:null!==P||L||O===e.id,children:O===e.id?"삭제 중...":"삭제"})]})]})]},e.id)),o?w.jsxs(Hs,{children:[w.jsx(qs,{placeholder:"댓글을 남겨주세요.",value:m,onChange:e=>h(e.target.value),maxLength:3e3,disabled:null!==P}),w.jsxs(Qs,{children:[w.jsxs(Ks,{children:[m.length,"/3000"]}),w.jsx(Ys,{onClick:async()=>{var e;if(m.trim()&&t){if(!o)return alert("로그인이 필요합니다."),void n("/login");try{j(!0);const e={post_id:t,content:m.trim()},n=await(async e=>{try{return(await us.post("/comments",e)).data}catch(v){throw console.error("댓글 작성 오류:",v),v}})(e),r={id:n.id,user_id:n.user_id,username:n.username,content:n.content,created_at:n.created_at};f(e=>[...e,r]),h("")}catch(a){console.error("댓글 작성 오류:",a),401===(null==(e=a.response)?void 0:e.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):alert("댓글 작성 중 오류가 발생했습니다.")}finally{j(!1)}}},disabled:S||!m.trim()||null!==P,children:S?"등록 중...":"등록"})]})]}):w.jsxs(ec,{children:[w.jsx("p",{children:"댓글을 작성하려면 로그인이 필요합니다."}),w.jsx("button",{onClick:()=>{n("/login")},children:"로그인하기"})]})]}),w.jsx(cs,{isLiked:M,likeCount:x,onLike:async()=>{var e;if(t){if(!o)return alert("로그인이 필요합니다."),void n("/login");try{console.log("=== 좋아요 토글 시작 ==="),console.log("현재 좋아요 상태:",M);const e=await(async e=>{try{return(await us.post(`/posts/${e}/like`)).data}catch(v){throw console.error("좋아요 토글 오류:",v),v}})(t);console.log("🎯 좋아요 토글 API 응답:",e),r(kt({postId:t,liked:e.liked}));const n=JSON.parse(localStorage.getItem("likedPosts")||"{}");n[t]=e.liked,localStorage.setItem("likedPosts",JSON.stringify(n)),g(e.total_likes),console.log("✅ 좋아요 토글 완료:",{postId:t,liked:e.liked,totalLikes:e.total_likes})}catch(a){console.error("❌ 좋아요 처리 오류:",a),401===(null==(e=a.response)?void 0:e.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):alert("좋아요 처리 중 오류가 발생했습니다.")}}},showText:!0,showCount:!0}),w.jsxs(Xs,{children:[w.jsx(Js,{onClick:G,children:"목록"}),w.jsx(Zs,{onClick:()=>{if(!o)return alert("글쓰기를 하려면 로그인이 필요합니다."),void n("/login");n("/CommunityWrite")},children:"글쓰기"})]})]}),z&&w.jsx(tc,{children:w.jsxs(nc,{children:[w.jsx(rc,{children:"게시글 삭제"}),w.jsxs(oc,{children:["정말로 이 게시글을 삭제하시겠습니까?",w.jsx("br",{}),"삭제된 게시글은 복구할 수 없습니다."]}),w.jsxs(ac,{children:[w.jsx(lc,{onClick:()=>{C(!1)},children:"취소"}),w.jsx(sc,{onClick:async()=>{var e,o;if(t)try{E(!0);const e=await(async e=>{try{return(await us.delete(`/posts/${e}`)).data}catch(v){throw console.error("게시글 삭제 오류:",v),v}})(t);console.log("삭제 성공:",e.message),r(St(t));const o=JSON.parse(localStorage.getItem("likedPosts")||"{}");delete o[t],localStorage.setItem("likedPosts",JSON.stringify(o)),alert("게시글이 삭제되었습니다."),n("/CommunityList")}catch(a){console.error("게시글 삭제 오류:",a),401===(null==(e=a.response)?void 0:e.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):403===(null==(o=a.response)?void 0:o.status)?alert("삭제 권한이 없습니다."):alert("게시글 삭제 중 오류가 발생했습니다.")}finally{E(!1),C(!1)}},disabled:_,children:_?"삭제 중...":"삭제"})]})]})})]}):w.jsxs(xs,{children:[w.jsxs(gs,{children:[w.jsx(bs,{children:w.jsx(Jn,{})}),w.jsx(ws,{children:"커뮤니티"})]}),w.jsxs(ys,{children:[w.jsx(ks,{children:"게시글을 찾을 수 없습니다."}),w.jsx(Xs,{children:w.jsx(Js,{onClick:G,children:"목록으로 돌아가기"})})]})]})},dc=d.create({baseURL:"http://localhost:8000",headers:{"Content-Type":"application/json"}});dc.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`),e},e=>Promise.reject(e));const uc=[{id:1,name:"서울특별시"},{id:2,name:"부산광역시"},{id:3,name:"대구광역시"},{id:4,name:"인천광역시"},{id:5,name:"광주광역시"},{id:6,name:"대전광역시"},{id:7,name:"울산광역시"},{id:8,name:"세종특별자치시"},{id:9,name:"경기도"},{id:10,name:"강원도"},{id:11,name:"충청북도"},{id:12,name:"충청남도"},{id:13,name:"전라북도"},{id:14,name:"전라남도"},{id:15,name:"경상북도"},{id:16,name:"경상남도"},{id:17,name:"제주특별자치도"}],pc=n.div`
+`,sc=()=>{const{id:t}=i(),n=a(),r=q(),{isAuthenticated:o,user:l,likedPosts:s}=Y(e=>e.auth),[c,u]=e.useState(null),[p,f]=e.useState([]),[m,h]=e.useState(""),[x,g]=e.useState(0),[b,y]=e.useState(!0),[v,k]=e.useState(null),[S,j]=e.useState(!1),[z,C]=e.useState(!1),[_,E]=e.useState(!1),[P,F]=e.useState(null),[T,A]=e.useState(""),[N,I]=e.useState(!1),[L,D]=e.useState(!1),[O,R]=e.useState(null),M=t&&s[t]||!1,$=e=>{if(console.log("=== 댓글 권한 체크 ==="),console.log("isAuthenticated:",o),console.log("user:",l),console.log("comment.user_id:",e.user_id),console.log("comment.username:",e.username),!o)return console.log("❌ 인증되지 않음"),!1;if(l&&l.user_id&&"loading..."!==l.username){const t=String(l.user_id),n=String(e.user_id),r=t===n&&""!==t;return console.log("Redux 사용자 ID로 비교:",t,"===",n,"=",r),r}const t=fs();if(t){const n=String(e.user_id),r=t===n;return console.log("토큰 사용자 ID로 비교:",t,"===",n,"=",r),r}return console.log("❌ 사용자 ID를 확인할 수 없음"),!1},B=()=>{if(console.log("=== 게시글 권한 체크 ==="),console.log("isAuthenticated:",o),console.log("post:",c),console.log("user:",l),!o||!c)return console.log("❌ 인증되지 않음 또는 게시글 없음"),!1;if(l&&l.user_id&&"loading..."!==l.username){const e=String(l.user_id),t=String(c.user_id),n=e===t&&""!==e;return console.log("Redux 사용자 ID로 비교:",e,"===",t,"=",n),n}const e=fs();if(e){const t=String(c.user_id),n=e===t;return console.log("토큰 사용자 ID로 비교:",e,"===",t,"=",n),n}return console.log("❌ 사용자 ID를 확인할 수 없음"),!1},U=async e=>{console.log("🔄 서버와 좋아요 상태 동기화 시작");const t=localStorage.getItem("accessToken");if(t&&ms(t))try{const t=await(async e=>{var t,n,r,o;try{if(console.log("🎯 개별 좋아요 상태 조회 시도:",e),!localStorage.getItem("accessToken"))throw new Error("토큰이 없습니다");const t=await ds.get(`/posts/${e}/like-status/me`);return console.log("✅ 개별 좋아요 상태 응답:",t.data),t.data}catch(v){throw console.error("❌ 내 좋아요 상태 조회 오류:",v),console.error("오류 상세:",{status:null==(t=v.response)?void 0:t.status,message:(null==(r=null==(n=v.response)?void 0:n.data)?void 0:r.detail)||v.message,headers:null==(o=v.config)?void 0:o.headers}),v}})(e);console.log("📡 서버에서 받은 좋아요 데이터:",t),r(kt({postId:e,liked:t.liked}));const n=JSON.parse(localStorage.getItem("likedPosts")||"{}");n[e]=t.liked,localStorage.setItem("likedPosts",JSON.stringify(n)),g(t.total_likes),console.log("✅ 서버 동기화 완료:",{postId:e,liked:t.liked,totalLikes:t.total_likes})}catch(n){console.error("❌ 서버 동기화 실패:",n)}else console.log("❌ 유효하지 않은 토큰")};e.useEffect(()=>{console.log("=== 컴포넌트 마운트 - 인증 상태 복원 ==="),r(yt());const e=localStorage.getItem("accessToken"),t=localStorage.getItem("userInfo");if(console.log("토큰 존재:",!!e),console.log("사용자 정보 존재:",!!t),e&&t&&ms(e))try{const e=JSON.parse(t);console.log("✅ 인증 상태 복원 완료:",e.username)}catch(n){console.error("❌ 사용자 정보 파싱 오류:",n),r(gt()),localStorage.clear()}else console.log("❌ 유효하지 않은 인증 정보 - 로그아웃 처리"),r(gt()),localStorage.removeItem("accessToken"),localStorage.removeItem("refreshToken"),localStorage.removeItem("userInfo")},[r]),e.useEffect(()=>{(async()=>{if(o&&(!l||!l.user_id||"loading..."===l.username)){console.log("🔄 사용자 정보 로드 시도");try{const e=await(async()=>{if(!localStorage.getItem("accessToken"))return null;try{return(await ds.get("/mypage")).data.mypage}catch(v){return console.error("사용자 정보 가져오기 실패:",v),null}})();if(e){const t={user_id:fs()||"unknown",username:e.username,email:e.email};r(wt(t)),console.log("✅ 사용자 정보 로드 완료:",t)}}catch(e){console.error("❌ 사용자 정보 로드 실패:",e)}}})()},[o,l,r]);const W=async e=>{console.log("=== 좋아요 상태 로드 시작 ==="),console.log("postId:",e),console.log("isAuthenticated:",o);try{if(o){const t=localStorage.getItem("accessToken");if(t&&ms(t))return console.log("✅ 로그인된 사용자 - 개별 좋아요 상태 조회"),void(await U(e));console.log("❌ 토큰 무효 - 로그아웃 처리"),r(gt()),localStorage.clear()}console.log("👤 비로그인 사용자 - 공개 좋아요 수 조회");const t=await(async e=>{try{return(await d.get(`${cs}/posts/${e}/like-status`)).data}catch(v){throw console.error("공개 좋아요 상태 조회 오류:",v),v}})(e);g(t.total_likes||0)}catch(t){console.error("❌ 좋아요 상태 로드 실패:",t),g(0)}},V=async e=>{var t;try{let a;if(o)try{a=await(async e=>{try{return(await ds.get(`/posts/${e}/comments`)).data}catch(v){throw console.error("댓글 조회 오류:",v),v}})(e)}catch(n){if(401!==(null==(t=n.response)?void 0:t.status))throw n;r(gt()),localStorage.clear(),a=await ps(e)}else a=await ps(e);f(a.comments||[])}catch(a){console.error("댓글 로드 실패:",a),f([])}},H=async()=>{var e,n,a,i,l,s,c;if(!t)return k("게시글 ID가 없습니다."),void y(!1);try{let n;if(y(!0),k(null),o)try{n=await(async e=>{try{return(await ds.get(`/posts/${e}`)).data}catch(v){throw console.error("게시글 조회 오류:",v),v}})(t)}catch(d){if(401!==(null==(e=d.response)?void 0:e.status))throw d;r(gt()),localStorage.clear(),n=await us(t)}else n=await us(t);u(n),await Promise.all([W(t),V(t)])}catch(p){console.error("게시글 로드 오류:",p);let e="게시글을 불러오는 중 오류가 발생했습니다.";404===(null==(n=p.response)?void 0:n.status)?e="존재하지 않는 게시글입니다.":500===(null==(a=p.response)?void 0:a.status)?e="서버 내부 오류가 발생했습니다.":"ERR_NETWORK"===p.code?e="서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.":(null==(l=null==(i=p.response)?void 0:i.data)?void 0:l.message)?e=p.response.data.message:(null==(c=null==(s=p.response)?void 0:s.data)?void 0:c.detail)&&(e=p.response.data.detail),k(e)}finally{y(!1)}};e.useEffect(()=>{(async()=>{r(yt()),await new Promise(e=>setTimeout(e,100)),await H()})()},[t,r]),e.useEffect(()=>{(async()=>{o&&t&&(console.log("🔄 인증 상태 변경 감지 - 서버와 동기화"),await U(t))})()},[o,t]);const Q=()=>{F(null),A("")},K=async e=>{var t,o;if(confirm("정말로 이 댓글을 삭제하시겠습니까?"))try{D(!0),R(e),await(async e=>{try{return(await ds.delete(`/comments/${e}`)).data}catch(v){throw console.error("댓글 삭제 오류:",v),v}})(e),f(t=>t.filter(t=>t.id!==e)),alert("댓글이 삭제되었습니다.")}catch(a){console.error("댓글 삭제 오류:",a),401===(null==(t=a.response)?void 0:t.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):403===(null==(o=a.response)?void 0:o.status)?alert("댓글 삭제 권한이 없습니다."):alert("댓글 삭제 중 오류가 발생했습니다.")}finally{D(!1),R(null)}},X=e=>{try{const t=new Date(e),n=t.getFullYear(),r=(t.getMonth()+1).toString().padStart(2,"0"),o=t.getDate().toString().padStart(2,"0"),a=t.getHours().toString().padStart(2,"0");return`${n}.${r}.${o} ${a}:${t.getMinutes().toString().padStart(2,"0")}`}catch{return e}},G=()=>{n("/CommunityList")},J=()=>{H()};return e.useEffect(()=>{const e=e=>{"Escape"===e.key&&P&&Q()};return document.addEventListener("keydown",e),()=>document.removeEventListener("keydown",e)},[P]),e.useEffect(()=>{console.log("=== Redux 상태 변경 감지 ==="),console.log("isAuthenticated:",o),console.log("user:",l),console.log("likedPosts:",s),console.log("현재 게시글 좋아요 상태 (isLiked):",M),console.log("localStorage likedPosts:",localStorage.getItem("likedPosts")),console.log("토큰에서 추출한 user_id:",fs()),console.log("현재 게시글:",c),console.log("댓글 수:",p.length),p.length>0&&(console.log("첫 번째 댓글:",p[0]),console.log("첫 번째 댓글 소유자 여부:",$(p[0]))),c&&console.log("게시글 소유자 여부:",B())},[o,l,s,M,c,p]),b?w.jsxs(hs,{children:[w.jsxs(xs,{children:[w.jsx(gs,{children:w.jsx(Jn,{})}),w.jsx(bs,{children:"커뮤니티"})]}),w.jsx(ws,{children:w.jsx(ys,{children:"게시글을 불러오는 중..."})})]}):v?w.jsxs(hs,{children:[w.jsxs(xs,{children:[w.jsx(gs,{children:w.jsx(Jn,{})}),w.jsx(bs,{children:"커뮤니티"})]}),w.jsxs(ws,{children:[w.jsx(vs,{children:v}),w.jsxs(Ys,{children:[w.jsx(Gs,{onClick:G,children:"목록으로 돌아가기"}),w.jsx(Js,{onClick:J,children:"다시 시도"})]})]})]}):c?w.jsxs(hs,{children:[w.jsxs(xs,{children:[w.jsx(gs,{children:w.jsx(Jn,{})}),w.jsx(bs,{children:"커뮤니티"})]}),w.jsxs(ws,{children:[w.jsxs(ks,{children:[w.jsxs(Ss,{children:[w.jsxs(js,{children:[w.jsx(zs,{children:c.title}),B()&&w.jsx(Cs,{onClick:()=>{C(!0)},disabled:_,children:_?"삭제 중...":"삭제"})]}),w.jsx(_s,{children:w.jsxs("span",{children:[X(c.created_at),"     작성자: ",c.username,"     좋아요: ",x]})})]}),w.jsxs(Es,{children:[w.jsx(Ps,{children:c.content}),c.tags&&c.tags.length>0&&w.jsx(Fs,{children:c.tags.map((e,t)=>w.jsxs(Ts,{children:["#",e]},t))})]})]}),w.jsxs(As,{children:[w.jsxs(Ns,{children:["💬 댓글 ",p.length]}),p.map(e=>w.jsxs(Is,{children:[w.jsxs(Ls,{children:[e.username," · ",X(e.created_at)]}),P===e.id?w.jsxs("div",{children:[w.jsx(Ms,{value:T,onChange:e=>A(e.target.value),maxLength:3e3,disabled:N,placeholder:"댓글을 수정해주세요."}),w.jsxs("div",{style:{fontSize:"12px",color:"#999",marginBottom:"8px"},children:[T.length,"/3000"]}),w.jsxs($s,{children:[w.jsx(Ws,{onClick:Q,disabled:N,children:"취소"}),w.jsx(Us,{onClick:()=>(async e=>{var t,o,a,i,l;if(T.trim())try{I(!0),console.log("댓글 수정 시도:",{commentId:e,content:T.trim()});const t={content:T.trim()},n=await ds.patch(`/comments/${e}`,t);console.log("댓글 수정 성공:",n.data),f(t=>t.map(t=>t.id===e?{...t,content:T.trim()}:t)),F(null),A(""),alert("댓글이 수정되었습니다.")}catch(s){console.error("댓글 수정 오류:",s),console.error("오류 상세:",{status:null==(t=s.response)?void 0:t.status,data:null==(o=s.response)?void 0:o.data,message:s.message}),401===(null==(a=s.response)?void 0:a.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):403===(null==(i=s.response)?void 0:i.status)?alert("댓글 수정 권한이 없습니다."):422===(null==(l=s.response)?void 0:l.status)?alert("요청 데이터 형식이 올바르지 않습니다."):alert("댓글 수정 중 오류가 발생했습니다.")}finally{I(!1)}else alert("댓글 내용을 입력해주세요.")})(e.id),disabled:N||!T.trim(),children:N?"저장 중...":"저장"})]})]}):w.jsxs("div",{children:[w.jsx(Ds,{children:e.content}),o&&$(e)&&w.jsxs(Os,{children:[w.jsx(Rs,{onClick:()=>(e=>{F(e.id),A(e.content)})(e),disabled:null!==P||L,children:"수정"}),w.jsx(Rs,{onClick:()=>K(e.id),disabled:null!==P||L||O===e.id,children:O===e.id?"삭제 중...":"삭제"})]})]})]},e.id)),o?w.jsxs(Vs,{children:[w.jsx(Hs,{placeholder:"댓글을 남겨주세요.",value:m,onChange:e=>h(e.target.value),maxLength:3e3,disabled:null!==P}),w.jsxs(qs,{children:[w.jsxs(Qs,{children:[m.length,"/3000"]}),w.jsx(Ks,{onClick:async()=>{var e;if(m.trim()&&t){if(!o)return alert("로그인이 필요합니다."),void n("/login");try{j(!0);const e={post_id:t,content:m.trim()},n=await(async e=>{try{return(await ds.post("/comments",e)).data}catch(v){throw console.error("댓글 작성 오류:",v),v}})(e),r={id:n.id,user_id:n.user_id,username:n.username,content:n.content,created_at:n.created_at};f(e=>[...e,r]),h("")}catch(a){console.error("댓글 작성 오류:",a),401===(null==(e=a.response)?void 0:e.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):alert("댓글 작성 중 오류가 발생했습니다.")}finally{j(!1)}}},disabled:S||!m.trim()||null!==P,children:S?"등록 중...":"등록"})]})]}):w.jsxs(Zs,{children:[w.jsx("p",{children:"댓글을 작성하려면 로그인이 필요합니다."}),w.jsx("button",{onClick:()=>{n("/login")},children:"로그인하기"})]})]}),w.jsx(ss,{isLiked:M,likeCount:x,onLike:async()=>{var e;if(t){if(!o)return alert("로그인이 필요합니다."),void n("/login");try{console.log("=== 좋아요 토글 시작 ==="),console.log("현재 좋아요 상태:",M);const e=await(async e=>{try{return(await ds.post(`/posts/${e}/like`)).data}catch(v){throw console.error("좋아요 토글 오류:",v),v}})(t);console.log("🎯 좋아요 토글 API 응답:",e),r(kt({postId:t,liked:e.liked}));const n=JSON.parse(localStorage.getItem("likedPosts")||"{}");n[t]=e.liked,localStorage.setItem("likedPosts",JSON.stringify(n)),g(e.total_likes),console.log("✅ 좋아요 토글 완료:",{postId:t,liked:e.liked,totalLikes:e.total_likes})}catch(a){console.error("❌ 좋아요 처리 오류:",a),401===(null==(e=a.response)?void 0:e.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):alert("좋아요 처리 중 오류가 발생했습니다.")}}},showText:!0,showCount:!0}),w.jsxs(Ys,{children:[w.jsx(Gs,{onClick:G,children:"목록"}),w.jsx(Js,{onClick:()=>{if(!o)return alert("글쓰기를 하려면 로그인이 필요합니다."),void n("/login");n("/CommunityWrite")},children:"글쓰기"})]})]}),z&&w.jsx(ec,{children:w.jsxs(tc,{children:[w.jsx(nc,{children:"게시글 삭제"}),w.jsxs(rc,{children:["정말로 이 게시글을 삭제하시겠습니까?",w.jsx("br",{}),"삭제된 게시글은 복구할 수 없습니다."]}),w.jsxs(oc,{children:[w.jsx(ic,{onClick:()=>{C(!1)},children:"취소"}),w.jsx(lc,{onClick:async()=>{var e,o;if(t)try{E(!0);const e=await(async e=>{try{return(await ds.delete(`/posts/${e}`)).data}catch(v){throw console.error("게시글 삭제 오류:",v),v}})(t);console.log("삭제 성공:",e.message),r(St(t));const o=JSON.parse(localStorage.getItem("likedPosts")||"{}");delete o[t],localStorage.setItem("likedPosts",JSON.stringify(o)),alert("게시글이 삭제되었습니다."),n("/CommunityList")}catch(a){console.error("게시글 삭제 오류:",a),401===(null==(e=a.response)?void 0:e.status)?(r(gt()),localStorage.clear(),alert("로그인이 필요합니다."),n("/login")):403===(null==(o=a.response)?void 0:o.status)?alert("삭제 권한이 없습니다."):alert("게시글 삭제 중 오류가 발생했습니다.")}finally{E(!1),C(!1)}},disabled:_,children:_?"삭제 중...":"삭제"})]})]})})]}):w.jsxs(hs,{children:[w.jsxs(xs,{children:[w.jsx(gs,{children:w.jsx(Jn,{})}),w.jsx(bs,{children:"커뮤니티"})]}),w.jsxs(ws,{children:[w.jsx(vs,{children:"게시글을 찾을 수 없습니다."}),w.jsx(Ys,{children:w.jsx(Gs,{onClick:G,children:"목록으로 돌아가기"})})]})]})},cc=d.create({baseURL:"https://baekend.onrender.com",headers:{"Content-Type":"application/json"}});cc.interceptors.request.use(e=>{const t=localStorage.getItem("accessToken");return t&&(e.headers.Authorization=`Bearer ${t}`),e},e=>Promise.reject(e));const dc=[{id:1,name:"서울특별시"},{id:2,name:"부산광역시"},{id:3,name:"대구광역시"},{id:4,name:"인천광역시"},{id:5,name:"광주광역시"},{id:6,name:"대전광역시"},{id:7,name:"울산광역시"},{id:8,name:"세종특별자치시"},{id:9,name:"경기도"},{id:10,name:"강원도"},{id:11,name:"충청북도"},{id:12,name:"충청남도"},{id:13,name:"전라북도"},{id:14,name:"전라남도"},{id:15,name:"경상북도"},{id:16,name:"경상남도"},{id:17,name:"제주특별자치도"}],uc=n.div`
   min-height: 100vh;
   background-color: #FFEFD5;
   padding: 5px 0;
-`,fc=n.div`
+`,pc=n.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -4651,7 +4651,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     margin-bottom: 1px;
     padding: 0 5px;
   }
-`,mc=n.div`
+`,fc=n.div`
   margin-top: 2px;
   margin-bottom: -50px;
   
@@ -4662,7 +4662,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     margin-top: 1px;
   }
-`,hc=n.h1`
+`,mc=n.h1`
   font-size: 25px;
   font-weight: 700;
   color: #333;
@@ -4683,7 +4683,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 22px;
     margin: 8px 0 0 50px;
   }
-`,xc=n.div`
+`,hc=n.div`
   background-color: #FFEFD5;
   border-radius: 16px;
   padding: 60px;
@@ -4705,16 +4705,16 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 25px 15px;
     margin: 0 5px;
   }
-`,gc=n.form`
+`,xc=n.form`
   display: flex;
   flex-direction: column;
   gap: 10px;
-`,bc=n.div`
+`,gc=n.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 20px;
-`,wc=n.label`
+`,bc=n.label`
   font-size: 16px;
   font-weight: 600;
   color: #333;
@@ -4726,13 +4726,13 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   @media (max-width: 480px) {
     font-size: 14px;
   }
-`,yc=n.div`
+`,wc=n.div`
   font-size: 12px;
   color: #666;
   text-align: right;
   margin-top: -15px;
   margin-bottom: 15px;
-`,vc=n.input`
+`,yc=n.input`
   width: 100%;
   padding: 12px 16px;
   border: 2px solid #ddd;
@@ -4761,11 +4761,11 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 14px;
     padding: 8px 12px;
   }
-`,kc=n.div`
+`,vc=n.div`
   font-size: 12px;
   color: #666;
   margin-top: 5px;
-`,Sc=n.div`
+`,kc=n.div`
   padding: 12px 16px;
   background-color: #e8f5e8;
   border: 2px solid #4CAF50;
@@ -4783,12 +4783,12 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     font-size: 14px;
     padding: 8px 12px;
   }
-`,jc=n.div`
+`,Sc=n.div`
   font-size: 12px;
   color: #666;
   margin-top: 5px;
   font-weight: normal;
-`,zc=n.div`
+`,jc=n.div`
   color: #dc3545;
   font-size: 14px;
   margin-top: 8px;
@@ -4796,7 +4796,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   background-color: #f8d7da;
   border: 1px solid #f5c6cb;
   border-radius: 4px;
-`,Cc=n.div`
+`,zc=n.div`
   color: #155724;
   font-size: 14px;
   margin-top: 8px;
@@ -4804,12 +4804,12 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   background-color: #d4edda;
   border: 1px solid #c3e6cb;
   border-radius: 4px;
-`,_c=n.div`
+`,Cc=n.div`
   display: flex;
   justify-content: center;
   margin-top: 20px;
   position: relative;
-`,Ec=n.button`
+`,_c=n.button`
   background-color: #FBBF77;
   color: white;
   border: none;
@@ -4842,7 +4842,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     padding: 10px 40px;
     font-size: 14px;
   }
-`,Pc=n.div`
+`,Ec=n.div`
   position: absolute;
   top: 0;
   left: 0;
@@ -4853,7 +4853,7 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
   justify-content: center;
   align-items: center;
   border-radius: 8px;
-`,Fc=n.div`
+`,Pc=n.div`
   width: 20px;
   height: 20px;
   border: 2px solid #f3f3f3;
@@ -4866,4 +4866,4 @@ import{r as e,f as t,d as n}from"./ui-BYBmBeOn.js";import{r,a as o}from"./vendor
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
-`,Tc=()=>{const t=a(),[n,r]=e.useState({title:"",content:"",tags:""}),[o,i]=e.useState({userInfo:!0,submission:!1}),[l,s]=e.useState(null),[c,d]=e.useState(null),[u,p]=e.useState(null),f=e.useCallback(e=>{var n,r,o,a,i,l,s;if(console.error("API 에러:",e),401===(null==(n=e.response)?void 0:n.status))return localStorage.removeItem("accessToken"),setTimeout(()=>t("/login"),2e3),"로그인이 만료되었습니다. 로그인 페이지로 이동합니다.";if(422===(null==(r=e.response)?void 0:r.status)){if(null==(a=null==(o=e.response)?void 0:o.data)?void 0:a.detail){if(Array.isArray(e.response.data.detail)){return`입력 데이터 오류:\n${e.response.data.detail.map(e=>{var t;return`${(null==(t=e.loc)?void 0:t[1])||"필드"}: ${e.msg||"오류"}`}).join("\n")}`}return`입력 데이터 오류: ${e.response.data.detail}`}return"입력 데이터 형식이 올바르지 않습니다. 모든 필드를 확인해주세요."}return 500===(null==(i=e.response)?void 0:i.status)?"서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.":(null==(s=null==(l=e.response)?void 0:l.data)?void 0:s.message)||e.message||"알 수 없는 오류가 발생했습니다."},[t]),m=e.useCallback(e=>{if(!e.trim())return{isValid:!0};const t=e.split(",").map(e=>e.trim()).filter(Boolean);if(t.length>5)return{isValid:!1,message:"태그는 최대 5개까지 입력 가능합니다."};return t.find(e=>e.length>20)?{isValid:!1,message:"각 태그는 20자를 초과할 수 없습니다."}:{isValid:!0}},[]),h=e.useCallback(()=>{if(!n.title||!n.content)return{isValid:!1,message:"제목과 내용을 모두 입력해주세요."};if(n.title.length<2)return{isValid:!1,message:"제목을 최소 2자 이상 입력해주세요."};if(n.content.length<10)return{isValid:!1,message:"내용을 최소 10자 이상 입력해주세요."};if(!u||!u.local_id)return{isValid:!1,message:"사용자 정보를 불러오지 못했습니다. 페이지를 새로고침해주세요."};const e=m(n.tags);return e.isValid?{isValid:!0}:{isValid:!1,message:e.message}},[n,u,m]),x=e.useMemo(()=>{if(!(null==u?void 0:u.local_id))return"";const e=uc.find(e=>e.id===u.local_id);return e?e.name:`지역 ID: ${u.local_id}`},[null==u?void 0:u.local_id]);e.useEffect(()=>{let e;return(async()=>{try{if(!localStorage.getItem("accessToken"))return s("로그인이 필요합니다. 로그인 페이지로 이동합니다."),void(e=setTimeout(()=>t("/login"),2e3));console.log("🔍 사용자 정보 가져오는 중...");const n=await(async()=>(await dc.get("/users/me")).data)();console.log("✅ 사용자 정보:",n),p(n)}catch(n){const e=f(n);s(e)}finally{i(e=>({...e,userInfo:!1}))}})(),()=>{e&&clearTimeout(e)}},[t,f]);const g=e.useCallback(e=>{e.length<=20&&r(t=>({...t,title:e})),l&&s(null)},[l]),b=e.useCallback(e=>{e.length<=2e3&&r(t=>({...t,content:e})),l&&s(null)},[l]),y=e.useCallback(e=>{r(t=>({...t,tags:e.target.value})),l&&s(null)},[l]),v=e.useCallback(async e=>{e.preventDefault();const r=h();if(!r.isValid)return void s(r.message||"입력 정보를 확인해주세요.");if(!localStorage.getItem("accessToken"))return s("로그인이 필요합니다. 로그인 페이지로 이동합니다."),void setTimeout(()=>t("/login"),2e3);i(e=>({...e,submission:!0})),s(null),d(null);try{const e=n.tags.split(",").map(e=>e.trim()).filter(e=>e.length>0),r={title:n.title,content:n.content,tags:e};console.log("전송할 게시글 데이터:",r),console.log("사용자의 지역 ID (자동 적용):",u.local_id);await(async e=>(await dc.post("/post",e)).data)(r);d("✅ 게시글이 성공적으로 등록되었습니다!"),setTimeout(()=>{t("/communityList")},2e3)}catch(o){const e=f(o);s(e)}finally{i(e=>({...e,submission:!1}))}},[n,u,h,t,f]);return o.userInfo?w.jsxs(pc,{children:[w.jsxs(fc,{children:[w.jsx(mc,{children:w.jsx(Jn,{})}),w.jsx(hc,{children:"커뮤니티 글 쓰기"})]}),w.jsx(xc,{children:w.jsxs("div",{style:{textAlign:"center",padding:"40px 0"},children:[w.jsx(Fc,{}),w.jsx("div",{children:"사용자 정보를 불러오는 중..."})]})})]}):u?w.jsxs(pc,{children:[w.jsxs(fc,{children:[w.jsx(mc,{children:w.jsx(Jn,{})}),w.jsx(hc,{children:"커뮤니티 글 쓰기"})]}),w.jsx(xc,{children:w.jsxs(gc,{onSubmit:v,children:[w.jsxs(bc,{children:[w.jsx(wc,{htmlFor:"title",children:"제목"}),w.jsx(Gr,{type:"text",value:n.title,onChange:g,placeholder:"최소 2자, 최대 20자 작성 가능",required:!0}),w.jsxs(yc,{children:[n.title.length,"/20자"]})]}),w.jsxs(bc,{children:[w.jsx(wc,{htmlFor:"content",children:"작성 내용"}),w.jsx(Gr,{type:"textarea",value:n.content,onChange:b,placeholder:"내용에 대해 자세히 적어주세요\n\n• 최소 10자, 2000자 이내 작성 가능",rows:12,required:!0}),w.jsxs(yc,{children:[n.content.length,"/2000자"]})]}),w.jsxs(bc,{children:[w.jsx(wc,{children:"작성 지역"}),w.jsxs(Sc,{children:["📍 ",x,w.jsx(jc,{children:"* 회원가입 시 설정한 지역으로 자동 등록됩니다"})]})]}),w.jsxs(bc,{children:[w.jsx(wc,{htmlFor:"tags",children:"태그 (선택사항)"}),w.jsx(vc,{type:"text",value:n.tags,onChange:y,placeholder:"태그를 쉼표로 구분해서 입력하세요 (예: 토마토, 장마, 병충해)"}),w.jsx(kc,{children:"태그는 쉼표(,)로 구분하여 입력하세요. 최대 5개, 각 태그당 20자 이내로 입력 가능합니다."})]}),l&&w.jsx(zc,{children:l}),c&&w.jsx(Cc,{children:c}),w.jsxs(_c,{children:[w.jsx(Ec,{type:"submit",disabled:o.submission,children:o.submission?"등록 중...":"등록"}),o.submission&&w.jsxs(Pc,{children:[w.jsx(Fc,{}),w.jsx("div",{children:"게시글 등록 중..."})]})]})]})})]}):w.jsxs(pc,{children:[w.jsxs(fc,{children:[w.jsx(mc,{children:w.jsx(Jn,{})}),w.jsx(hc,{children:"커뮤니티 글 쓰기"})]}),w.jsx(xc,{children:l&&w.jsx(zc,{children:l})})]})};function Ac(){return w.jsx($,{store:Ct,children:w.jsxs(l,{children:[w.jsx(_t,{}),w.jsx("div",{className:"App",children:w.jsxs(s,{children:[w.jsx(c,{path:"/",element:w.jsx($n,{})}),w.jsx(c,{path:"/login",element:w.jsx(vr,{})}),w.jsx(c,{path:"/signup",element:w.jsx(Wr,{})}),w.jsx(c,{path:"/report",element:w.jsx(ta,{})}),w.jsx(c,{path:"/Mypage",element:w.jsx(si,{})}),w.jsx(c,{path:"/ReportDetail",element:w.jsx($i,{})}),w.jsx(c,{path:"/SupportList",element:w.jsx(cl,{})}),w.jsx(c,{path:"/SupportDetail",element:w.jsx(Al,{})}),w.jsx(c,{path:"/CommunityList",element:w.jsx(os,{})}),w.jsx(c,{path:"/CommunityDetail/:id",element:w.jsx(cc,{})}),w.jsx(c,{path:"/CommunityWrite",element:w.jsx(Tc,{})})]})})]})})}E.createRoot(document.getElementById("root")).render(w.jsx(e.StrictMode,{children:w.jsx(Ac,{})}));
+`,Fc=()=>{const t=a(),[n,r]=e.useState({title:"",content:"",tags:""}),[o,i]=e.useState({userInfo:!0,submission:!1}),[l,s]=e.useState(null),[c,d]=e.useState(null),[u,p]=e.useState(null),f=e.useCallback(e=>{var n,r,o,a,i,l,s;if(console.error("API 에러:",e),401===(null==(n=e.response)?void 0:n.status))return localStorage.removeItem("accessToken"),setTimeout(()=>t("/login"),2e3),"로그인이 만료되었습니다. 로그인 페이지로 이동합니다.";if(422===(null==(r=e.response)?void 0:r.status)){if(null==(a=null==(o=e.response)?void 0:o.data)?void 0:a.detail){if(Array.isArray(e.response.data.detail)){return`입력 데이터 오류:\n${e.response.data.detail.map(e=>{var t;return`${(null==(t=e.loc)?void 0:t[1])||"필드"}: ${e.msg||"오류"}`}).join("\n")}`}return`입력 데이터 오류: ${e.response.data.detail}`}return"입력 데이터 형식이 올바르지 않습니다. 모든 필드를 확인해주세요."}return 500===(null==(i=e.response)?void 0:i.status)?"서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.":(null==(s=null==(l=e.response)?void 0:l.data)?void 0:s.message)||e.message||"알 수 없는 오류가 발생했습니다."},[t]),m=e.useCallback(e=>{if(!e.trim())return{isValid:!0};const t=e.split(",").map(e=>e.trim()).filter(Boolean);if(t.length>5)return{isValid:!1,message:"태그는 최대 5개까지 입력 가능합니다."};return t.find(e=>e.length>20)?{isValid:!1,message:"각 태그는 20자를 초과할 수 없습니다."}:{isValid:!0}},[]),h=e.useCallback(()=>{if(!n.title||!n.content)return{isValid:!1,message:"제목과 내용을 모두 입력해주세요."};if(n.title.length<2)return{isValid:!1,message:"제목을 최소 2자 이상 입력해주세요."};if(n.content.length<10)return{isValid:!1,message:"내용을 최소 10자 이상 입력해주세요."};if(!u||!u.local_id)return{isValid:!1,message:"사용자 정보를 불러오지 못했습니다. 페이지를 새로고침해주세요."};const e=m(n.tags);return e.isValid?{isValid:!0}:{isValid:!1,message:e.message}},[n,u,m]),x=e.useMemo(()=>{if(!(null==u?void 0:u.local_id))return"";const e=dc.find(e=>e.id===u.local_id);return e?e.name:`지역 ID: ${u.local_id}`},[null==u?void 0:u.local_id]);e.useEffect(()=>{let e;return(async()=>{try{if(!localStorage.getItem("accessToken"))return s("로그인이 필요합니다. 로그인 페이지로 이동합니다."),void(e=setTimeout(()=>t("/login"),2e3));console.log("🔍 사용자 정보 가져오는 중...");const n=await(async()=>(await cc.get("/users/me")).data)();console.log("✅ 사용자 정보:",n),p(n)}catch(n){const e=f(n);s(e)}finally{i(e=>({...e,userInfo:!1}))}})(),()=>{e&&clearTimeout(e)}},[t,f]);const g=e.useCallback(e=>{e.length<=20&&r(t=>({...t,title:e})),l&&s(null)},[l]),b=e.useCallback(e=>{e.length<=2e3&&r(t=>({...t,content:e})),l&&s(null)},[l]),y=e.useCallback(e=>{r(t=>({...t,tags:e.target.value})),l&&s(null)},[l]),v=e.useCallback(async e=>{e.preventDefault();const r=h();if(!r.isValid)return void s(r.message||"입력 정보를 확인해주세요.");if(!localStorage.getItem("accessToken"))return s("로그인이 필요합니다. 로그인 페이지로 이동합니다."),void setTimeout(()=>t("/login"),2e3);i(e=>({...e,submission:!0})),s(null),d(null);try{const e=n.tags.split(",").map(e=>e.trim()).filter(e=>e.length>0),r={title:n.title,content:n.content,tags:e};console.log("전송할 게시글 데이터:",r),console.log("사용자의 지역 ID (자동 적용):",u.local_id);await(async e=>(await cc.post("/post",e)).data)(r);d("✅ 게시글이 성공적으로 등록되었습니다!"),setTimeout(()=>{t("/communityList")},2e3)}catch(o){const e=f(o);s(e)}finally{i(e=>({...e,submission:!1}))}},[n,u,h,t,f]);return o.userInfo?w.jsxs(uc,{children:[w.jsxs(pc,{children:[w.jsx(fc,{children:w.jsx(Jn,{})}),w.jsx(mc,{children:"커뮤니티 글 쓰기"})]}),w.jsx(hc,{children:w.jsxs("div",{style:{textAlign:"center",padding:"40px 0"},children:[w.jsx(Pc,{}),w.jsx("div",{children:"사용자 정보를 불러오는 중..."})]})})]}):u?w.jsxs(uc,{children:[w.jsxs(pc,{children:[w.jsx(fc,{children:w.jsx(Jn,{})}),w.jsx(mc,{children:"커뮤니티 글 쓰기"})]}),w.jsx(hc,{children:w.jsxs(xc,{onSubmit:v,children:[w.jsxs(gc,{children:[w.jsx(bc,{htmlFor:"title",children:"제목"}),w.jsx(Gr,{type:"text",value:n.title,onChange:g,placeholder:"최소 2자, 최대 20자 작성 가능",required:!0}),w.jsxs(wc,{children:[n.title.length,"/20자"]})]}),w.jsxs(gc,{children:[w.jsx(bc,{htmlFor:"content",children:"작성 내용"}),w.jsx(Gr,{type:"textarea",value:n.content,onChange:b,placeholder:"내용에 대해 자세히 적어주세요\n\n• 최소 10자, 2000자 이내 작성 가능",rows:12,required:!0}),w.jsxs(wc,{children:[n.content.length,"/2000자"]})]}),w.jsxs(gc,{children:[w.jsx(bc,{children:"작성 지역"}),w.jsxs(kc,{children:["📍 ",x,w.jsx(Sc,{children:"* 회원가입 시 설정한 지역으로 자동 등록됩니다"})]})]}),w.jsxs(gc,{children:[w.jsx(bc,{htmlFor:"tags",children:"태그 (선택사항)"}),w.jsx(yc,{type:"text",value:n.tags,onChange:y,placeholder:"태그를 쉼표로 구분해서 입력하세요 (예: 토마토, 장마, 병충해)"}),w.jsx(vc,{children:"태그는 쉼표(,)로 구분하여 입력하세요. 최대 5개, 각 태그당 20자 이내로 입력 가능합니다."})]}),l&&w.jsx(jc,{children:l}),c&&w.jsx(zc,{children:c}),w.jsxs(Cc,{children:[w.jsx(_c,{type:"submit",disabled:o.submission,children:o.submission?"등록 중...":"등록"}),o.submission&&w.jsxs(Ec,{children:[w.jsx(Pc,{}),w.jsx("div",{children:"게시글 등록 중..."})]})]})]})})]}):w.jsxs(uc,{children:[w.jsxs(pc,{children:[w.jsx(fc,{children:w.jsx(Jn,{})}),w.jsx(mc,{children:"커뮤니티 글 쓰기"})]}),w.jsx(hc,{children:l&&w.jsx(jc,{children:l})})]})};function Tc(){return w.jsx($,{store:Ct,children:w.jsxs(l,{children:[w.jsx(_t,{}),w.jsx("div",{className:"App",children:w.jsxs(s,{children:[w.jsx(c,{path:"/",element:w.jsx($n,{})}),w.jsx(c,{path:"/login",element:w.jsx(vr,{})}),w.jsx(c,{path:"/signup",element:w.jsx(Wr,{})}),w.jsx(c,{path:"/report",element:w.jsx(ta,{})}),w.jsx(c,{path:"/Mypage",element:w.jsx(li,{})}),w.jsx(c,{path:"/ReportDetail",element:w.jsx(Mi,{})}),w.jsx(c,{path:"/SupportList",element:w.jsx(sl,{})}),w.jsx(c,{path:"/SupportDetail",element:w.jsx(Tl,{})}),w.jsx(c,{path:"/CommunityList",element:w.jsx(rs,{})}),w.jsx(c,{path:"/CommunityDetail/:id",element:w.jsx(sc,{})}),w.jsx(c,{path:"/CommunityWrite",element:w.jsx(Fc,{})})]})})]})})}E.createRoot(document.getElementById("root")).render(w.jsx(e.StrictMode,{children:w.jsx(Tc,{})}));

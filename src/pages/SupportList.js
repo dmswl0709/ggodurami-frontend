@@ -313,7 +313,7 @@ const ITEMS_PER_PAGE = 10;
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://baekend.onrender.com';
 // Axios 인스턴스 생성
 const apiClient = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: BASE_URL,
     timeout: 10000, // 10초 타임아웃
     headers: {
         'Content-Type': 'application/json',
