@@ -1,4 +1,5 @@
-// pages/ReportDetail.jsx
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+// pages/ReportDetail.js
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Logo } from '../Components/Logo/Logo';
@@ -539,105 +540,39 @@ const getFileUrl = (fileData) => {
 const AIResultDisplay = ({ aiResult, loading, error }) => {
   // 로딩 중일 때
   if (loading) {
-    return (
-      <AIResultContainer>
-        <AIBadge>AI 분석</AIBadge>
-        <div style={{ textAlign: 'center', color: '#666', padding: '20px 0' }}>
-          🤖 AI가 이미지를 분석하는 중...
-        </div>
-      </AIResultContainer>
-    );
+    return (_jsxs(AIResultContainer, { children: [_jsx(AIBadge, { children: "AI 분석" }), _jsx("div", { style: { textAlign: 'center', color: '#666', padding: '20px 0' }, children: "🤖 AI가 이미지를 분석하는 중..." })] }));
   }
 
   // 에러가 있을 때
   if (error) {
-    return (
-      <NoAIResult>
-        <div style={{ marginBottom: '10px' }}>⚠️ AI 진단 중 오류 발생</div>
-        <div style={{ fontSize: '12px', color: '#999' }}>{error}</div>
-      </NoAIResult>
-    );
+    return (_jsxs(NoAIResult, { children: [_jsx("div", { style: { marginBottom: '10px' }, children: "⚠️ AI 진단 중 오류 발생" }), _jsx("div", { style: { fontSize: '12px', color: '#999' }, children: error })] }));
   }
 
   // AI 결과가 없거나 null일 때
   if (!aiResult) {
-    return (
-      <NoAIResult>
-        🤖 AI 진단 결과가 없습니다
-      </NoAIResult>
-    );
+    return (_jsx(NoAIResult, { children: "🤖 AI 진단 결과가 없습니다" }));
   }
 
   // primary_detection이 없거나 null일 때
   if (!aiResult.primary_detection) {
-    return (
-      <NoAIResult>
-        🤖 AI가 병해충을 탐지하지 못했습니다
-      </NoAIResult>
-    );
+    return (_jsx(NoAIResult, { children: "🤖 AI가 병해충을 탐지하지 못했습니다" }));
   }
 
   // 정상적인 AI 결과 표시
   try {
     const confidencePercentage = Math.round(aiResult.primary_detection.confidence * 100);
 
-    return (
-      <AIResultContainer>
-        <AIBadge>AI 분석</AIBadge>
-        
-        <AIResultItem>
-          <AILabel>탐지 카테고리:</AILabel>
-          <AIValue>{aiResult.category || '알 수 없음'}</AIValue>
-        </AIResultItem>
-        
-        <AIResultItem>
-          <AILabel>주요 진단:</AILabel>
-          <AIValue>{aiResult.primary_detection.class_name || '알 수 없음'}</AIValue>
-        </AIResultItem>
-        
-        <AIResultItem>
-          <AILabel>신뢰도:</AILabel>
-          <div style={{ flex: 1 }}>
-            <AIValue>{confidencePercentage}%</AIValue>
-            <ConfidenceBar confidence={confidencePercentage} />
-          </div>
-        </AIResultItem>
-        
-        <AIResultItem>
-          <AILabel>총 탐지 수:</AILabel>
-          <AIValue>{aiResult.total_detections || 0}개</AIValue>
-        </AIResultItem>
-        
-        {aiResult.detections && aiResult.detections.length > 1 && (
-          <AIResultItem style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-            <AILabel style={{ marginBottom: '8px' }}>추가 탐지 결과:</AILabel>
-            <div style={{ width: '100%' }}>
-              {aiResult.detections.slice(1).map((detection, index) => (
-                <div key={index} style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  padding: '4px 0',
-                  fontSize: '14px',
-                  color: '#6c757d'
-                }}>
-                  <span>{detection.class_name || '알 수 없음'}</span>
-                  <span>{Math.round((detection.confidence || 0) * 100)}%</span>
-                </div>
-              ))}
-            </div>
-          </AIResultItem>
-        )}
-      </AIResultContainer>
-    );
+    return (_jsxs(AIResultContainer, { children: [_jsx(AIBadge, { children: "AI 분석" }), _jsxs(AIResultItem, { children: [_jsx(AILabel, { children: "탐지 카테고리:" }), _jsx(AIValue, { children: aiResult.category || '알 수 없음' })] }), _jsxs(AIResultItem, { children: [_jsx(AILabel, { children: "주요 진단:" }), _jsx(AIValue, { children: aiResult.primary_detection.class_name || '알 수 없음' })] }), _jsxs(AIResultItem, { children: [_jsx(AILabel, { children: "신뢰도:" }), _jsxs("div", { style: { flex: 1 }, children: [_jsxs(AIValue, { children: [confidencePercentage, "%"] }), _jsx(ConfidenceBar, { confidence: confidencePercentage })] })] }), _jsxs(AIResultItem, { children: [_jsx(AILabel, { children: "총 탐지 수:" }), _jsxs(AIValue, { children: [aiResult.total_detections || 0, "개"] })] }), aiResult.detections && aiResult.detections.length > 1 && (_jsxs(AIResultItem, { style: { flexDirection: 'column', alignItems: 'flex-start' }, children: [_jsx(AILabel, { style: { marginBottom: '8px' }, children: "추가 탐지 결과:" }), _jsx("div", { style: { width: '100%' }, children: aiResult.detections.slice(1).map((detection, index) => (_jsxs("div", { style: {
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '4px 0',
+                                    fontSize: '14px',
+                                    color: '#6c757d'
+                                }, children: [_jsx("span", { children: detection.class_name || '알 수 없음' }), _jsxs("span", { children: [Math.round((detection.confidence || 0) * 100), "%"] })] }, index))) })] }))] }));
   } catch (renderError) {
     console.error('AI 결과 렌더링 오류:', renderError);
-    return (
-      <NoAIResult>
-        <div style={{ marginBottom: '10px' }}>⚠️ AI 결과 표시 중 오류 발생</div>
-        <div style={{ fontSize: '12px', color: '#999' }}>결과 데이터 형식이 올바르지 않습니다</div>
-      </NoAIResult>
-    );
+    return (_jsxs(NoAIResult, { children: [_jsx("div", { style: { marginBottom: '10px' }, children: "⚠️ AI 결과 표시 중 오류 발생" }), _jsx("div", { style: { fontSize: '12px', color: '#999' }, children: "결과 데이터 형식이 올바르지 않습니다" })] }));
   }
 };
 
@@ -646,88 +581,68 @@ const ImageDisplay = ({ files }) => {
   console.log('ImageDisplay 받은 files:', files);
 
   if (!files || !Array.isArray(files) || files.length === 0) {
-    return (
-      <div style={{
-        padding: '40px 20px',
-        backgroundColor: '#f8f9fa',
-        border: '2px dashed #dee2e6',
-        borderRadius: '12px',
-        textAlign: 'center',
-        color: '#6c757d',
-        fontSize: '14px'
-      }}>
-        <div style={{ marginBottom: '10px' }}>📷</div>
-        <div>첨부된 파일이 없습니다</div>
-      </div>
-    );
+    return (_jsxs("div", { style: {
+                padding: '40px 20px',
+                backgroundColor: '#f8f9fa',
+                border: '2px dashed #dee2e6',
+                borderRadius: '12px',
+                textAlign: 'center',
+                color: '#6c757d',
+                fontSize: '14px'
+            }, children: [_jsx("div", { style: { marginBottom: '10px' }, children: "📷" }), _jsx("div", { children: "첨부된 파일이 없습니다" })] }));
   }
 
-  return (
-    <div>
-      {files.map((file, index) => {
-        console.log(`파일 ${index + 1} 처리:`, file);
-        
-        if (!file) {
-          console.warn(`파일 ${index + 1}이 비어있습니다`);
-          return null;
-        }
+  return (_jsx("div", { children: files.map((file, index) => {
+            console.log(`파일 ${index + 1} 처리:`, file);
+            
+            if (!file) {
+                console.warn(`파일 ${index + 1}이 비어있습니다`);
+                return null;
+            }
 
-        const fileUrl = getFileUrl(file);
-        console.log(`🖼️ 이미지 ${index + 1} URL:`, fileUrl);
-        
-        if (!fileUrl) {
-          console.warn(`파일 ${index + 1}의 URL을 생성할 수 없습니다`);
-          return (
-            <div key={index} style={{
-              padding: '20px',
-              backgroundColor: '#fff3cd',
-              border: '1px solid #ffeaa7',
-              borderRadius: '8px',
-              textAlign: 'center',
-              color: '#856404',
-              fontSize: '14px',
-              marginBottom: '15px'
-            }}>
-              <div>⚠️ 파일 정보를 읽을 수 없습니다</div>
-              <div style={{ fontSize: '12px', marginTop: '5px' }}>
-                파일 {index + 1}: {JSON.stringify(file).substring(0, 50)}...
-              </div>
-            </div>
-          );
-        }
-        
-        // 파일명 추출
-        const getFileName = (fileData) => {
-          if (typeof fileData === 'string') {
-            return fileData.split('/').pop() || `파일 ${index + 1}`;
-          }
-          if (fileData?.original_filename) {
-            return fileData.original_filename;
-          }
-          if (fileData?.filename) {
-            return fileData.filename;
-          }
-          return `첨부 파일 ${index + 1}`;
-        };
+            const fileUrl = getFileUrl(file);
+            console.log(`🖼️ 이미지 ${index + 1} URL:`, fileUrl);
+            
+            if (!fileUrl) {
+                console.warn(`파일 ${index + 1}의 URL을 생성할 수 없습니다`);
+                return (_jsxs("div", { style: {
+                        padding: '20px',
+                        backgroundColor: '#fff3cd',
+                        border: '1px solid #ffeaa7',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        color: '#856404',
+                        fontSize: '14px',
+                        marginBottom: '15px'
+                    }, children: [_jsx("div", { children: "⚠️ 파일 정보를 읽을 수 없습니다" }), _jsxs("div", { style: { fontSize: '12px', marginTop: '5px' }, children: ["파일 ", index + 1, ": ", JSON.stringify(file).substring(0, 50), "..."] })] }, index));
+            }
+            
+            // 파일명 추출
+            const getFileName = (fileData) => {
+                if (typeof fileData === 'string') {
+                    return fileData.split('/').pop() || `파일 ${index + 1}`;
+                }
+                if (fileData?.original_filename) {
+                    return fileData.original_filename;
+                }
+                if (fileData?.filename) {
+                    return fileData.filename;
+                }
+                return `첨부 파일 ${index + 1}`;
+            };
 
-        const fileName = getFileName(file);
-        
-        return (
-          <div key={index} style={{ marginBottom: '15px' }}>
-            <ReportImage 
-              src={fileUrl}
-              alt={fileName}
-              onLoad={() => {
-                console.log(`✅ 이미지 ${index + 1} 로드 성공:`, fileName);
-              }}
-              onError={(e) => {
-                console.error(`❌ 이미지 ${index + 1} 로드 실패:`, fileName, fileUrl);
-                
-                const target = e.target;
-                target.style.display = 'none';
-                
-                const errorDiv = document.createElement('div');
-                errorDiv.style.cssText = `
+            const fileName = getFileName(file);
+            
+            return (_jsxs("div", { style: { marginBottom: '15px' }, children: [_jsx(ReportImage, { src: fileUrl, alt: fileName, onLoad: () => {
+                            console.log(`✅ 이미지 ${index + 1} 로드 성공:`, fileName);
+                        }, onError: (e) => {
+                            console.error(`❌ 이미지 ${index + 1} 로드 실패:`, fileName, fileUrl);
+                            
+                            const target = e.target;
+                            target.style.display = 'none';
+                            
+                            const errorDiv = document.createElement('div');
+                            errorDiv.style.cssText = `
                   padding: 40px 20px;
                   background-color: #f8d7da;
                   border: 2px dashed #f5c6cb;
@@ -736,7 +651,7 @@ const ImageDisplay = ({ files }) => {
                   color: #721c24;
                   font-size: 14px;
                 `;
-                errorDiv.innerHTML = `
+                            errorDiv.innerHTML = `
                   <div style="margin-bottom: 10px;">🚫</div>
                   <div><strong>${fileName}</strong></div>
                   <div style="margin-top: 5px;">이미지를 불러올 수 없습니다</div>
@@ -744,16 +659,10 @@ const ImageDisplay = ({ files }) => {
                     URL: ${fileUrl}
                   </div>
                 `;
-                
-                target.parentNode?.insertBefore(errorDiv, target.nextSibling);
-              }}
-            />
-            <ImageCaption>{fileName}</ImageCaption>
-          </div>
-        );
-      }).filter(Boolean)}
-    </div>
-  );
+                            
+                            target.parentNode?.insertBefore(errorDiv, target.nextSibling);
+                        } }), _jsx(ImageCaption, { children: fileName })] }, index));
+        }).filter(Boolean) }));
 };
 
 // 🔥 API 함수들
@@ -1079,163 +988,15 @@ export const ReportDetail = () => {
   }, [selectedReportDetail]);
 
   if (loading) {
-    return (
-      <PageContainer>
-        <LoadingContainer>
-          신고 정보를 불러오는 중...
-        </LoadingContainer>
-      </PageContainer>
-    );
+    return (_jsx(PageContainer, { children: _jsx(LoadingContainer, { children: "신고 정보를 불러오는 중..." }) }));
   }
 
   if (error) {
-    return (
-      <PageContainer>
-        <ErrorContainer>
-          <div>{error}</div>
-        </ErrorContainer>
-      </PageContainer>
-    );
+    return (_jsx(PageContainer, { children: _jsx(ErrorContainer, { children: _jsx("div", { children: error }) }) }));
   }
 
-  return (
-    <PageContainer>
-      <Header>
-        <LogoContainer>
-          <Logo />
-        </LogoContainer>
-        <HeaderTitle>신고상황 세부 페이지</HeaderTitle>
-      </Header>
-      
-      <MapContainer>
-        <Map reports={reportsData} onMarkerClick={handleMarkerClick} />
-      </MapContainer>
-      
-      <ContentWrapper>
-        {selectedReportDetail ? (
-          <InfoSection>
-            <InfoItem>
-              <InfoLabel style={{ color: '#d32f2f', fontWeight: 700, fontSize: '20px' }}>
-                📋 선택된 신고 상세 정보
-              </InfoLabel>
-            </InfoItem>
-            
-            {loadingDetail ? (
-              <DetailContent>상세 정보를 불러오는 중...</DetailContent>
-            ) : (
-              <>
-                <InfoItem>
-                  <InfoLabel>신고 제목:</InfoLabel>
-                  <InfoValue>{selectedReportDetail.title}</InfoValue>
-                </InfoItem>
-                
-                <InfoItem>
-                  <InfoLabel>신고자:</InfoLabel>
-                  <InfoValue>{selectedReportDetail.username}</InfoValue>
-                </InfoItem>
-                
-                <InfoItem>
-                  <InfoLabel>카테고리:</InfoLabel>
-                  <InfoValue>
-                    {selectedReportDetail.main_category}
-                    {selectedReportDetail.sub_category && ` > ${selectedReportDetail.sub_category}`}
-                  </InfoValue>
-                </InfoItem>
-                
-                <InfoItem>
-                  <InfoLabel>발생 지역:</InfoLabel>
-                  <InfoValue>{selectedReportDetail.local}</InfoValue>
-                </InfoItem>
-                
-                <InfoItem>
-                  <InfoLabel>좌표:</InfoLabel>
-                  <InfoValue>
-                    위도: {selectedReportDetail.latitude}, 경도: {selectedReportDetail.longitude}
-                  </InfoValue>
-                </InfoItem>
-                
-                <InfoItem>
-                  <InfoLabel>신고 일시:</InfoLabel>
-                  <InfoValue>
-                    {new Date(selectedReportDetail.created_at).toLocaleString('ko-KR')}
-                  </InfoValue>
-                </InfoItem>
-                
-                <DetailSection>
-                  <InfoItem>
-                    <InfoLabel>신고 내용:</InfoLabel>
-                  </InfoItem>
-                  <DetailContent style={{ backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '8px', marginTop: '10px' }}>
-                    {selectedReportDetail.content}
-                  </DetailContent>
-                </DetailSection>
-                
-                {/* 🔥 AI 진단 결과 섹션 - 병해충 신고인 경우만 표시 */}
-                {selectedReportDetail.main_category === "병해충" && (
-                  <AISection>
-                    <InfoItem>
-                      <InfoLabel>🤖 AI 진단 결과:</InfoLabel>
-                    </InfoItem>
-                    <AIResultDisplay 
-                      aiResult={aiDiagnosis} 
-                      loading={loadingAI} 
-                      error={aiError}
-                    />
-                  </AISection>
-                )}
-                
-                {/* 🔥 첨부 파일 표시 */}
-                <ImageSection>
-                  <ImageLabelContainer>
-                    <InfoLabel>첨부 파일:</InfoLabel>
-                  </ImageLabelContainer>
-                  <ImageContainer>
-                    <ImageDisplay files={selectedReportDetail.files || []} />
-                  </ImageContainer>
-                </ImageSection>
-              </>
-            )}
-          </InfoSection>
-        ) : (
-          <InfoSection>
-            <InfoItem>
-              <InfoLabel style={{ color: '#666', fontWeight: 600, fontSize: '18px' }}>
-                🗺️ 실시간 신고 현황
-              </InfoLabel>
-            </InfoItem>
-            <DetailContent style={{ textAlign: 'center', padding: '40px 20px', color: '#666' }}>
-              지도의 마커를 클릭하면 해당 신고의 상세 정보를 확인할 수 있습니다.
-              <br />
-              <br />
-              <span style={{ fontSize: '14px', color: '#999' }}>
-                💡 빨간색 마커: 재난/재해 신고 | 파란색 마커: 병해충 신고
-                <br />
-                🤖 병해충 신고의 경우 AI 진단 결과도 함께 확인할 수 있습니다.
-              </span>
-            </DetailContent>
-          </InfoSection>
-        )}
-
-        {reportsData.length > 0 && (
-          <DetailSection>
-            <InfoItem>
-              <InfoLabel>최근 신고 현황:</InfoLabel>
-            </InfoItem>
-            <DetailContent>
-              총 {reportsData.length}건의 신고가 접수되어 지도에 표시되고 있습니다.
-              {reportsData.some(report => report.latitude && report.longitude) && 
-                ` (위치 정보가 있는 신고: ${reportsData.filter(report => report.latitude && report.longitude).length}건)`
-              }
-              <br />
-              <span style={{ fontSize: '14px', color: '#666', marginTop: '8px', display: 'inline-block' }}>
-                🤖 병해충 관련 신고: {reportsData.filter(report => report.main_category === "병해충").length}건 (AI 진단 가능)
-              </span>
-            </DetailContent>
-          </DetailSection>
-        )}
-      </ContentWrapper>
-    </PageContainer>
-  );
+  return (_jsxs(PageContainer, { children: [_jsxs(Header, { children: [_jsx(LogoContainer, { children: _jsx(Logo, {}) }), _jsx(HeaderTitle, { children: "신고상황 세부 페이지" })] }), _jsx(MapContainer, { children: _jsx(Map, { reports: reportsData, onMarkerClick: handleMarkerClick }) }), _jsxs(ContentWrapper, { children: [selectedReportDetail ? (_jsxs(InfoSection, { children: [_jsx(InfoItem, { children: _jsx(InfoLabel, { style: { color: '#d32f2f', fontWeight: 700, fontSize: '20px' }, children: "📋 선택된 신고 상세 정보" }) }), loadingDetail ? (_jsx(DetailContent, { children: "상세 정보를 불러오는 중..." })) : (_jsxs(_Fragment, { children: [_jsxs(InfoItem, { children: [_jsx(InfoLabel, { children: "신고 제목:" }), _jsx(InfoValue, { children: selectedReportDetail.title })] }), _jsxs(InfoItem, { children: [_jsx(InfoLabel, { children: "신고자:" }), _jsx(InfoValue, { children: selectedReportDetail.username })] }), _jsxs(InfoItem, { children: [_jsx(InfoLabel, { children: "카테고리:" }), _jsxs(InfoValue, { children: [selectedReportDetail.main_category, selectedReportDetail.sub_category && ` > ${selectedReportDetail.sub_category}`] })] }), _jsxs(InfoItem, { children: [_jsx(InfoLabel, { children: "발생 지역:" }), _jsx(InfoValue, { children: selectedReportDetail.local })] }), _jsxs(InfoItem, { children: [_jsx(InfoLabel, { children: "좌표:" }), _jsxs(InfoValue, { children: ["위도: ", selectedReportDetail.latitude, ", 경도: ", selectedReportDetail.longitude] })] }), _jsxs(InfoItem, { children: [_jsx(InfoLabel, { children: "신고 일시:" }), _jsx(InfoValue, { children: new Date(selectedReportDetail.created_at).toLocaleString('ko-KR') })] }), _jsxs(DetailSection, { children: [_jsx(InfoItem, { children: _jsx(InfoLabel, { children: "신고 내용:" }) }), _jsx(DetailContent, { style: { backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '8px', marginTop: '10px' }, children: selectedReportDetail.content })] }), selectedReportDetail.main_category === "병해충" && (_jsxs(AISection, { children: [_jsx(InfoItem, { children: _jsx(InfoLabel, { children: "🤖 AI 진단 결과:" }) }), _jsx(AIResultDisplay, { aiResult: aiDiagnosis, loading: loadingAI, error: aiError })] })), _jsxs(ImageSection, { children: [_jsx(ImageLabelContainer, { children: _jsx(InfoLabel, { children: "첨부 파일:" }) }), _jsx(ImageContainer, { children: _jsx(ImageDisplay, { files: selectedReportDetail.files || [] }) })] })] }))] })) : (_jsxs(InfoSection, { children: [_jsx(InfoItem, { children: _jsx(InfoLabel, { style: { color: '#666', fontWeight: 600, fontSize: '18px' }, children: "🗺️ 실시간 신고 현황" }) }), _jsxs(DetailContent, { style: { textAlign: 'center', padding: '40px 20px', color: '#666' }, children: ["지도의 마커를 클릭하면 해당 신고의 상세 정보를 확인할 수 있습니다.", _jsx("br", {}), _jsx("br", {}), _jsxs("span", { style: { fontSize: '14px', color: '#999' }, children: ["💡 빨간색 마커: 재난/재해 신고 | 파란색 마커: 병해충 신고", _jsx("br", {}), "🤖 병해충 신고의 경우 AI 진단 결과도 함께 확인할 수 있습니다."] })] })] })), reportsData.length > 0 && (_jsxs(DetailSection, { children: [_jsx(InfoItem, { children: _jsx(InfoLabel, { children: "최근 신고 현황:" }) }), _jsxs(DetailContent, { children: ["총 ", reportsData.length, "건의 신고가 접수되어 지도에 표시되고 있습니다.", reportsData.some(report => report.latitude && report.longitude) &&
+                                        ` (위치 정보가 있는 신고: ${reportsData.filter(report => report.latitude && report.longitude).length}건)`, _jsx("br", {}), _jsxs("span", { style: { fontSize: '14px', color: '#666', marginTop: '8px', display: 'inline-block' }, children: ["🤖 병해충 관련 신고: ", reportsData.filter(report => report.main_category === "병해충").length, "건 (AI 진단 가능)"] })] })] }))] })] }));
 };
 
 export default ReportDetail;
