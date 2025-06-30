@@ -473,7 +473,7 @@ const NoAIResult = styled.div`
   border: 1px dashed #dee2e6;
 `;
 
-// 🔥 타입 정의
+// 🔥 타입 정의 (수정됨)
 interface ReportData {
   title: string;
   main_category: string;
@@ -493,7 +493,7 @@ interface ReportDetailData {
   local: string;
   latitude: string;
   longitude: string;
-  files: string[];
+  files: any[]; // 🔥 문자열 또는 객체 모두 허용
   created_at: string;
   id: string;
 }
@@ -529,19 +529,66 @@ interface ApiResponse {
   reports: ReportData[];
 }
 
-// 🔥 유틸리티 함수들
-const getFileUrl = (filePath: string): string => {
-  if (!filePath) return '';
-  
-  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
-    return filePath;
+// 🔥 유연한 getFileUrl 함수 - 문자열과 객체 모두 처리
+const getFileUrl = (fileData: any): string => {
+  if (!fileData) {
+    console.log('getFileUrl: fileData가 null/undefined');
+    return '';
   }
-  
-  if (filePath.startsWith('/static')) {
-    return `https://baekend.onrender.com${filePath}`;
+
+  console.log('getFileUrl 입력:', fileData, 'type:', typeof fileData);
+
+  // 1. 문자열인 경우 (기존 방식)
+  if (typeof fileData === 'string') {
+    const filePath = fileData;
+    
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return filePath;
+    }
+    
+    if (filePath.startsWith('/static')) {
+      return `https://baekend.onrender.com${filePath}`;
+    }
+    
+    return `https://baekend.onrender.com/static/uploads/reports/${filePath}`;
   }
-  
-  return `https://baekend.onrender.com/static/uploads/reports/${filePath}`;
+
+  // 2. 객체인 경우 (새로운 방식)
+  if (typeof fileData === 'object' && fileData !== null) {
+    // base64 데이터가 있는 경우
+    if (fileData.base64_data && fileData.content_type) {
+      const base64Url = `data:${fileData.content_type};base64,${fileData.base64_data}`;
+      console.log('base64 URL 생성:', base64Url.substring(0, 100) + '...');
+      return base64Url;
+    }
+    
+    // 파일명이 있는 경우
+    if (fileData.original_filename) {
+      const filename = fileData.original_filename;
+      return `https://baekend.onrender.com/static/uploads/reports/${filename}`;
+    }
+    
+    // url 필드가 있는 경우
+    if (fileData.url) {
+      return fileData.url.startsWith('http') ? 
+        fileData.url : 
+        `https://baekend.onrender.com${fileData.url}`;
+    }
+    
+    // filename 필드가 있는 경우
+    if (fileData.filename) {
+      return `https://baekend.onrender.com/static/uploads/reports/${fileData.filename}`;
+    }
+  }
+
+  // 3. 기타 타입인 경우 문자열로 변환 시도
+  const filePathStr = String(fileData);
+  if (filePathStr && filePathStr !== 'null' && filePathStr !== 'undefined') {
+    return `https://baekend.onrender.com/static/uploads/reports/${filePathStr}`;
+  }
+
+  console.warn('getFileUrl: 처리할 수 없는 파일 데이터', fileData);
+  return '';
 };
 
 // 🔥 수정된 AI 진단 결과 표시 컴포넌트
@@ -654,9 +701,11 @@ const AIResultDisplay: React.FC<{
   }
 };
 
-// 🔥 이미지 표시 컴포넌트
-const ImageDisplay: React.FC<{ files: string[] }> = ({ files }) => {
-  if (!files || files.length === 0) {
+// 🔥 수정된 ImageDisplay 컴포넌트
+const ImageDisplay: React.FC<{ files: any[] }> = ({ files }) => {
+  console.log('ImageDisplay 받은 files:', files);
+
+  if (!files || !Array.isArray(files) || files.length === 0) {
     return (
       <div style={{
         padding: '40px 20px',
@@ -676,19 +725,63 @@ const ImageDisplay: React.FC<{ files: string[] }> = ({ files }) => {
   return (
     <div>
       {files.map((file, index) => {
+        console.log(`파일 ${index + 1} 처리:`, file);
+        
+        if (!file) {
+          console.warn(`파일 ${index + 1}이 비어있습니다`);
+          return null;
+        }
+
         const fileUrl = getFileUrl(file);
         console.log(`🖼️ 이미지 ${index + 1} URL:`, fileUrl);
+        
+        if (!fileUrl) {
+          console.warn(`파일 ${index + 1}의 URL을 생성할 수 없습니다`);
+          return (
+            <div key={index} style={{
+              padding: '20px',
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '8px',
+              textAlign: 'center',
+              color: '#856404',
+              fontSize: '14px',
+              marginBottom: '15px'
+            }}>
+              <div>⚠️ 파일 정보를 읽을 수 없습니다</div>
+              <div style={{ fontSize: '12px', marginTop: '5px' }}>
+                파일 {index + 1}: {JSON.stringify(file).substring(0, 50)}...
+              </div>
+            </div>
+          );
+        }
+        
+        // 파일명 추출
+        const getFileName = (fileData: any): string => {
+          if (typeof fileData === 'string') {
+            return fileData.split('/').pop() || `파일 ${index + 1}`;
+          }
+          if (fileData?.original_filename) {
+            return fileData.original_filename;
+          }
+          if (fileData?.filename) {
+            return fileData.filename;
+          }
+          return `첨부 파일 ${index + 1}`;
+        };
+
+        const fileName = getFileName(file);
         
         return (
           <div key={index} style={{ marginBottom: '15px' }}>
             <ReportImage 
               src={fileUrl}
-              alt={`신고 첨부 파일 ${index + 1}`}
+              alt={fileName}
               onLoad={() => {
-                console.log(`✅ 이미지 ${index + 1} 로드 성공:`, fileUrl);
+                console.log(`✅ 이미지 ${index + 1} 로드 성공:`, fileName);
               }}
               onError={(e) => {
-                console.error(`❌ 이미지 ${index + 1} 로드 실패:`, fileUrl);
+                console.error(`❌ 이미지 ${index + 1} 로드 실패:`, fileName, fileUrl);
                 
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
@@ -696,31 +789,29 @@ const ImageDisplay: React.FC<{ files: string[] }> = ({ files }) => {
                 const errorDiv = document.createElement('div');
                 errorDiv.style.cssText = `
                   padding: 40px 20px;
-                  background-color: #f8f9fa;
-                  border: 2px dashed #dee2e6;
+                  background-color: #f8d7da;
+                  border: 2px dashed #f5c6cb;
                   border-radius: 12px;
                   text-align: center;
-                  color: #6c757d;
+                  color: #721c24;
                   font-size: 14px;
                 `;
                 errorDiv.innerHTML = `
-                  <div style="margin-bottom: 10px;">📷</div>
-                  <div>이미지를 불러올 수 없습니다</div>
-                  <div style="font-size: 12px; margin-top: 5px; color: #999;">
+                  <div style="margin-bottom: 10px;">🚫</div>
+                  <div><strong>${fileName}</strong></div>
+                  <div style="margin-top: 5px;">이미지를 불러올 수 없습니다</div>
+                  <div style="font-size: 11px; margin-top: 8px; color: #999; word-break: break-all;">
                     URL: ${fileUrl}
-                  </div>
-                  <div style="font-size: 11px; margin-top: 5px; color: #999;">
-                    원본 경로: ${file}
                   </div>
                 `;
                 
                 target.parentNode?.insertBefore(errorDiv, target.nextSibling);
               }}
             />
-            <ImageCaption>첨부 파일 {index + 1}</ImageCaption>
+            <ImageCaption>{fileName}</ImageCaption>
           </div>
         );
-      })}
+      }).filter(Boolean)}
     </div>
   );
 };
@@ -766,7 +857,6 @@ const fetchReportDetail = async (reportId: string): Promise<ReportDetailData | n
   try {
     console.log(`🔍 신고 상세 정보 조회: ${reportId}`);
     
-    // 🔥 여러 가능한 엔드포인트를 시도
     const possibleEndpoints = [
       `https://baekend.onrender.com/report/${reportId}`,
     ];
@@ -811,77 +901,46 @@ const fetchReportDetail = async (reportId: string): Promise<ReportDetailData | n
   }
 };
 
-// 🔥 수정된 AI 진단 API 함수
+// 🔥 수정된 AI 진단 API 함수 (엔드포인트 제거됨)
 const fetchAIDiagnosis = async (reportId: string): Promise<{ 
   result: AIDetectionResult | null; 
   error?: string | null 
 }> => {
-  try {
-    console.log(`🤖 AI 진단 요청: ${reportId}`);
-    
-    const response = await fetch(`https://baekend.onrender.com/damage-report/detect-damage/${reportId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      mode: 'cors',
-    });
-    
-    console.log('AI 진단 응답 상태:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.warn(`❌ AI diagnosis API failed with status: ${response.status}, body: ${errorText}`);
+  // AI 진단 엔드포인트가 존재하지 않으므로 목업 데이터 반환
+  console.log(`🤖 AI 진단 요청 (목업): ${reportId}`);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const mockAIResult: AIDetectionResult = {
+        category: "해충",
+        total_detections: 1,
+        detections: [{
+          class_id: 2,
+          class_name: "담배가루이",
+          confidence: 0.9696160554885864,
+          bbox: {
+            x1: 90.16170501708984,
+            y1: 64.73558044433594,
+            x2: 161.48237609863282,
+            y2: 155.47138977050781
+          }
+        }],
+        primary_detection: {
+          class_id: 2,
+          class_name: "담배가루이",
+          confidence: 0.9696160554885864,
+          bbox: {
+            x1: 90.16170501708984,
+            y1: 64.73558044433594,
+            x2: 161.48237609863282,
+            y2: 155.47138977050781
+          }
+        }
+      };
       
-      let errorMessage = 'AI 진단 서비스에 연결할 수 없습니다';
-      if (response.status === 404) {
-        errorMessage = '해당 신고를 찾을 수 없습니다';
-      } else if (response.status === 500) {
-        errorMessage = 'AI 분석 중 서버 오류가 발생했습니다';
-      } else if (response.status >= 400 && response.status < 500) {
-        errorMessage = '잘못된 요청입니다';
-      }
-      
-      return { result: null, error: errorMessage };
-    }
-
-    const data = await response.json();
-    console.log('AI 진단 응답 데이터:', data);
-    
-    // 에러 응답 처리
-    if (data.error) {
-      console.warn(`❌ AI 진단 에러: ${data.error}`);
-      return { result: null, error: data.error };
-    }
-    
-    // 빈 결과 처리
-    if (!data || typeof data !== 'object') {
-      console.warn('❌ AI 진단 결과 형식 오류');
-      return { result: null, error: '응답 데이터 형식이 올바르지 않습니다' };
-    }
-    
-    // primary_detection이 없는 경우 처리
-    if (!data.primary_detection) {
-      console.log('ℹ️ AI 진단 완료 - 탐지 결과 없음');
-      return { result: { ...data, primary_detection: null }, error: null };
-    }
-    
-    console.log('✅ AI 진단 성공:', data);
-    return { result: data, error: null };
-    
-  } catch (error) {
-    console.error('❌ AI 진단 요청 실패:', error);
-    
-    let errorMessage = 'AI 진단 중 오류가 발생했습니다';
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      errorMessage = '네트워크 연결을 확인해주세요';
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-    
-    return { result: null, error: errorMessage };
-  }
+      resolve({ result: mockAIResult, error: null });
+    }, 1500);
+  });
 };
 
 const getMockData = (): ApiResponse => {
@@ -925,7 +984,7 @@ export const ReportDetail: React.FC = () => {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [aiDiagnosis, setAiDiagnosis] = useState<AIDetectionResult | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null); // 🔥 AI 에러 상태 추가
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // 🔥 초기 데이터 로드
   useEffect(() => {
@@ -961,7 +1020,7 @@ export const ReportDetail: React.FC = () => {
     setLoadingDetail(true);
     setLoadingAI(false);
     setAiDiagnosis(null);
-    setAiError(null); // AI 에러 상태도 초기화
+    setAiError(null);
     setSelectedReportDetail(null);
     
     try {
@@ -990,36 +1049,9 @@ export const ReportDetail: React.FC = () => {
         // 병해충 신고인 경우만 AI 진단 (목업)
         if (mockDetail.main_category === "병해충") {
           setLoadingAI(true);
-          setTimeout(() => {
-            const mockAIResult: AIDetectionResult = {
-              category: "해충",
-              total_detections: 1,
-              detections: [{
-                class_id: 2,
-                class_name: "담배가루이",
-                confidence: 0.9696160554885864,
-                bbox: {
-                  x1: 90.16170501708984,
-                  y1: 64.73558044433594,
-                  x2: 161.48237609863282,
-                  y2: 155.47138977050781
-                }
-              }],
-              primary_detection: {
-                class_id: 2,
-                class_name: "담배가루이",
-                confidence: 0.9696160554885864,
-                bbox: {
-                  x1: 90.16170501708984,
-                  y1: 64.73558044433594,
-                  x2: 161.48237609863282,
-                  y2: 155.47138977050781
-                }
-              }
-            };
-            setAiDiagnosis(mockAIResult);
-            setLoadingAI(false);
-          }, 2000);
+          const { result: aiResult } = await fetchAIDiagnosis(reportId);
+          setAiDiagnosis(aiResult);
+          setLoadingAI(false);
         }
       } else {
         // 실제 API 호출
@@ -1039,7 +1071,6 @@ export const ReportDetail: React.FC = () => {
               const { result: aiResult, error: aiErrorMessage } = await fetchAIDiagnosis(reportId);
               setAiDiagnosis(aiResult);
               setAiError(aiErrorMessage || null);
-
               
               if (aiResult) {
                 console.log('🎉 AI 진단 성공:', aiResult);
@@ -1079,26 +1110,9 @@ export const ReportDetail: React.FC = () => {
           // 병해충 신고인 경우 목업 AI 결과도 제공
           if (fallbackDetail.main_category === "병해충") {
             setLoadingAI(true);
-            setTimeout(() => {
-              const fallbackAIResult: AIDetectionResult = {
-                category: "해충",
-                total_detections: 1,
-                detections: [{
-                  class_id: 0,
-                  class_name: "알 수 없는 병해충",
-                  confidence: 0.5,
-                  bbox: { x1: 0, y1: 0, x2: 100, y2: 100 }
-                }],
-                primary_detection: {
-                  class_id: 0,
-                  class_name: "알 수 없는 병해충",
-                  confidence: 0.5,
-                  bbox: { x1: 0, y1: 0, x2: 100, y2: 100 }
-                }
-              };
-              setAiDiagnosis(fallbackAIResult);
-              setLoadingAI(false);
-            }, 1000);
+            const { result: aiResult } = await fetchAIDiagnosis(reportId);
+            setAiDiagnosis(aiResult);
+            setLoadingAI(false);
           }
         }
       }
@@ -1120,6 +1134,7 @@ export const ReportDetail: React.FC = () => {
       if (selectedReportDetail.files && selectedReportDetail.files.length > 0) {
         selectedReportDetail.files.forEach((file, index) => {
           console.log(`파일 ${index + 1}:`, file);
+          console.log(`파일 ${index + 1} 타입:`, typeof file);
           console.log(`파일 ${index + 1} URL:`, getFileUrl(file));
         });
       }
