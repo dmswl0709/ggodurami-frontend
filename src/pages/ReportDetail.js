@@ -750,43 +750,74 @@ const fetchReportDetail = async (reportId) => {
   }
 };
 
-// 🔥 수정된 AI 진단 API 함수 (엔드포인트 제거됨)
+// 🔥 수정된 AI 진단 API 함수 - 실제 API 호출
 const fetchAIDiagnosis = async (reportId) => {
-  // AI 진단 엔드포인트가 존재하지 않으므로 목업 데이터 반환
-  console.log(`🤖 AI 진단 요청 (목업): ${reportId}`);
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const mockAIResult = {
-        category: "해충",
-        total_detections: 1,
-        detections: [{
-          class_id: 2,
-          class_name: "담배가루이",
-          confidence: 0.9696160554885864,
-          bbox: {
-            x1: 90.16170501708984,
-            y1: 64.73558044433594,
-            x2: 161.48237609863282,
-            y2: 155.47138977050781
-          }
-        }],
-        primary_detection: {
-          class_id: 2,
-          class_name: "담배가루이",
-          confidence: 0.9696160554885864,
-          bbox: {
-            x1: 90.16170501708984,
-            y1: 64.73558044433594,
-            x2: 161.48237609863282,
-            y2: 155.47138977050781
-          }
-        }
-      };
+  try {
+    console.log(`🤖 AI 진단 요청: ${reportId}`);
+    
+    const response = await fetch(`https://baekend.onrender.com/damage-report/detect-damage/${reportId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      mode: 'cors',
+    });
+    
+    console.log('AI 진단 응답 상태:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn(`❌ AI diagnosis API failed with status: ${response.status}, body: ${errorText}`);
       
-      resolve({ result: mockAIResult, error: null });
-    }, 1500);
-  });
+      let errorMessage = 'AI 진단 서비스에 연결할 수 없습니다';
+      if (response.status === 404) {
+        errorMessage = '해당 신고를 찾을 수 없습니다';
+      } else if (response.status === 500) {
+        errorMessage = 'AI 분석 중 서버 오류가 발생했습니다';
+      } else if (response.status >= 400 && response.status < 500) {
+        errorMessage = '잘못된 요청입니다';
+      }
+      
+      return { result: null, error: errorMessage };
+    }
+
+    const data = await response.json();
+    console.log('AI 진단 응답 데이터:', data);
+
+    // 에러 응답 처리
+    if (data.error) {
+      console.warn(`❌ AI 진단 에러: ${data.error}`);
+      return { result: null, error: data.error };
+    }
+
+    // 빈 결과 처리
+    if (!data || typeof data !== 'object') {
+      console.warn('❌ AI 진단 결과 형식 오류');
+      return { result: null, error: '응답 데이터 형식이 올바르지 않습니다' };
+    }
+
+    // primary_detection이 없는 경우 처리
+    if (!data.primary_detection) {
+      console.log('ℹ️ AI 진단 완료 - 탐지 결과 없음');
+      return { result: { ...data, primary_detection: null }, error: null };
+    }
+
+    console.log('✅ AI 진단 성공:', data);
+    return { result: data, error: null };
+    
+  } catch (error) {
+    console.error('❌ AI 진단 요청 실패:', error);
+    
+    let errorMessage = 'AI 진단 중 오류가 발생했습니다';
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      errorMessage = '네트워크 연결을 확인해주세요';
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    return { result: null, error: errorMessage };
+  }
 };
 
 const getMockData = () => {
@@ -892,7 +923,7 @@ export const ReportDetail = () => {
         
         setSelectedReportDetail(mockDetail);
         
-        // 병해충 신고인 경우만 AI 진단 (목업)
+        // 병해충 신고인 경우만 AI 진단 (실제 API 호출)
         if (mockDetail.main_category === "병해충") {
           setLoadingAI(true);
           const { result: aiResult } = await fetchAIDiagnosis(reportId);
@@ -953,7 +984,7 @@ export const ReportDetail = () => {
           };
           setSelectedReportDetail(fallbackDetail);
           
-          // 병해충 신고인 경우 목업 AI 결과도 제공
+          // 병해충 신고인 경우 AI 결과도 호출
           if (fallbackDetail.main_category === "병해충") {
             setLoadingAI(true);
             const { result: aiResult } = await fetchAIDiagnosis(reportId);
