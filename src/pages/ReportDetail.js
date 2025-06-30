@@ -575,10 +575,7 @@ const fetchReportDetail = async (reportId) => {
         console.log(`🔍 신고 상세 정보 조회: ${reportId}`);
         // 🔥 여러 가능한 엔드포인트를 시도
         const possibleEndpoints = [
-            `https://baekend.onrender.com/damage-report/${reportId}`,
-            `https://baekend.onrender.com/reports/${reportId}`,
             `https://baekend.onrender.com/report/${reportId}`,
-            `https://baekend.onrender.com/damage-reports/${reportId}`
         ];
         for (const endpoint of possibleEndpoints) {
             try {
